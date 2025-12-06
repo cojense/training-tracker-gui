@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "lib": ["es6", "dom"],
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "baseUrl": "./",
+    "paths": {
+      "~/*": ["src/*"],
+      "~": ["src"]
+    },
+    "types": ["vite/client"]
+  },
+  "include": ["src", "vite.config.ts", "*.js", "eslint.config.js"]
+}
