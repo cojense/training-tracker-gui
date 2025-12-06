@@ -45,7 +45,7 @@ export default defineConfig(
     languageOptions: {
       ...reactPlugin.configs.flat.recommended.languageOptions,
       parserOptions: {
-        project: ['./tsconfig.app.json', './tsconfig.node.json'],
+        projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
     },
