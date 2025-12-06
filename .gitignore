@@ -1,0 +1,50 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# --- AI Agents & Caches ---
+.gemini/plan-ideas/
+.gemini/logs/
+.claude/
+conductor/tracks/*
+conductor/code_styleguides/*
+CLAUDE.md
+conductor/claude-workflow.md
+conductor/research.md
+examples/
+*.md.template
+
+# Editor directories and files
+.vscode/*
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.bak
+
+# Extras
+.env
+GEMINI.md
+.vscode/
+.gemini/
+conductor/
+.geminiignore
+
+# --- Whitelist (Keep these) ---
+*.sh
+!run.bash
+*.md
+!README.md
