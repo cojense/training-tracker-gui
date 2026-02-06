@@ -26,6 +26,9 @@ export default defineConfig(
       'react-hooks/rules-of-hooks': 'error',
       // exhaustive-deps finds hooks with inproper effect dependencies
       'react-hooks/exhaustive-deps': 'warn',
+      // Disable strict perf rules for now to allow for cleaner JSX
+      'react-perf/jsx-no-new-function-as-prop': 'off',
+      'react-perf/jsx-no-new-object-as-prop': 'off',
     },
     languageOptions: {
       ...reactPlugin.configs.flat.recommended.languageOptions,
