@@ -1,35 +1,53 @@
-import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
-import { Card, CardContent, Typography, Box } from '@mui/material';
-import { jwtDecode } from 'jwt-decode';
-import { useAuth } from '~/AuthContext';
+import React, { useCallback } from 'react';
+import { Card, CardContent, Typography, Button, Box } from '@mui/material';
+import { useAuth } from '~/utilities/useAuth';
+import { useNavigate } from 'react-router-dom';
 
-const LoginView = () => {
-  const { setLoginAuth, setUser } = useAuth();
+const styles = {
+  container: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: '60vh',
+  },
+  card: {
+    maxWidth: 400,
+    textAlign: 'center',
+    p: 2,
+  },
+  secondaryText: { mb: 3 },
+};
+const LoginView: React.FC = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogin = useCallback(() => {
+    login();
+    void navigate('/');
+  }, [login, navigate]);
 
   return (
-    <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
-      <Card sx={{ maxWidth: 400, textAlign: 'center' }}>
+    <Box sx={styles.container}>
+      <Card sx={styles.card}>
         <CardContent>
-          <Typography variant="h5" component="div" sx={{ mb: 2 }}>
-            Welcome to Shyft Training Tracker
+          <Typography variant="h5" gutterBottom>
+            Welcome to Training Tracker
           </Typography>
-          <Typography variant="body1" sx={{ mb: 3 }}>
-            Please sign in with your Google account to continue.
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={styles.secondaryText}
+          >
+            Please sign in to access your training requirements.
           </Typography>
-          <GoogleLogin
-            onSuccess={(credentialResponse: CredentialResponse) => {
-              if (credentialResponse.credential) {
-                const decoded: { name: string; email: string; picture: string } = jwtDecode(
-                  credentialResponse.credential
-                );
-                setUser({ name: decoded.name, email: decoded.email, picture: decoded.picture });
-                setLoginAuth(true);
-              }
-            }}
-            onError={() => {
-              console.log('Login Failed');
-            }}
-          />
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            onClick={handleLogin}
+          >
+            Sign In (Mock)
+          </Button>
         </CardContent>
       </Card>
     </Box>
