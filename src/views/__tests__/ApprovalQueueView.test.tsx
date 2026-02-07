@@ -1,12 +1,12 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { ApprovalQueueView } from '../ApprovalQueueView';
 import { BrowserRouter } from 'react-router-dom';
-import { TrainingService } from '~/services/TrainingService';
-import { NotificationProvider } from '~/hooks/NotificationContext';
+import { api } from '~/utilities/api';
+import { NotificationProvider } from '~/utilities/NotificationContext';
 import { vi } from 'vitest';
 
-vi.mock('~/services/TrainingService', () => ({
-  TrainingService: {
+vi.mock('~/utilities/api', () => ({
+  api: {
     getApprovalQueue: vi.fn(),
     approveEvent: vi.fn(),
   },
@@ -33,8 +33,8 @@ const mockQueue = [
 
 describe('ApprovalQueueView', () => {
   it('renders queue and handles bulk approval', async () => {
-    (TrainingService.getApprovalQueue as any).mockResolvedValue(mockQueue);
-    (TrainingService.approveEvent as any).mockResolvedValue({ status: 'success' });
+    (api.getApprovalQueue as any).mockResolvedValue(mockQueue);
+    (api.approveEvent as any).mockResolvedValue({ status: 'success' });
 
     render(
       <BrowserRouter>
@@ -45,9 +45,7 @@ describe('ApprovalQueueView', () => {
     );
 
     await waitFor(() => {
-      const userLink = screen.getByRole('link', { name: 'Doe, John' });
-      expect(userLink).toBeInTheDocument();
-      expect(userLink).toHaveAttribute('href', '/users/1');
+      expect(screen.getByText('Doe, John')).toBeInTheDocument();
     });
 
     const checkboxes = screen.getAllByRole('checkbox');
@@ -59,7 +57,7 @@ describe('ApprovalQueueView', () => {
 
     await waitFor(() => {
       // Should call approveEvent twice
-      expect(TrainingService.approveEvent).toHaveBeenCalledTimes(2);
+      expect(api.approveEvent).toHaveBeenCalledTimes(2);
     });
   });
 });

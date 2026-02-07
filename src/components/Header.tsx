@@ -17,7 +17,7 @@ import {
   Menu as MenuIcon,
   OpenInNew as OpenInNewIcon,
 } from '@mui/icons-material';
-import { useAuth } from '~/hooks/useAuth';
+import { useAuth } from '~/utilities/useAuth';
 
 const styles = {
   appBar: { zIndex: (theme: Theme) => theme.zIndex.drawer + 1 },
@@ -75,9 +75,7 @@ const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
   }, [navigate]);
 
   const handleFlaskUIClick = useCallback(() => {
-    const BACKEND_URL =
-      import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:5001';
-    window.location.href = `${BACKEND_URL}/`;
+    window.location.href = 'http://localhost:5001/';
   }, []);
 
   const handleProfileClick = useCallback(() => {

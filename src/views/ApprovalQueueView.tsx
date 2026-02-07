@@ -24,10 +24,10 @@ import {
   Edit as EditIcon,
   CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
-import { TrainingService } from '~/services/TrainingService';
+import { api } from '~/utilities/api';
 import { TrainingEvent } from '~/types/training';
-import { useNotification } from '~/hooks/NotificationContext';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNotification } from '~/utilities/NotificationContext';
+import { useNavigate } from 'react-router-dom';
 
 const styles = {
   headerBox: {
@@ -69,15 +69,7 @@ const QueueRow = ({
       <TableCell padding="checkbox">
         <Checkbox checked={selected} onChange={() => onToggle(event.id!)} />
       </TableCell>
-      <TableCell>
-        <Link
-          component={RouterLink}
-          to={`/users/${event.user_id}`}
-          underline="hover"
-        >
-          {userName}
-        </Link>
-      </TableCell>
+      <TableCell>{userName}</TableCell>
       <TableCell>{event.training.title}</TableCell>
       <TableCell>{event.completion_date}</TableCell>
       <TableCell>
@@ -86,21 +78,17 @@ const QueueRow = ({
         ) : event.training_certificates.length === 0 ? (
           <b>missing</b>
         ) : (
-          event.training_certificates.map((cert, index) => {
-            const BACKEND_URL =
-              import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:5001';
-            return (
-              <Link
-                key={cert.id ?? index}
-                href={`${BACKEND_URL}/api/certificates/${cert.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={styles.certLink}
-              >
-                cert{index > 0 ? index + 1 : ''}
-              </Link>
-            );
-          })
+          event.training_certificates.map((cert, index) => (
+            <Link
+              key={cert.id ?? index}
+              href={`http://localhost:5001/api/certificates/${cert.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={styles.certLink}
+            >
+              cert{index > 0 ? index + 1 : ''}
+            </Link>
+          ))
         )}
       </TableCell>
       <TableCell>
@@ -138,7 +126,7 @@ export const ApprovalQueueView = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await TrainingService.getApprovalQueue();
+      const data = await api.getApprovalQueue();
       setQueue(data);
       setSelectedIds(new Set());
     } catch (err) {
@@ -180,7 +168,7 @@ export const ApprovalQueueView = () => {
     async (id: number) => {
       try {
         setApproving(true);
-        await TrainingService.approveEvent(id);
+        await api.approveEvent(id);
         showNotification('Training approved.', 'success');
         void fetchQueue();
       } catch (err) {
@@ -201,7 +189,7 @@ export const ApprovalQueueView = () => {
       setApproving(true);
       // Sequential API calls as requested to avoid backend modification
       for (const id of ids) {
-        await TrainingService.approveEvent(id);
+        await api.approveEvent(id);
       }
       showNotification(
         `Successfully approved ${ids.length} records.`,

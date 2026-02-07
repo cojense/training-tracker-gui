@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -8,7 +7,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Link as MuiLink,
   Typography,
   Card,
   CardContent,
@@ -17,17 +15,14 @@ import {
   CircularProgress,
   Alert,
   Button,
+  alpha,
   useTheme,
 } from '@mui/material';
-import {
-  Download as DownloadIcon,
-  Add as AddIcon,
-  Edit as EditIcon,
-} from '@mui/icons-material';
-import { ReportService } from '~/services/ReportService';
+import { Download as DownloadIcon } from '@mui/icons-material';
+import { api } from '~/utilities/api';
 import { AssignedTraining } from '~/types/assignments';
 import { exportToCSV } from '~/utilities/csvExport';
-import { getStatusBackgroundColor } from '~/utilities/statusColors';
+import { differenceInDays, parseISO } from 'date-fns';
 
 const styles = {
   headerBox: {
@@ -53,7 +48,7 @@ export const ManagerReportView = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await ReportService.getManagerReport();
+      const data = await api.getManagerReport();
       setReport(data);
     } catch (err) {
       console.error('Failed to fetch manager report:', err);
@@ -69,27 +64,50 @@ export const ManagerReportView = () => {
 
   const handleExport = useCallback(() => {
     const headers = [
+      'Supervisor',
       'Member',
       'Training',
-      'Bill To',
       'Last Completed',
       'Approved',
       'Due',
-      'Supervisor',
     ];
     const data = report.map((row) => [
-      `${row.member.last_name}, ${row.member.first_name}`,
-      row.assignment.training.title,
-      row.projects.map((p) => p.name).join(', '),
-      row.completion_date,
-      row.approved_date,
-      row.due_date,
       row.member.supervisor
         ? `${row.member.supervisor.last_name}, ${row.member.supervisor.first_name}`
         : 'MISSING',
+      `${row.member.last_name}, ${row.member.first_name}`,
+      row.assignment.training.title,
+      row.completion_date,
+      row.approved_date,
+      row.due_date,
     ]);
     exportToCSV(`manager_report_${Date.now()}.csv`, headers, data);
   }, [report]);
+
+  const getRowStyles = useCallback(
+    (row: AssignedTraining) => {
+      if (row.assignment.no_nag) {
+        return {
+          backgroundColor:
+            theme.palette.mode === 'light' ? '#e1f5fe' : '#01579b',
+        };
+      }
+      if (row.due_date) {
+        const daysUntilDue = differenceInDays(
+          parseISO(row.due_date),
+          new Date()
+        );
+        if (daysUntilDue <= 0) {
+          return { backgroundColor: alpha(theme.palette.error.main, 0.2) };
+        }
+        if (daysUntilDue <= 30) {
+          return { backgroundColor: alpha(theme.palette.warning.main, 0.2) };
+        }
+      }
+      return {};
+    },
+    [theme]
+  );
 
   return (
     <Card elevation={2}>
@@ -97,28 +115,16 @@ export const ManagerReportView = () => {
         <Typography variant="h6">
           Training Manager Report (All Users)
         </Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button
-            component={Link}
-            to="/events/record"
-            variant="contained"
-            color="secondary"
-            startIcon={<AddIcon />}
-            size="small"
-          >
-            Record Training
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            startIcon={<DownloadIcon />}
-            onClick={handleExport}
-            disabled={report.length === 0}
-            size="small"
-          >
-            Export CSV
-          </Button>
-        </Box>
+        <Button
+          variant="contained"
+          color="secondary"
+          startIcon={<DownloadIcon />}
+          onClick={handleExport}
+          disabled={report.length === 0}
+          size="small"
+        >
+          Export CSV
+        </Button>
       </Box>
       <Divider />
       <CardContent sx={styles.contentRoot}>
@@ -135,64 +141,33 @@ export const ManagerReportView = () => {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={styles.headerCell}>Actions</TableCell>
+                  <TableCell sx={styles.headerCell}>Supervisor</TableCell>
                   <TableCell sx={styles.headerCell}>Member</TableCell>
                   <TableCell sx={styles.headerCell}>Training</TableCell>
-                  <TableCell sx={styles.headerCell}>Bill To</TableCell>
                   <TableCell sx={styles.headerCell}>Completed</TableCell>
                   <TableCell sx={styles.headerCell}>Approved</TableCell>
                   <TableCell sx={styles.headerCell}>Due Date</TableCell>
-                  <TableCell sx={styles.headerCell}>Supervisor</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {report.map((row, index) => (
                   <TableRow
                     key={`${row.member.id}-${row.assignment.training.id}-${index}`}
-                    sx={{
-                      backgroundColor: getStatusBackgroundColor(row, theme),
-                    }}
+                    sx={getRowStyles(row)}
                     hover
                   >
-                    <TableCell>
-                      <Button
-                        component={Link}
-                        to={`/events/record?training_id=${row.assignment.training.id}&user_id=${row.member.id}`}
-                        size="small"
-                        startIcon={<EditIcon />}
-                      >
-                        Record
-                      </Button>
-                    </TableCell>
-                    <TableCell>
-                      <MuiLink
-                        component={Link}
-                        to={`/users/${row.member.id}`}
-                        underline="hover"
-                      >
-                        {row.member.last_name}, {row.member.first_name}
-                      </MuiLink>
-                    </TableCell>
-                    <TableCell>
-                      <MuiLink
-                        component={Link}
-                        to={`/training/${row.assignment.training.id}`}
-                        underline="hover"
-                      >
-                        {row.assignment.training.title}
-                      </MuiLink>
-                    </TableCell>
-                    <TableCell>
-                      {row.projects.map((p) => p.name).join(', ')}
-                    </TableCell>
-                    <TableCell>{row.completion_date ?? 'Never'}</TableCell>
-                    <TableCell>{row.approved_date ?? 'N/A'}</TableCell>
-                    <TableCell>{row.due_date}</TableCell>
                     <TableCell>
                       {row.member.supervisor
                         ? `${row.member.supervisor.last_name}, ${row.member.supervisor.first_name}`
                         : 'MISSING'}
                     </TableCell>
+                    <TableCell>
+                      {row.member.last_name}, {row.member.first_name}
+                    </TableCell>
+                    <TableCell>{row.assignment.training.title}</TableCell>
+                    <TableCell>{row.completion_date ?? 'Never'}</TableCell>
+                    <TableCell>{row.approved_date ?? 'N/A'}</TableCell>
+                    <TableCell>{row.due_date}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

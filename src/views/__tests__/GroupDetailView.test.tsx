@@ -1,12 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { GroupDetailView } from '../GroupDetailView';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { GroupService } from '~/services/GroupService';
+import { api } from '~/utilities/api';
 import { vi } from 'vitest';
-import { AuthProvider } from '~/hooks/useAuth';
+import { AuthProvider } from '~/utilities/useAuth';
 
-vi.mock('~/services/GroupService', () => ({
-  GroupService: {
+vi.mock('~/utilities/api', () => ({
+  api: {
     getGroup: vi.fn(),
     getGroupAssignments: vi.fn(),
     getGroupMembers: vi.fn(),
@@ -33,9 +33,9 @@ const mockMembers = [
 
 describe('GroupDetailView', () => {
   it('renders group details, assignments and members', async () => {
-    (GroupService.getGroup as any).mockResolvedValue(mockGroup);
-    (GroupService.getGroupAssignments as any).mockResolvedValue(mockAssignments);
-    (GroupService.getGroupMembers as any).mockResolvedValue(mockMembers);
+    (api.getGroup as any).mockResolvedValue(mockGroup);
+    (api.getGroupAssignments as any).mockResolvedValue(mockAssignments);
+    (api.getGroupMembers as any).mockResolvedValue(mockMembers);
 
     render(
       <MemoryRouter initialEntries={['/groups/1']}>

@@ -17,8 +17,8 @@ import {
   DialogContentText,
   DialogActions,
 } from '@mui/material';
-import { GroupService } from '~/services/GroupService';
-import { useNotification } from '~/hooks/NotificationContext';
+import { api } from '~/utilities/api';
+import { useNotification } from '~/utilities/NotificationContext';
 import { useNavigate, useParams } from 'react-router-dom';
 
 interface GroupFormInput {
@@ -45,7 +45,7 @@ export const GroupEditView = () => {
     if (!id) return;
     try {
       setLoading(true);
-      const data = await GroupService.getGroup(id);
+      const data = await api.getGroup(id);
       reset({
         name: data.name,
         is_admin: data.is_admin,
@@ -67,7 +67,7 @@ export const GroupEditView = () => {
   const onSubmit = async (data: GroupFormInput) => {
     if (!id) return;
     try {
-      await GroupService.updateGroup(id, data);
+      await api.updateGroup(id, data);
       showNotification('Group updated successfully!', 'success');
       void navigate(`/groups/${id}`);
     } catch (error) {
@@ -79,7 +79,7 @@ export const GroupEditView = () => {
   const handleDelete = async () => {
     if (!id) return;
     try {
-      await GroupService.deleteGroup(id);
+      await api.deleteGroup(id);
       showNotification('Group deleted.', 'success');
       setDeleteDialogOpen(false);
       void navigate('/groups');

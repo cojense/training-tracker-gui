@@ -8,8 +8,8 @@ import {
   CardContent,
   Stack,
 } from '@mui/material';
-import { ProjectService } from '~/services/ProjectService';
-import { useNotification } from '~/hooks/NotificationContext';
+import { api } from '~/utilities/api';
+import { useNotification } from '~/utilities/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 
 interface ProjectFormInput {
@@ -32,7 +32,7 @@ export const ProjectCreateView = () => {
 
   const onSubmit = async (data: ProjectFormInput) => {
     try {
-      await ProjectService.createProject(data);
+      await api.createProject(data);
       showNotification('Project created successfully!', 'success');
       void navigate('/projects');
     } catch (error) {

@@ -1,12 +1,12 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { UpdateTrainingEventView } from '../UpdateTrainingEventView';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { TrainingService } from '~/services/TrainingService';
-import { NotificationProvider } from '~/hooks/NotificationContext';
+import { api } from '~/utilities/api';
+import { NotificationProvider } from '~/utilities/NotificationContext';
 import { vi } from 'vitest';
 
-vi.mock('~/services/TrainingService', () => ({
-  TrainingService: {
+vi.mock('~/utilities/api', () => ({
+  api: {
     getEvent: vi.fn(),
     updateEvent: vi.fn(),
   },
@@ -24,8 +24,8 @@ const mockEvent = {
 
 describe('UpdateTrainingEventView', () => {
   it('renders existing event data and submits updates', async () => {
-    (TrainingService.getEvent as any).mockResolvedValue(mockEvent);
-    (TrainingService.updateEvent as any).mockResolvedValue({
+    (api.getEvent as any).mockResolvedValue(mockEvent);
+    (api.updateEvent as any).mockResolvedValue({
       ...mockEvent,
       comment: 'New comment',
     });
@@ -54,7 +54,7 @@ describe('UpdateTrainingEventView', () => {
     fireEvent.click(screen.getByText('Save Changes'));
 
     await waitFor(() => {
-      expect(TrainingService.updateEvent).toHaveBeenCalled();
+      expect(api.updateEvent).toHaveBeenCalled();
     });
   });
 });
