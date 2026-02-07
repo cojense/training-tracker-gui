@@ -14,8 +14,8 @@ import {
   CardContent,
   Stack,
 } from '@mui/material';
-import { TrainingService } from '~/services/TrainingService';
-import { useNotification } from '~/hooks/NotificationContext';
+import { api } from '~/utilities/api';
+import { useNotification } from '~/utilities/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { Training } from '~/types/training';
 
@@ -176,7 +176,7 @@ export const TrainingCreateView = () => {
           ...data,
           id: undefined, // Let the backend generate the ID
         };
-        await TrainingService.createTraining(newTraining);
+        await api.createTraining(newTraining);
         showNotification('Training course created successfully!', 'success');
         void navigate('/trainings');
       } catch (error) {

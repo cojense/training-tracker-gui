@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import { Edit as EditIcon, Add as AddIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { GroupService } from '~/services/GroupService';
+import { api } from '~/utilities/api';
 import { Group, User } from '~/types/user';
 import { Assignment } from '~/types/assignments';
 
@@ -52,9 +52,9 @@ export const GroupDetailView = () => {
       setLoading(true);
       setError(null);
       const [groupData, assignmentsData, membersData] = await Promise.all([
-        GroupService.getGroup(id),
-        GroupService.getGroupAssignments(id),
-        GroupService.getGroupMembers(id),
+        api.getGroup(id),
+        api.getGroupAssignments(id),
+        api.getGroupMembers(id),
       ]);
       setGroup(groupData);
       setAssignments(assignmentsData);

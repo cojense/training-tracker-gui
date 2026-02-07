@@ -5,7 +5,7 @@ import Header from '~/components/Header';
 import Sidebar from '~/components/Sidebar';
 import Home from '~/views/Home';
 import Trainings from '~/views/Trainings';
-import { useAuth } from '~/hooks/useAuth';
+import { useAuth } from '~/utilities/useAuth';
 import LoginView from '~/views/LoginView';
 import Profile from '~/views/Profile';
 
@@ -31,7 +31,6 @@ import { TrainingEditView } from '~/views/TrainingEditView';
 import { UpdateTrainingEventView } from '~/views/UpdateTrainingEventView';
 import { UserEditView } from '~/views/UserEditView';
 import { UserListView } from '~/views/UserListView';
-import { UserDetailView } from '~/views/UserDetailView';
 
 const styles = {
   appContainer: {
@@ -118,7 +117,6 @@ const App = ({ mode, toggleMode }: AppProps) => {
                   />
                   <Route path="/supervisor" element={<SupervisorView />} />
                   <Route path="/profile" element={<Profile />} />
-                  <Route path="/users/:id" element={<UserDetailView />} />
                   <Route path="/users/:id/edit" element={<UserEditView />} />
                   <Route
                     path="/users/:id/groups"

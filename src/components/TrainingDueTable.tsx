@@ -9,12 +9,13 @@ import {
   Paper,
   Button,
   useTheme,
+  alpha,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Edit as EditIcon } from '@mui/icons-material';
 import { AssignedTraining } from '~/types/assignments';
 import { TrainingDetailsModalButton } from './TrainingDetailsModal';
-import { getStatusBackgroundColor } from '~/utilities/statusColors';
+import { differenceInDays, parseISO } from 'date-fns';
 
 const styles = {
   header: { fontWeight: 'bold' },
@@ -31,10 +32,25 @@ const TrainingDueRow = ({ assignment, onRecord }: RowProps) => {
     onRecord(assignment.assignment.training.id, assignment.member.id);
   }, [assignment, onRecord]);
 
-  const backgroundColor = useMemo(
-    () => getStatusBackgroundColor(assignment, theme),
-    [assignment, theme]
-  );
+  const backgroundColor = useMemo(() => {
+    if (assignment.assignment.no_nag) {
+      return theme.palette.mode === 'light' ? '#e1f5fe' : '#01579b'; // Light Blue
+    }
+
+    if (assignment.due_date) {
+      const daysUntilDue = differenceInDays(
+        parseISO(assignment.due_date),
+        new Date()
+      );
+      if (daysUntilDue <= 0) {
+        return alpha(theme.palette.error.main, 0.2);
+      }
+      if (daysUntilDue <= 30) {
+        return alpha(theme.palette.warning.main, 0.2);
+      }
+    }
+    return 'inherit';
+  }, [assignment, theme]);
 
   const projectNames = useMemo(() => {
     return assignment.projects.map((p) => p.name).join(', ');

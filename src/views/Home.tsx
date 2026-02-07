@@ -9,9 +9,9 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { useAuth } from '~/hooks/useAuth';
+import { useAuth } from '~/utilities/useAuth';
 import { TrainingDueTable } from '~/components/TrainingDueTable';
-import { UserService } from '~/services/UserService';
+import { api } from '~/utilities/api';
 import { AssignedTraining } from '~/types/assignments';
 
 const styles = {
@@ -35,7 +35,7 @@ const Home = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await UserService.getCurrentUserAssignments();
+      const data = await api.getCurrentUserAssignments();
       setAssignments(data);
     } catch (err) {
       console.error('Failed to fetch assignments:', err);

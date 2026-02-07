@@ -17,8 +17,8 @@ import {
   Checkbox,
   CircularProgress,
 } from '@mui/material';
-import { TrainingService } from '~/services/TrainingService';
-import { useNotification } from '~/hooks/NotificationContext';
+import { api } from '~/utilities/api';
+import { useNotification } from '~/utilities/NotificationContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TrainingEvent } from '~/types/training';
 
@@ -87,7 +87,7 @@ interface CertificateFileProps {
   field: ControllerRenderProps<UpdateFormInput, 'certificate'>;
 }
 const CertificateFile = ({ field }: CertificateFileProps) => {
-  const { onChange, value, ...fieldProps } = field;
+  const { onChange, ...fieldProps } = field;
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -102,7 +102,6 @@ const CertificateFile = ({ field }: CertificateFileProps) => {
       type="file"
       accept=".pdf,.png,.jpg,.jpeg"
       onChange={handleChange}
-      value={value === null ? '' : undefined}
     />
   );
 };
@@ -129,7 +128,6 @@ export const UpdateTrainingEventView = () => {
     handleSubmit,
     watch,
     reset,
-    setValue,
     formState: { isSubmitting },
   } = useForm<UpdateFormInput>({
     defaultValues: {
@@ -142,17 +140,11 @@ export const UpdateTrainingEventView = () => {
 
   const watchCertUnavailable = watch('certificate_unavailable');
 
-  useEffect(() => {
-    if (watchCertUnavailable) {
-      setValue('certificate', null);
-    }
-  }, [watchCertUnavailable, setValue]);
-
   const fetchEvent = useCallback(async () => {
     if (!id) return;
     try {
       setLoading(true);
-      const data = await TrainingService.getEvent(id);
+      const data = await api.getEvent(id);
       setEvent(data);
       reset({
         completion_date: data.completion_date,
@@ -189,7 +181,7 @@ export const UpdateTrainingEventView = () => {
           formData.append('certificate', data.certificate[0]);
         }
 
-        await TrainingService.updateEvent(id, formData);
+        await api.updateEvent(id, formData);
         showNotification('Training record updated successfully!', 'success');
         void navigate('/profile');
       } catch (error) {

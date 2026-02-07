@@ -1,50 +1,73 @@
-import React, { useState, useCallback, useMemo, ReactNode } from 'react';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  isAdmin: boolean;
-  isTrainingManager: boolean;
-}
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  ReactNode,
+  useEffect,
+} from 'react';
+import { api } from './api';
+import { Box, CircularProgress } from '@mui/material';
+import { User } from '~/types/user';
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: () => void;
+  isLoading: boolean;
   logout: () => void;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
-  const [user, setUser] = useState<User | null>(null);
+const loadingStyles = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  height: '100vh',
+};
 
-  const login = useCallback(() => {
-    setUser({
-      id: '1',
-      name: 'Mock User',
-      email: 'mock@shyftsolutions.io',
-      isAdmin: true,
-      isTrainingManager: true,
-    });
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const verifySession = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const userData = await api.getCurrentUser();
+      setUser(userData);
+    } catch (error) {
+      console.warn('Session verification failed:', error);
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    void verifySession();
+  }, [verifySession]);
+
   const logout = useCallback(() => {
-    setUser(null);
+    // For real logout, we'll redirect to backend /logout with next parameter
+    window.location.href = `http://localhost:5001/oauth2/logout?next=${encodeURIComponent('http://localhost:5173/login')}`;
   }, []);
 
   const value = useMemo(
     () => ({
       user,
       isAuthenticated: !!user,
-      login,
+      isLoading,
       logout,
     }),
-    [user, login, logout]
+    [user, isLoading, logout]
   );
+
+  if (isLoading) {
+    return (
+      <Box sx={loadingStyles}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
