@@ -50,7 +50,7 @@ const Header: React.FC<HeaderProps> = ({ mode, toggleMode, onMenuClick }) => {
   }, [navigate]);
 
   const fullName = user ? `${user.first_name} ${user.last_name}` : '';
-  
+
   return (
     <AppBar
       position="sticky"
@@ -118,7 +118,10 @@ const Header: React.FC<HeaderProps> = ({ mode, toggleMode, onMenuClick }) => {
           </Tooltip>
 
           {isAuthenticated && user ? (
-            <Box onClick={handleProfileClick} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box
+              onClick={handleProfileClick}
+              sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+            >
               <Box
                 sx={{
                   display: { xs: 'none', md: 'block' },

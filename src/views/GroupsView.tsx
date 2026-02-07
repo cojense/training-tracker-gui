@@ -14,11 +14,16 @@ import {
   Divider,
   CircularProgress,
   Alert,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
+import { Edit as EditIcon, Visibility as ViewIcon } from '@mui/icons-material';
 import { api } from '~/utilities/api';
 import { Group } from '~/types/user';
+import { useNavigate } from 'react-router-dom';
 
 export const GroupsView: React.FC = () => {
+  const navigate = useNavigate();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +45,20 @@ export const GroupsView: React.FC = () => {
   useEffect(() => {
     void fetchGroups();
   }, [fetchGroups]);
+
+  const handleDetailsClick = useCallback(
+    (id: number | null) => {
+      if (id !== null) void navigate(`/groups/${id}`);
+    },
+    [navigate]
+  );
+
+  const handleEditClick = useCallback(
+    (id: number | null) => {
+      if (id !== null) void navigate(`/groups/${id}/edit`);
+    },
+    [navigate]
+  );
 
   return (
     <Card elevation={2}>
@@ -67,6 +86,7 @@ export const GroupsView: React.FC = () => {
                   <TableCell sx={{ fontWeight: 'bold' }}>Name</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Admin</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Manager</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -77,6 +97,24 @@ export const GroupsView: React.FC = () => {
                     <TableCell>{g.is_admin ? 'Yes' : 'No'}</TableCell>
                     <TableCell>
                       {g.is_training_manager ? 'Yes' : 'No'}
+                    </TableCell>
+                    <TableCell>
+                      <Tooltip title="View Details">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDetailsClick(g.id)}
+                        >
+                          <ViewIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Edit Group">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleEditClick(g.id)}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 ))}
