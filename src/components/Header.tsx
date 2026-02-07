@@ -32,6 +32,12 @@ const Header: React.FC<HeaderProps> = ({ mode, toggleMode, onMenuClick }) => {
     void navigate('/');
   }, [navigate]);
 
+  const handleLoginClick = useCallback(() => {
+    void navigate('/login');
+  }, [navigate]);
+
+  const fullName = user ? `${user.first_name} ${user.last_name}` : '';
+
   return (
     <AppBar
       position="sticky"
@@ -100,12 +106,12 @@ const Header: React.FC<HeaderProps> = ({ mode, toggleMode, onMenuClick }) => {
                   variant="body2"
                   sx={{ fontWeight: 'bold', lineHeight: 1.2 }}
                 >
-                  {user.name}
+                  {fullName}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {user.isAdmin
+                  {user.is_admin
                     ? 'ADMIN'
-                    : user.isTrainingManager
+                    : user.is_training_manager
                       ? 'MANAGER'
                       : 'EMPLOYEE'}
                 </Typography>
@@ -118,7 +124,7 @@ const Header: React.FC<HeaderProps> = ({ mode, toggleMode, onMenuClick }) => {
                   fontSize: '0.875rem',
                 }}
               >
-                {user.name.charAt(0)}
+                {user.first_name.charAt(0)}
               </Avatar>
               <Button
                 color="inherit"
@@ -134,7 +140,7 @@ const Header: React.FC<HeaderProps> = ({ mode, toggleMode, onMenuClick }) => {
               color="primary"
               variant="contained"
               size="small"
-              onClick={() => navigate('/login')}
+              onClick={handleLoginClick}
             >
               Login
             </Button>

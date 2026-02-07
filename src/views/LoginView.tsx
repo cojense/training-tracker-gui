@@ -1,15 +1,25 @@
 import React from 'react';
-import { Card, CardContent, Typography, Button, Box } from '@mui/material';
-import { useAuth } from '~/utilities/useAuth';
-import { useNavigate } from 'react-router-dom';
+import {
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Box,
+  Stack,
+} from '@mui/material';
+
+const BACKEND_URL = 'http://localhost:5001';
+const FRONTEND_URL = 'http://localhost:5173';
 
 const LoginView: React.FC = () => {
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const handleGoogleLogin = () => {
+    // Perform full page redirect to backend OAuth route with next parameter
+    window.location.href = `${BACKEND_URL}/oauth2/login/google?next=${encodeURIComponent(FRONTEND_URL)}`;
+  };
 
-  const handleLogin = () => {
-    login();
-    void navigate('/');
+  const handleDevLogin = () => {
+    // Perform full page redirect to backend dev login route with next parameter
+    window.location.href = `${BACKEND_URL}/dev/login?next=${encodeURIComponent(FRONTEND_URL)}`;
   };
 
   return (
@@ -29,14 +39,26 @@ const LoginView: React.FC = () => {
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
             Please sign in to access your training requirements.
           </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            onClick={handleLogin}
-          >
-            Sign In (Mock)
-          </Button>
+
+          <Stack spacing={2}>
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              onClick={handleGoogleLogin}
+            >
+              Sign In with Google
+            </Button>
+
+            <Button
+              variant="outlined"
+              color="secondary"
+              fullWidth
+              onClick={handleDevLogin}
+            >
+              Dev Login (Bypass)
+            </Button>
+          </Stack>
         </CardContent>
       </Card>
     </Box>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   Drawer,
   List,
@@ -36,14 +36,17 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, mobile }) => {
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
 
-  const handleNavigate = (path: string) => {
-    void navigate(path);
-    if (mobile) onClose();
-  };
+  const handleNavigate = useCallback(
+    (path: string) => {
+      void navigate(path);
+      if (mobile) onClose();
+    },
+    [navigate, mobile, onClose]
+  );
 
   const isActive = (path: string) => location.pathname === path;
 
-  const isAdminOrManager = user?.isAdmin ?? user?.isTrainingManager ?? false;
+  const isAdminOrManager = user?.is_admin ?? user?.is_training_manager ?? false;
 
   const navItems = [
     { text: 'Home', path: '/', icon: <HomeIcon />, visible: true },

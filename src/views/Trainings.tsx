@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Table,
   TableBody,
@@ -13,12 +13,38 @@ import {
   CardContent,
   Box,
   Divider,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { Training } from '~/types/training';
-import { mockTrainingList as TestTrainingList } from '~/utilities/testData';
+import { api } from '~/utilities/api';
 
 const Trainings: React.FC = () => {
+  const [trainings, setTrainings] = useState<Training[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchTrainings = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await api.getTrainings();
+      setTrainings(data);
+    } catch (err) {
+      console.error('Failed to fetch trainings:', err);
+      setError(
+        'Could not load the training directory. Please try again later.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchTrainings();
+  }, [fetchTrainings]);
+
   return (
     <Card elevation={2}>
       <Box
@@ -30,48 +56,62 @@ const Trainings: React.FC = () => {
       </Box>
       <Divider />
       <CardContent sx={{ p: 0 }}>
-        <TableContainer component={Paper} elevation={0}>
-          <Table sx={{ minWidth: 650 }} aria-label="training table">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Training Name</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>External URL</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {TestTrainingList.map((training: Training) => (
-                <TableRow key={training.id} hover>
-                  <TableCell component="th" scope="row">
-                    {training.id}
+        {loading ? (
+          <Box sx={{ textAlign: 'center', py: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Box sx={{ p: 2 }}>
+            <Alert severity="error">{error}</Alert>
+          </Box>
+        ) : (
+          <TableContainer component={Paper} elevation={0}>
+            <Table sx={{ minWidth: 650 }} aria-label="training table">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>
+                    Training Name
                   </TableCell>
-                  <TableCell>{training.date}</TableCell>
-                  <TableCell>
-                    <MuiLink
-                      component={RouterLink}
-                      to={`/training/${training.id}`}
-                      underline="hover"
-                    >
-                      {training.title}
-                    </MuiLink>
-                  </TableCell>
-                  <TableCell>
-                    <MuiLink
-                      component="a"
-                      href={`${training.url}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      underline="hover"
-                    >
-                      {training.url}
-                    </MuiLink>
+                  <TableCell sx={{ fontWeight: 'bold' }}>
+                    External URL
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {trainings.map((training: Training) => (
+                  <TableRow key={training.id} hover>
+                    <TableCell component="th" scope="row">
+                      {training.id}
+                    </TableCell>
+                    <TableCell>{training.date}</TableCell>
+                    <TableCell>
+                      <MuiLink
+                        component={RouterLink}
+                        to={`/training/${training.id}`}
+                        underline="hover"
+                      >
+                        {training.title}
+                      </MuiLink>
+                    </TableCell>
+                    <TableCell>
+                      <MuiLink
+                        component="a"
+                        href={training.url ?? '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        underline="hover"
+                      >
+                        {training.url}
+                      </MuiLink>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
       </CardContent>
     </Card>
   );

@@ -9,28 +9,40 @@ import {
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
-import { Group, User } from '~/types/user';
+import { Group } from '~/types/user';
 
-interface UserDetailTableProps {
-  user: User;
+interface GroupMembershipTableProps {
+  groups: Group[];
 }
-export const GroupMembershipTable = ({ user }: UserDetailTableProps) => {
-  if (!user.groups || user.groups.length === 0) {
-    return <div>User is not a member of any groups.</div>;
+export const GroupMembershipTable = ({ groups }: GroupMembershipTableProps) => {
+  if (!groups || groups.length === 0) {
+    return (
+      <TableContainer component={Paper} elevation={0}>
+        <Table>
+          <TableBody>
+            <TableRow>
+              <TableCell align="center">
+                User is not a member of any groups.
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
   }
   return (
-    <TableContainer component={Paper} elevation={2}>
+    <TableContainer component={Paper} elevation={0}>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>ID</TableCell>
-            <TableCell>Name</TableCell>
-            <TableCell>Admin</TableCell>
-            <TableCell>Training Manager</TableCell>
+            <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
+            <TableCell sx={{ fontWeight: 'bold' }}>Name</TableCell>
+            <TableCell sx={{ fontWeight: 'bold' }}>Admin</TableCell>
+            <TableCell sx={{ fontWeight: 'bold' }}>Training Manager</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {user.groups.map((group: Group) => (
+          {groups.map((group: Group) => (
             <TableRow key={group.id}>
               <TableCell>{group.id}</TableCell>
               <TableCell>{group.name}</TableCell>
