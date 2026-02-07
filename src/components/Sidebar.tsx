@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import {
   Drawer,
   List,
@@ -8,8 +8,6 @@ import {
   ListItemText,
   Divider,
   Box,
-  SxProps,
-  Theme,
 } from '@mui/material';
 import {
   Home as HomeIcon,
@@ -27,76 +25,13 @@ import { useAuth } from '~/utilities/useAuth';
 
 const drawerWidth = 240;
 
-const styles = {
-  drawerBox: { overflow: 'auto', mt: 2 },
-  selectedItem: {
-    '&.Mui-selected': {
-      backgroundColor: 'primary.light',
-      color: 'primary.contrastText',
-      '& .MuiListItemIcon-root': {
-        color: 'primary.contrastText',
-      },
-    },
-  },
-  navBox: { width: { md: drawerWidth }, flexShrink: { md: 0 } },
-  tempDrawer: {
-    display: { xs: 'block', md: 'none' },
-    '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-  },
-  permDrawer: {
-    display: { xs: 'none', md: 'block' },
-    '& .MuiDrawer-paper': {
-      boxSizing: 'border-box',
-      width: drawerWidth,
-      top: '64px',
-      height: 'calc(100% - 64px)',
-    },
-  },
-};
-
-interface NavItem {
-  text: string;
-  path: string;
-  icon: React.ReactNode;
-  visible: boolean;
-}
-
-interface NavListItemProps {
-  item: NavItem;
-  isActive: boolean;
-  onClick: (path: string) => void;
-  sx?: SxProps<Theme>;
-}
-
-const NavListItem = ({ item, isActive, onClick, sx }: NavListItemProps) => {
-  const handleClick = useCallback(() => {
-    onClick(item.path);
-  }, [item.path, onClick]);
-
-  const iconStyles = useMemo(
-    () => ({
-      color: isActive ? 'inherit' : 'action.active',
-    }),
-    [isActive]
-  );
-
-  return (
-    <ListItem disablePadding>
-      <ListItemButton onClick={handleClick} selected={isActive} sx={sx}>
-        <ListItemIcon sx={iconStyles}>{item.icon}</ListItemIcon>
-        <ListItemText primary={item.text} />
-      </ListItemButton>
-    </ListItem>
-  );
-};
-
 interface SidebarProps {
   open: boolean;
   onClose: () => void;
   mobile: boolean;
 }
 
-const Sidebar = ({ open, onClose, mobile }: SidebarProps) => {
+const Sidebar: React.FC<SidebarProps> = ({ open, onClose, mobile }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
@@ -109,109 +44,137 @@ const Sidebar = ({ open, onClose, mobile }: SidebarProps) => {
     [navigate, mobile, onClose]
   );
 
+  const isActive = (path: string) => location.pathname === path;
+
   const isAdminOrManager = user?.is_admin ?? user?.is_training_manager ?? false;
 
-  const navItems = useMemo(
-    () => [
-      { text: 'Home', path: '/', icon: <HomeIcon />, visible: true },
-      {
-        text: 'Trainings',
-        path: '/trainings',
-        icon: <TrainingIcon />,
-        visible: isAuthenticated,
-      },
-      {
-        text: 'Supervisor',
-        path: '/supervisor',
-        icon: <SupervisorIcon />,
-        visible: isAuthenticated,
-      },
-      {
-        text: 'Manager',
-        path: '/manager-report',
-        icon: <ManagerIcon />,
-        visible: isAdminOrManager,
-      },
-      {
-        text: 'Approve',
-        path: '/approval',
-        icon: <ApproveIcon />,
-        visible: isAdminOrManager,
-      },
-      {
-        text: 'Users',
-        path: '/users',
-        icon: <UsersIcon />,
-        visible: isAdminOrManager,
-      },
-      {
-        text: 'Groups',
-        path: '/groups',
-        icon: <GroupsIcon />,
-        visible: isAdminOrManager,
-      },
-      {
-        text: 'Projects',
-        path: '/projects',
-        icon: <ProjectsIcon />,
-        visible: isAdminOrManager,
-      },
-    ],
-    [isAuthenticated, isAdminOrManager]
-  );
-
-  const profileItem = useMemo(
-    () => ({
-      text: 'Profile',
-      path: '/profile',
-      icon: <ProfileIcon />,
+  const navItems = [
+    { text: 'Home', path: '/', icon: <HomeIcon />, visible: true },
+    {
+      text: 'Trainings',
+      path: '/trainings',
+      icon: <TrainingIcon />,
       visible: isAuthenticated,
-    }),
-    [isAuthenticated]
-  );
+    },
+    {
+      text: 'Supervisor',
+      path: '/supervisor',
+      icon: <SupervisorIcon />,
+      visible: isAuthenticated,
+    },
+    {
+      text: 'Manager',
+      path: '/manager-report',
+      icon: <ManagerIcon />,
+      visible: isAdminOrManager,
+    },
+    {
+      text: 'Approve',
+      path: '/approval',
+      icon: <ApproveIcon />,
+      visible: isAdminOrManager,
+    },
+    {
+      text: 'Users',
+      path: '/users',
+      icon: <UsersIcon />,
+      visible: isAdminOrManager,
+    },
+    {
+      text: 'Groups',
+      path: '/groups',
+      icon: <GroupsIcon />,
+      visible: isAdminOrManager,
+    },
+    {
+      text: 'Projects',
+      path: '/projects',
+      icon: <ProjectsIcon />,
+      visible: isAdminOrManager,
+    },
+  ];
 
   const drawerContent = (
-    <Box sx={styles.drawerBox}>
+    <Box sx={{ overflow: 'auto', mt: 2 }}>
       <List>
         {navItems
           .filter((item) => item.visible)
           .map((item) => (
-            <NavListItem
-              key={item.text}
-              item={item}
-              isActive={location.pathname === item.path}
-              onClick={handleNavigate}
-              sx={styles.selectedItem}
-            />
+            <ListItem key={item.text} disablePadding>
+              <ListItemButton
+                onClick={() => handleNavigate(item.path)}
+                selected={isActive(item.path)}
+                sx={{
+                  '&.Mui-selected': {
+                    backgroundColor: 'primary.light',
+                    color: 'primary.contrastText',
+                    '& .MuiListItemIcon-root': {
+                      color: 'primary.contrastText',
+                    },
+                  },
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    color: isActive(item.path) ? 'inherit' : 'action.active',
+                  }}
+                >
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItemButton>
+            </ListItem>
           ))}
       </List>
       <Divider />
       <List>
         {isAuthenticated && (
-          <NavListItem
-            item={profileItem}
-            isActive={location.pathname === '/profile'}
-            onClick={handleNavigate}
-          />
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => handleNavigate('/profile')}
+              selected={isActive('/profile')}
+            >
+              <ListItemIcon>
+                <ProfileIcon />
+              </ListItemIcon>
+              <ListItemText primary="Profile" />
+            </ListItemButton>
+          </ListItem>
         )}
       </List>
     </Box>
   );
 
-  const modalProps = useMemo(() => ({ keepMounted: true }), []);
-
   return (
-    <Box component="nav" sx={styles.navBox}>
+    <Box
+      component="nav"
+      sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+    >
       <Drawer
         variant="temporary"
         open={open}
         onClose={onClose}
-        ModalProps={modalProps}
-        sx={styles.tempDrawer}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+        }}
       >
         {drawerContent}
       </Drawer>
-      <Drawer variant="permanent" sx={styles.permDrawer} open>
+      <Drawer
+        variant="permanent"
+        sx={{
+          display: { xs: 'none', md: 'block' },
+          '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
+            width: drawerWidth,
+            top: '64px',
+            height: 'calc(100% - 64px)',
+          },
+        }}
+        open
+      >
         {drawerContent}
       </Drawer>
     </Box>

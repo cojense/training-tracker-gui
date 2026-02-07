@@ -9,55 +9,17 @@ import {
   Button,
   Avatar,
   Tooltip,
-  Theme,
 } from '@mui/material';
-import {
-  LightMode,
-  DarkMode,
-  Menu as MenuIcon,
-  OpenInNew as OpenInNewIcon,
-} from '@mui/icons-material';
+import { LightMode, DarkMode, Menu as MenuIcon } from '@mui/icons-material';
 import { useAuth } from '~/utilities/useAuth';
-
-const styles = {
-  appBar: { zIndex: (theme: Theme) => theme.zIndex.drawer + 1 },
-  menuButton: { mr: 2, display: { md: 'none' } },
-  titleContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    flexGrow: 1,
-    cursor: 'pointer',
-  },
-  titleBrand: { fontWeight: 'bold', color: 'primary.main' },
-  titleApp: { ml: 1, display: { xs: 'none', sm: 'block' } },
-  rightActions: { display: 'flex', alignItems: 'center', gap: 2 },
-  flaskButton: { display: { xs: 'none', sm: 'flex' } },
-  userContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 1,
-    cursor: 'pointer',
-  },
-  userDetails: {
-    display: { xs: 'none', md: 'block' },
-    textAlign: 'right',
-  },
-  userName: { fontWeight: 'bold', lineHeight: 1.2 },
-  avatar: {
-    width: 32,
-    height: 32,
-    bgcolor: 'primary.main',
-    fontSize: '0.875rem',
-  },
-  logoutButton: { ml: 1 },
-};
 
 interface HeaderProps {
   mode: 'light' | 'dark';
   toggleMode: () => void;
   onMenuClick: () => void;
 }
-const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
+
+const Header: React.FC<HeaderProps> = ({ mode, toggleMode, onMenuClick }) => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
 
@@ -74,19 +36,15 @@ const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
     void navigate('/login');
   }, [navigate]);
 
-  const handleFlaskUIClick = useCallback(() => {
-    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
-    window.location.href = `${BACKEND_URL}/`;
-  }, []);
-
-  const handleProfileClick = useCallback(() => {
-    void navigate('/profile');
-  }, [navigate]);
-
   const fullName = user ? `${user.first_name} ${user.last_name}` : '';
 
   return (
-    <AppBar position="sticky" color="default" elevation={1} sx={styles.appBar}>
+    <AppBar
+      position="sticky"
+      color="default"
+      elevation={1}
+      sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+    >
       <Toolbar>
         {isAuthenticated && (
           <IconButton
@@ -94,37 +52,40 @@ const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
             aria-label="open drawer"
             edge="start"
             onClick={onMenuClick}
-            sx={styles.menuButton}
+            sx={{ mr: 2, display: { md: 'none' } }}
           >
             <MenuIcon />
           </IconButton>
         )}
 
-        <Box sx={styles.titleContainer} onClick={handleTitleClick}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            flexGrow: 1,
+            cursor: 'pointer',
+          }}
+          onClick={handleTitleClick}
+        >
           <Typography
             variant="h6"
             noWrap
             component="div"
-            sx={styles.titleBrand}
+            sx={{ fontWeight: 'bold', color: 'primary.main' }}
           >
             SHYFT
           </Typography>
-          <Typography variant="h6" noWrap component="div" sx={styles.titleApp}>
+          <Typography
+            variant="h6"
+            noWrap
+            component="div"
+            sx={{ ml: 1, display: { xs: 'none', sm: 'block' } }}
+          >
             Training Tracker
           </Typography>
         </Box>
 
-        <Box sx={styles.rightActions}>
-          <Button
-            color="inherit"
-            size="small"
-            startIcon={<OpenInNewIcon />}
-            onClick={handleFlaskUIClick}
-            sx={styles.flaskButton}
-          >
-            Flask UI
-          </Button>
-
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Tooltip
             title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}
           >
@@ -134,9 +95,17 @@ const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
           </Tooltip>
 
           {isAuthenticated && user ? (
-            <Box onClick={handleProfileClick} sx={styles.userContainer}>
-              <Box sx={styles.userDetails}>
-                <Typography variant="body2" sx={styles.userName}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box
+                sx={{
+                  display: { xs: 'none', md: 'block' },
+                  textAlign: 'right',
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 'bold', lineHeight: 1.2 }}
+                >
                   {fullName}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -147,12 +116,21 @@ const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
                       : 'EMPLOYEE'}
                 </Typography>
               </Box>
-              <Avatar sx={styles.avatar}>{user.first_name.charAt(0)}</Avatar>
+              <Avatar
+                sx={{
+                  width: 32,
+                  height: 32,
+                  bgcolor: 'primary.main',
+                  fontSize: '0.875rem',
+                }}
+              >
+                {user.first_name.charAt(0)}
+              </Avatar>
               <Button
                 color="inherit"
                 size="small"
                 onClick={handleLogout}
-                sx={styles.logoutButton}
+                sx={{ ml: 1 }}
               >
                 Logout
               </Button>

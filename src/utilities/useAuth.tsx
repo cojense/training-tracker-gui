@@ -18,14 +18,9 @@ interface AuthContextType {
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
-const loadingStyles = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  height: '100vh',
-};
-
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -48,9 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = useCallback(() => {
     // For real logout, we'll redirect to backend /logout with next parameter
-    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
-    const FRONTEND_URL = window.location.origin;
-    window.location.href = `${BACKEND_URL}/oauth2/logout?next=${encodeURIComponent(`${FRONTEND_URL}/login`)}`;
+    window.location.href = `http://localhost:5001/oauth2/logout?next=${encodeURIComponent('http://localhost:5173/login')}`;
   }, []);
 
   const value = useMemo(
@@ -65,7 +58,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   if (isLoading) {
     return (
-      <Box sx={loadingStyles}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+        }}
+      >
         <CircularProgress />
       </Box>
     );
