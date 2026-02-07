@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Table,
   TableBody,
@@ -22,7 +22,52 @@ import { api } from '~/utilities/api';
 import { Group } from '~/types/user';
 import { useNavigate } from 'react-router-dom';
 
-export const GroupsView: React.FC = () => {
+const headerBoxStyles = {
+  p: 2,
+  bgcolor: 'primary.main',
+  color: 'primary.contrastText',
+};
+const contentRootStyles = { p: 0 };
+const centeredBoxStyles = { textAlign: 'center', py: 4 };
+const headerCellStyles = { fontWeight: 'bold' };
+const errorBoxStyles = { p: 2 };
+
+interface GroupRowProps {
+  group: Group;
+  onDetails: (id: number | null) => void;
+  onEdit: (id: number | null) => void;
+}
+
+const GroupRow = ({ group, onDetails, onEdit }: GroupRowProps) => {
+  const handleDetails = useCallback(
+    () => onDetails(group.id),
+    [group.id, onDetails]
+  );
+  const handleEdit = useCallback(() => onEdit(group.id), [group.id, onEdit]);
+
+  return (
+    <TableRow hover>
+      <TableCell>{group.id}</TableCell>
+      <TableCell>{group.name}</TableCell>
+      <TableCell>{group.is_admin ? 'Yes' : 'No'}</TableCell>
+      <TableCell>{group.is_training_manager ? 'Yes' : 'No'}</TableCell>
+      <TableCell>
+        <Tooltip title="View Details">
+          <IconButton size="small" onClick={handleDetails}>
+            <ViewIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Edit Group">
+          <IconButton size="small" onClick={handleEdit}>
+            <EditIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </TableCell>
+    </TableRow>
+  );
+};
+
+export const GroupsView = () => {
   const navigate = useNavigate();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,21 +105,24 @@ export const GroupsView: React.FC = () => {
     [navigate]
   );
 
+  const isAdminOrManager = useMemo(
+    () => groups.some((g) => g.is_admin || g.is_training_manager),
+    [groups]
+  );
+
   return (
     <Card elevation={2}>
-      <Box
-        sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}
-      >
+      <Box sx={headerBoxStyles}>
         <Typography variant="h6">Groups Management</Typography>
       </Box>
       <Divider />
-      <CardContent sx={{ p: 0 }}>
+      <CardContent sx={contentRootStyles}>
         {loading ? (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Box sx={centeredBoxStyles}>
             <CircularProgress />
           </Box>
         ) : error ? (
-          <Box sx={{ p: 2 }}>
+          <Box sx={errorBoxStyles}>
             <Alert severity="error">{error}</Alert>
           </Box>
         ) : (
@@ -82,41 +130,21 @@ export const GroupsView: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Name</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Admin</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Manager</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                  <TableCell sx={headerCellStyles}>ID</TableCell>
+                  <TableCell sx={headerCellStyles}>Name</TableCell>
+                  <TableCell sx={headerCellStyles}>Admin</TableCell>
+                  <TableCell sx={headerCellStyles}>Manager</TableCell>
+                  <TableCell sx={headerCellStyles}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {groups.map((g) => (
-                  <TableRow key={g.id ?? 'new'} hover>
-                    <TableCell>{g.id}</TableCell>
-                    <TableCell>{g.name}</TableCell>
-                    <TableCell>{g.is_admin ? 'Yes' : 'No'}</TableCell>
-                    <TableCell>
-                      {g.is_training_manager ? 'Yes' : 'No'}
-                    </TableCell>
-                    <TableCell>
-                      <Tooltip title="View Details">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleDetailsClick(g.id)}
-                        >
-                          <ViewIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Edit Group">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleEditClick(g.id)}
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
+                  <GroupRow
+                    key={g.id ?? (isAdminOrManager ? 'none' : 'new')}
+                    group={g}
+                    onDetails={handleDetailsClick}
+                    onEdit={handleEditClick}
+                  />
                 ))}
               </TableBody>
             </Table>

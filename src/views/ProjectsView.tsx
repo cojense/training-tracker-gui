@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   Table,
   TableBody,
@@ -22,7 +22,53 @@ import { api } from '~/utilities/api';
 import { Project } from '~/types/projects';
 import { useNavigate } from 'react-router-dom';
 
-export const ProjectsView: React.FC = () => {
+const headerBoxStyles = {
+  p: 2,
+  bgcolor: 'primary.main',
+  color: 'primary.contrastText',
+};
+const contentRootStyles = { p: 0 };
+const centeredBoxStyles = { textAlign: 'center', py: 4 };
+const headerCellStyles = { fontWeight: 'bold' };
+const errorBoxStyles = { p: 2 };
+
+interface ProjectRowProps {
+  project: Project;
+  onDetails: (id: number | null) => void;
+  onEdit: (id: number | null) => void;
+}
+
+const ProjectRow = ({ project, onDetails, onEdit }: ProjectRowProps) => {
+  const handleDetails = useCallback(
+    () => onDetails(project.id),
+    [project.id, onDetails]
+  );
+  const handleEdit = useCallback(
+    () => onEdit(project.id),
+    [project.id, onEdit]
+  );
+
+  return (
+    <TableRow hover>
+      <TableCell>{project.id}</TableCell>
+      <TableCell>{project.name}</TableCell>
+      <TableCell>
+        <Tooltip title="View Details">
+          <IconButton size="small" onClick={handleDetails}>
+            <ViewIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Edit Project">
+          <IconButton size="small" onClick={handleEdit}>
+            <EditIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </TableCell>
+    </TableRow>
+  );
+};
+
+export const ProjectsView = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,19 +108,17 @@ export const ProjectsView: React.FC = () => {
 
   return (
     <Card elevation={2}>
-      <Box
-        sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}
-      >
+      <Box sx={headerBoxStyles}>
         <Typography variant="h6">Projects List</Typography>
       </Box>
       <Divider />
-      <CardContent sx={{ p: 0 }}>
+      <CardContent sx={contentRootStyles}>
         {loading ? (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Box sx={centeredBoxStyles}>
             <CircularProgress />
           </Box>
         ) : error ? (
-          <Box sx={{ p: 2 }}>
+          <Box sx={errorBoxStyles}>
             <Alert severity="error">{error}</Alert>
           </Box>
         ) : (
@@ -82,35 +126,19 @@ export const ProjectsView: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Name</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                  <TableCell sx={headerCellStyles}>ID</TableCell>
+                  <TableCell sx={headerCellStyles}>Name</TableCell>
+                  <TableCell sx={headerCellStyles}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {projects.map((p) => (
-                  <TableRow key={p.id ?? 'new'} hover>
-                    <TableCell>{p.id}</TableCell>
-                    <TableCell>{p.name}</TableCell>
-                    <TableCell>
-                      <Tooltip title="View Details">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleDetailsClick(p.id)}
-                        >
-                          <ViewIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Edit Project">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleEditClick(p.id)}
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
+                  <ProjectRow
+                    key={p.id ?? 'new'}
+                    project={p}
+                    onDetails={handleDetailsClick}
+                    onEdit={handleEditClick}
+                  />
                 ))}
               </TableBody>
             </Table>

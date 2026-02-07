@@ -1,12 +1,13 @@
-import React, {
+import {
   createContext,
   useContext,
   useState,
   useCallback,
   ReactNode,
   useMemo,
+  SyntheticEvent,
 } from 'react';
-import { Snackbar, Alert, AlertColor } from '@mui/material';
+import { Snackbar, Alert, AlertColor, SnackbarOrigin } from '@mui/material';
 
 interface NotificationContextType {
   showNotification: (message: string, severity?: AlertColor) => void;
@@ -16,9 +17,13 @@ const NotificationContext = createContext<NotificationContextType | undefined>(
   undefined
 );
 
-export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+const anchorOrigin: SnackbarOrigin = {
+  vertical: 'bottom',
+  horizontal: 'right',
+};
+const alertStyles = { width: '100%' };
+
+export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [severity, setSeverity] = useState<AlertColor>('success');
@@ -33,7 +38,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
   );
 
   const handleClose = useCallback(
-    (_?: React.SyntheticEvent | Event, reason?: string) => {
+    (_?: SyntheticEvent | Event, reason?: string) => {
       if (reason === 'clickaway') {
         return;
       }
@@ -54,12 +59,12 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
         open={open}
         autoHideDuration={6000}
         onClose={handleClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={anchorOrigin}
       >
         <Alert
           onClose={handleClose}
           severity={severity}
-          sx={{ width: '100%' }}
+          sx={alertStyles}
           variant="filled"
         >
           {message}

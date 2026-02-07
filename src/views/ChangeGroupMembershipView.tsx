@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -16,7 +16,39 @@ import { useNotification } from '~/utilities/NotificationContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Group, User } from '~/types/user';
 
-export const ChangeGroupMembershipView: React.FC = () => {
+const styles = {
+  container: { maxWidth: 600, mx: 'auto', mt: 4 },
+  headerBox: { p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' },
+  buttonContainer: {
+    display: 'flex',
+    gap: 2,
+    justifyContent: 'flex-end',
+    mt: 3,
+  },
+  centeredBox: { display: 'flex', justifyContent: 'center', py: 8 },
+};
+
+interface GroupCheckboxProps {
+  group: Group;
+  isMember: boolean;
+  onToggle: (id: number) => void;
+}
+
+const GroupCheckbox = ({ group, isMember, onToggle }: GroupCheckboxProps) => {
+  const handleChange = useCallback(
+    () => onToggle(group.id as unknown as number),
+    [group.id, onToggle]
+  );
+
+  return (
+    <FormControlLabel
+      control={<Checkbox checked={isMember} onChange={handleChange} />}
+      label={group.name}
+    />
+  );
+};
+
+export const ChangeGroupMembershipView = () => {
   const { id } = useParams<{ id: string }>();
   const { showNotification } = useNotification();
   const navigate = useNavigate();
@@ -52,39 +84,46 @@ export const ChangeGroupMembershipView: React.FC = () => {
     void fetchData();
   }, [fetchData]);
 
-  const handleToggleGroup = (groupId: number) => {
-    const nextSet = new Set(memberGroupIds);
-    if (nextSet.has(groupId)) {
-      nextSet.delete(groupId);
-    } else {
-      nextSet.add(groupId);
-    }
-    setMemberGroupIds(nextSet);
-  };
+  const handleToggleGroup = useCallback((groupId: number) => {
+    setMemberGroupIds((prev) => {
+      const nextSet = new Set(prev);
+      if (nextSet.has(groupId)) {
+        nextSet.delete(groupId);
+      } else {
+        nextSet.add(groupId);
+      }
+      return nextSet;
+    });
+  }, []);
 
-  const handleSave = async () => {
+  const handleSave = useCallback((): void => {
     if (!id) return;
-    try {
-      setSaving(true);
-      const groupStates: Record<number, boolean> = {};
-      allGroups.forEach((g) => {
-        if (g.id !== null) {
-          groupStates[g.id as unknown as number] = memberGroupIds.has(
-            g.id as unknown as number
-          );
-        }
-      });
 
-      await api.updateUserGroups(id, groupStates);
-      showNotification('Group memberships updated successfully!', 'success');
-      void navigate('/profile');
-    } catch (error) {
-      console.error('Failed to update groups:', error);
-      showNotification('Failed to update group memberships.', 'error');
-    } finally {
-      setSaving(false);
-    }
-  };
+    const executeSave = async () => {
+      try {
+        setSaving(true);
+        const groupStates: Record<number, boolean> = {};
+        allGroups.forEach((g) => {
+          if (g.id !== null) {
+            groupStates[g.id as unknown as number] = memberGroupIds.has(
+              g.id as unknown as number
+            );
+          }
+        });
+
+        await api.updateUserGroups(id, groupStates);
+        showNotification('Group memberships updated successfully!', 'success');
+        void navigate('/profile');
+      } catch (error) {
+        console.error('Failed to update groups:', error);
+        showNotification('Failed to update group memberships.', 'error');
+      } finally {
+        setSaving(false);
+      }
+    };
+
+    void executeSave();
+  }, [id, allGroups, memberGroupIds, showNotification, navigate]);
 
   const handleCancel = useCallback(() => {
     void navigate(-1);
@@ -92,14 +131,14 @@ export const ChangeGroupMembershipView: React.FC = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+      <Box sx={styles.centeredBox}>
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
+    <Box sx={styles.container}>
       <Typography variant="h4" gutterBottom>
         Change Group Membership
       </Typography>
@@ -109,33 +148,23 @@ export const ChangeGroupMembershipView: React.FC = () => {
         </Typography>
       )}
       <Card elevation={2}>
-        <Box
-          sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}
-        >
+        <Box sx={styles.headerBox}>
           <Typography variant="h6">Available Groups</Typography>
         </Box>
         <Divider />
         <CardContent>
           <Stack spacing={1}>
             {allGroups.map((group) => (
-              <FormControlLabel
+              <GroupCheckbox
                 key={group.id}
-                control={
-                  <Checkbox
-                    checked={memberGroupIds.has(group.id as unknown as number)}
-                    onChange={() =>
-                      handleToggleGroup(group.id as unknown as number)
-                    }
-                  />
-                }
-                label={group.name}
+                group={group}
+                isMember={memberGroupIds.has(group.id as unknown as number)}
+                onToggle={handleToggleGroup}
               />
             ))}
           </Stack>
 
-          <Box
-            sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3 }}
-          >
+          <Box sx={styles.buttonContainer}>
             <Button onClick={handleCancel} disabled={saving}>
               Cancel
             </Button>
@@ -143,9 +172,7 @@ export const ChangeGroupMembershipView: React.FC = () => {
               variant="contained"
               color="primary"
               loading={saving}
-              onClick={() => {
-                void handleSave();
-              }}
+              onClick={handleSave}
             >
               Save Changes
             </Button>

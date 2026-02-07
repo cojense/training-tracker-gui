@@ -1,5 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useEffect, useState, useCallback } from 'react';
+import {
+  useForm,
+  Controller,
+  Control,
+  ControllerRenderProps,
+} from 'react-hook-form';
 import {
   Box,
   Typography,
@@ -19,6 +24,18 @@ import { api } from '~/utilities/api';
 import { useNotification } from '~/utilities/NotificationContext';
 import { useNavigate, useParams } from 'react-router-dom';
 
+const styles = {
+  container: { maxWidth: 600, mx: 'auto', mt: 4 },
+  centeredBox: { display: 'flex', justifyContent: 'center', py: 8 },
+  buttonContainer: { display: 'flex', gap: 2, justifyContent: 'space-between' },
+  rightButtons: { display: 'flex', gap: 2 },
+};
+
+const dateRules = { required: 'Date is required' };
+const titleRules = { required: 'Title is required' };
+const descriptionRules = { required: 'Description is required' };
+const shrinkLabel = { shrink: true };
+
 interface TrainingFormInput {
   date: string;
   title: string;
@@ -26,7 +43,123 @@ interface TrainingFormInput {
   url: string;
 }
 
-export const TrainingEditView: React.FC = () => {
+/**
+ * Stable Render Functions
+ */
+const renderDateField = ({
+  field,
+  fieldState,
+}: {
+  field: ControllerRenderProps<TrainingFormInput, 'date'>;
+  fieldState: { error?: { message?: string } };
+}) => (
+  <TextField
+    {...field}
+    label="Date"
+    type="date"
+    fullWidth
+    InputLabelProps={shrinkLabel}
+    error={!!fieldState.error}
+    helperText={fieldState.error?.message}
+  />
+);
+
+const renderTitleField = ({
+  field,
+  fieldState,
+}: {
+  field: ControllerRenderProps<TrainingFormInput, 'title'>;
+  fieldState: { error?: { message?: string } };
+}) => (
+  <TextField
+    {...field}
+    label="Title"
+    fullWidth
+    error={!!fieldState.error}
+    helperText={fieldState.error?.message}
+  />
+);
+
+const renderDescriptionField = ({
+  field,
+  fieldState,
+}: {
+  field: ControllerRenderProps<TrainingFormInput, 'description'>;
+  fieldState: { error?: { message?: string } };
+}) => (
+  <TextField
+    {...field}
+    label="Description"
+    fullWidth
+    multiline
+    rows={4}
+    error={!!fieldState.error}
+    helperText={fieldState.error?.message}
+  />
+);
+
+const renderUrlField = ({
+  field,
+}: {
+  field: ControllerRenderProps<TrainingFormInput, 'url'>;
+}) => (
+  <TextField
+    {...field}
+    label="External URL (Optional)"
+    fullWidth
+    placeholder="https://example.com"
+  />
+);
+
+/**
+ * Controller Wrappers
+ */
+const DateController = ({
+  control,
+}: {
+  control: Control<TrainingFormInput>;
+}) => (
+  <Controller
+    name="date"
+    control={control}
+    rules={dateRules}
+    render={renderDateField}
+  />
+);
+
+const TitleController = ({
+  control,
+}: {
+  control: Control<TrainingFormInput>;
+}) => (
+  <Controller
+    name="title"
+    control={control}
+    rules={titleRules}
+    render={renderTitleField}
+  />
+);
+
+const DescriptionController = ({
+  control,
+}: {
+  control: Control<TrainingFormInput>;
+}) => (
+  <Controller
+    name="description"
+    control={control}
+    rules={descriptionRules}
+    render={renderDescriptionField}
+  />
+);
+
+const UrlController = ({
+  control,
+}: {
+  control: Control<TrainingFormInput>;
+}) => <Controller name="url" control={control} render={renderUrlField} />;
+
+export const TrainingEditView = () => {
   const { id } = useParams<{ id: string }>();
   const { showNotification } = useNotification();
   const navigate = useNavigate();
@@ -37,7 +170,7 @@ export const TrainingEditView: React.FC = () => {
     control,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = useForm<TrainingFormInput>();
 
   const fetchTraining = useCallback(async () => {
@@ -64,17 +197,20 @@ export const TrainingEditView: React.FC = () => {
     void fetchTraining();
   }, [fetchTraining]);
 
-  const onSubmit = async (data: TrainingFormInput) => {
-    if (!id) return;
-    try {
-      await api.updateTraining(id, data);
-      showNotification('Training course updated successfully!', 'success');
-      void navigate('/trainings');
-    } catch (error) {
-      console.error('Failed to update training:', error);
-      showNotification('Failed to update training.', 'error');
-    }
-  };
+  const onSubmit = useCallback(
+    async (data: TrainingFormInput) => {
+      if (!id) return;
+      try {
+        await api.updateTraining(id, data);
+        showNotification('Training course updated successfully!', 'success');
+        void navigate('/trainings');
+      } catch (error) {
+        console.error('Failed to update training:', error);
+        showNotification('Failed to update training.', 'error');
+      }
+    },
+    [id, navigate, showNotification]
+  );
 
   const handleDelete = useCallback(async () => {
     if (!id) return;
@@ -93,104 +229,51 @@ export const TrainingEditView: React.FC = () => {
     void navigate('/trainings');
   }, [navigate]);
 
+  const handleOpenDelete = useCallback(() => setDeleteDialogOpen(true), []);
+  const handleCloseDelete = useCallback(() => setDeleteDialogOpen(false), []);
+
+  const handleConfirmDelete = useCallback(() => {
+    void handleDelete();
+  }, [handleDelete]);
+
+  const handleFormSubmit = useCallback(
+    (e: React.FormEvent) => {
+      void handleSubmit(onSubmit)(e);
+    },
+    [handleSubmit, onSubmit]
+  );
+
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+      <Box sx={styles.centeredBox}>
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
+    <Box sx={styles.container}>
       <Typography variant="h4" gutterBottom>
         Edit Training
       </Typography>
       <Card elevation={2}>
         <CardContent>
-          <form
-            onSubmit={(e) => {
-              void handleSubmit(onSubmit)(e);
-            }}
-          >
+          <form onSubmit={handleFormSubmit}>
             <Stack spacing={3}>
-              <Controller
-                name="date"
-                control={control}
-                rules={{ required: 'Date is required' }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Date"
-                    type="date"
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    error={!!errors.date}
-                    helperText={errors.date?.message}
-                  />
-                )}
-              />
+              <DateController control={control} />
+              <TitleController control={control} />
+              <DescriptionController control={control} />
+              <UrlController control={control} />
 
-              <Controller
-                name="title"
-                control={control}
-                rules={{ required: 'Title is required' }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Title"
-                    fullWidth
-                    error={!!errors.title}
-                    helperText={errors.title?.message}
-                  />
-                )}
-              />
-
-              <Controller
-                name="description"
-                control={control}
-                rules={{ required: 'Description is required' }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Description"
-                    fullWidth
-                    multiline
-                    rows={4}
-                    error={!!errors.description}
-                    helperText={errors.description?.message}
-                  />
-                )}
-              />
-
-              <Controller
-                name="url"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="External URL (Optional)"
-                    fullWidth
-                    placeholder="https://example.com"
-                  />
-                )}
-              />
-
-              <Box
-                sx={{
-                  display: 'flex',
-                  gap: 2,
-                  justifyContent: 'space-between',
-                }}
-              >
+              <Box sx={styles.buttonContainer}>
                 <Button
                   color="error"
-                  onClick={() => setDeleteDialogOpen(true)}
+                  onClick={handleOpenDelete}
                   disabled={isSubmitting}
                 >
                   Delete
                 </Button>
-                <Box sx={{ display: 'flex', gap: 2 }}>
+                <Box sx={styles.rightButtons}>
                   <Button onClick={handleCancel} disabled={isSubmitting}>
                     Cancel
                   </Button>
@@ -210,10 +293,7 @@ export const TrainingEditView: React.FC = () => {
       </Card>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-      >
+      <Dialog open={deleteDialogOpen} onClose={handleCloseDelete}>
         <DialogTitle>Delete Training?</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -222,14 +302,8 @@ export const TrainingEditView: React.FC = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button
-            onClick={() => {
-              void handleDelete();
-            }}
-            color="error"
-            autoFocus
-          >
+          <Button onClick={handleCloseDelete}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>
             Delete
           </Button>
         </DialogActions>

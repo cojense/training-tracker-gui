@@ -1,4 +1,4 @@
-import React from 'react';
+import { useCallback } from 'react';
 import {
   Card,
   CardContent,
@@ -11,32 +11,40 @@ import {
 const BACKEND_URL = 'http://localhost:5001';
 const FRONTEND_URL = 'http://localhost:5173';
 
-const LoginView: React.FC = () => {
-  const handleGoogleLogin = () => {
+const styles = {
+  container: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: '60vh',
+  },
+  card: { maxWidth: 400, textAlign: 'center', p: 2 },
+  description: { mb: 3 },
+};
+
+const LoginView = () => {
+  const handleGoogleLogin = useCallback(() => {
     // Perform full page redirect to backend OAuth route with next parameter
     window.location.href = `${BACKEND_URL}/oauth2/login/google?next=${encodeURIComponent(FRONTEND_URL)}`;
-  };
+  }, []);
 
-  const handleDevLogin = () => {
+  const handleDevLogin = useCallback(() => {
     // Perform full page redirect to backend dev login route with next parameter
     window.location.href = `${BACKEND_URL}/dev/login?next=${encodeURIComponent(FRONTEND_URL)}`;
-  };
+  }, []);
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '60vh',
-      }}
-    >
-      <Card sx={{ maxWidth: 400, textAlign: 'center', p: 2 }}>
+    <Box sx={styles.container}>
+      <Card sx={styles.card}>
         <CardContent>
           <Typography variant="h5" gutterBottom>
             Welcome to Training Tracker
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={styles.description}
+          >
             Please sign in to access your training requirements.
           </Typography>
 

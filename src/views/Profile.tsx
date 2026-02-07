@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   Typography,
   Stack,
@@ -22,7 +22,25 @@ import { AssignedTraining } from '~/types/assignments';
 import { Group } from '~/types/user';
 import { TrainingEvent } from '~/types/training';
 
-const Profile: React.FC = () => {
+const styles = {
+  headerBox: {
+    p: 2,
+    bgcolor: 'primary.main',
+    color: 'primary.contrastText',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  plainHeaderBox: {
+    p: 2,
+    bgcolor: 'primary.main',
+    color: 'primary.contrastText',
+  },
+  contentRoot: { p: 0 },
+  centeredBox: { display: 'flex', justifyContent: 'center', py: 8 },
+};
+
+const Profile = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [assignments, setAssignments] = useState<AssignedTraining[]>([]);
@@ -69,7 +87,7 @@ const Profile: React.FC = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+      <Box sx={styles.centeredBox}>
         <CircularProgress />
       </Box>
     );
@@ -87,16 +105,7 @@ const Profile: React.FC = () => {
 
       {/* User Details Card */}
       <Card elevation={2}>
-        <Box
-          sx={{
-            p: 2,
-            bgcolor: 'primary.main',
-            color: 'primary.contrastText',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
+        <Box sx={styles.headerBox}>
           <Typography variant="h6">Personal Details</Typography>
           {user?.is_admin && (
             <Button
@@ -110,36 +119,25 @@ const Profile: React.FC = () => {
           )}
         </Box>
         <Divider />
-        <CardContent sx={{ p: 0 }}>
+        <CardContent sx={styles.contentRoot}>
           {user && <UserDetailTable user={user} />}
         </CardContent>
       </Card>
 
       {/* Training Requirements Card */}
       <Card elevation={2}>
-        <Box
-          sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}
-        >
+        <Box sx={styles.plainHeaderBox}>
           <Typography variant="h6">Current Training Requirements</Typography>
         </Box>
         <Divider />
-        <CardContent sx={{ p: 0 }}>
+        <CardContent sx={styles.contentRoot}>
           <TrainingDueTable assignments={assignments} />
         </CardContent>
       </Card>
 
       {/* Group Membership Card */}
       <Card elevation={2}>
-        <Box
-          sx={{
-            p: 2,
-            bgcolor: 'primary.main',
-            color: 'primary.contrastText',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
+        <Box sx={styles.headerBox}>
           <Typography variant="h6">Group Memberships</Typography>
           {isManager && (
             <Button
@@ -153,23 +151,14 @@ const Profile: React.FC = () => {
           )}
         </Box>
         <Divider />
-        <CardContent sx={{ p: 0 }}>
+        <CardContent sx={styles.contentRoot}>
           <GroupMembershipTable groups={groups} />
         </CardContent>
       </Card>
 
       {/* Training Record Card */}
       <Card elevation={2}>
-        <Box
-          sx={{
-            p: 2,
-            bgcolor: 'primary.main',
-            color: 'primary.contrastText',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
+        <Box sx={styles.headerBox}>
           <Typography variant="h6">Training Record</Typography>
           <Button
             variant="contained"
@@ -182,7 +171,7 @@ const Profile: React.FC = () => {
           </Button>
         </Box>
         <Divider />
-        <CardContent sx={{ p: 0 }}>
+        <CardContent sx={styles.contentRoot}>
           <TrainingRecordTable record={record} />
         </CardContent>
       </Card>

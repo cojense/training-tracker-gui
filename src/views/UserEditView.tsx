@@ -1,5 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import {
+  useForm,
+  Controller,
+  Control,
+  ControllerRenderProps,
+} from 'react-hook-form';
 import {
   Box,
   Typography,
@@ -18,6 +23,22 @@ import { useNotification } from '~/utilities/NotificationContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { User } from '~/types/user';
 
+const styles = {
+  container: { maxWidth: 600, mx: 'auto', mt: 4 },
+  buttonContainer: { display: 'flex', gap: 2, justifyContent: 'flex-end' },
+  centeredBox: { display: 'flex', justifyContent: 'center', py: 8 },
+};
+
+const firstNameRules = { required: 'First name is required' };
+const lastNameRules = { required: 'Last name is required' };
+const emailRules = {
+  required: 'Email is required',
+  pattern: {
+    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+    message: 'Invalid email address',
+  },
+};
+
 interface UserFormInput {
   first_name: string;
   last_name: string;
@@ -26,7 +47,134 @@ interface UserFormInput {
   is_active: boolean;
 }
 
-export const UserEditView: React.FC = () => {
+/**
+ * Pure Render Functions (Module Scope)
+ */
+const renderFirstNameField = ({
+  field,
+  fieldState,
+}: {
+  field: ControllerRenderProps<UserFormInput, 'first_name'>;
+  fieldState: { error?: { message?: string } };
+}) => (
+  <TextField
+    {...field}
+    label="First Name"
+    fullWidth
+    error={!!fieldState.error}
+    helperText={fieldState.error?.message}
+  />
+);
+
+const renderLastNameField = ({
+  field,
+  fieldState,
+}: {
+  field: ControllerRenderProps<UserFormInput, 'last_name'>;
+  fieldState: { error?: { message?: string } };
+}) => (
+  <TextField
+    {...field}
+    label="Last Name"
+    fullWidth
+    error={!!fieldState.error}
+    helperText={fieldState.error?.message}
+  />
+);
+
+const renderEmailField = ({
+  field,
+  fieldState,
+}: {
+  field: ControllerRenderProps<UserFormInput, 'email'>;
+  fieldState: { error?: { message?: string } };
+}) => (
+  <TextField
+    {...field}
+    label="Email"
+    fullWidth
+    error={!!fieldState.error}
+    helperText={fieldState.error?.message}
+  />
+);
+
+const ActiveStatusSwitch = ({
+  field,
+}: {
+  field: ControllerRenderProps<UserFormInput, 'is_active'>;
+}) => {
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      field.onChange(e.target.checked);
+    },
+    [field]
+  );
+
+  return (
+    <FormControlLabel
+      control={<Switch checked={field.value} onChange={handleChange} />}
+      label="Active Status"
+    />
+  );
+};
+
+const renderActiveSwitchField = ({
+  field,
+}: {
+  field: ControllerRenderProps<UserFormInput, 'is_active'>;
+}) => <ActiveStatusSwitch field={field} />;
+
+/**
+ * Controller Wrappers
+ */
+const FirstNameController = ({
+  control,
+}: {
+  control: Control<UserFormInput>;
+}) => (
+  <Controller
+    name="first_name"
+    control={control}
+    rules={firstNameRules}
+    render={renderFirstNameField}
+  />
+);
+
+const LastNameController = ({
+  control,
+}: {
+  control: Control<UserFormInput>;
+}) => (
+  <Controller
+    name="last_name"
+    control={control}
+    rules={lastNameRules}
+    render={renderLastNameField}
+  />
+);
+
+const EmailController = ({ control }: { control: Control<UserFormInput> }) => (
+  <Controller
+    name="email"
+    control={control}
+    rules={emailRules}
+    render={renderEmailField}
+  />
+);
+
+const ActiveStatusController = ({
+  control,
+}: {
+  control: Control<UserFormInput>;
+}) => (
+  <Controller
+    name="is_active"
+    control={control}
+    render={renderActiveSwitchField}
+  />
+);
+
+export const UserEditView = () => {
   const { id } = useParams<{ id: string }>();
   const { showNotification } = useNotification();
   const navigate = useNavigate();
@@ -37,7 +185,7 @@ export const UserEditView: React.FC = () => {
     control,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = useForm<UserFormInput>();
 
   const fetchData = useCallback(async () => {
@@ -68,128 +216,90 @@ export const UserEditView: React.FC = () => {
     void fetchData();
   }, [fetchData]);
 
-  const onSubmit = async (data: UserFormInput) => {
-    if (!id) return;
-    try {
-      await api.updateUser(id, data);
-      showNotification('User profile updated successfully!', 'success');
-      void navigate('/users');
-    } catch (error) {
-      console.error('Failed to update user:', error);
-      showNotification('Failed to update user profile.', 'error');
-    }
-  };
+  const onSubmit = useCallback(
+    async (data: UserFormInput) => {
+      if (!id) return;
+      try {
+        const supervisorId = data.supervisor_id
+          ? Number(data.supervisor_id)
+          : undefined;
+        await api.updateUser(id, {
+          ...data,
+          supervisor_id: supervisorId,
+        });
+        showNotification('User profile updated successfully!', 'success');
+        void navigate('/users');
+      } catch (error) {
+        console.error('Failed to update user:', error);
+        showNotification('Failed to update user profile.', 'error');
+      }
+    },
+    [id, navigate, showNotification]
+  );
 
   const handleCancel = useCallback(() => {
     void navigate('/users');
   }, [navigate]);
 
+  const handleFormSubmit = useCallback(
+    (e: React.FormEvent) => {
+      void handleSubmit(onSubmit)(e);
+    },
+    [handleSubmit, onSubmit]
+  );
+
+  // Memoize the supervisor render function to satisfy react-perf
+  const renderSupervisor = useMemo(
+    () =>
+      ({
+        field,
+      }: {
+        field: ControllerRenderProps<UserFormInput, 'supervisor_id'>;
+      }) => (
+        <TextField {...field} select label="Supervisor" fullWidth>
+          <MenuItem value="">
+            <em>None</em>
+          </MenuItem>
+          {users.map((u) => (
+            <MenuItem key={u.id} value={u.id}>
+              {u.last_name}, {u.first_name}
+            </MenuItem>
+          ))}
+        </TextField>
+      ),
+    [users]
+  );
+
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+      <Box sx={styles.centeredBox}>
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
+    <Box sx={styles.container}>
       <Typography variant="h4" gutterBottom>
         Edit User Profile
       </Typography>
       <Card elevation={2}>
         <CardContent>
-          <form
-            onSubmit={(e) => {
-              void handleSubmit(onSubmit)(e);
-            }}
-          >
+          <form onSubmit={handleFormSubmit}>
             <Stack spacing={3}>
-              <Controller
-                name="first_name"
-                control={control}
-                rules={{ required: 'First name is required' }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="First Name"
-                    fullWidth
-                    error={!!errors.first_name}
-                    helperText={errors.first_name?.message}
-                  />
-                )}
-              />
-
-              <Controller
-                name="last_name"
-                control={control}
-                rules={{ required: 'Last name is required' }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Last Name"
-                    fullWidth
-                    error={!!errors.last_name}
-                    helperText={errors.last_name?.message}
-                  />
-                )}
-              />
-
-              <Controller
-                name="email"
-                control={control}
-                rules={{
-                  required: 'Email is required',
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Invalid email address',
-                  },
-                }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Email"
-                    fullWidth
-                    error={!!errors.email}
-                    helperText={errors.email?.message}
-                  />
-                )}
-              />
+              <FirstNameController control={control} />
+              <LastNameController control={control} />
+              <EmailController control={control} />
 
               <Controller
                 name="supervisor_id"
                 control={control}
-                render={({ field }) => (
-                  <TextField {...field} select label="Supervisor" fullWidth>
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    {users.map((u) => (
-                      <MenuItem key={u.id} value={u.id}>
-                        {u.last_name}, {u.first_name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                )}
+                render={renderSupervisor}
               />
 
-              <Controller
-                name="is_active"
-                control={control}
-                render={({ field }) => (
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={field.value}
-                        onChange={(e) => field.onChange(e.target.checked)}
-                      />
-                    }
-                    label="Active Status"
-                  />
-                )}
-              />
+              <ActiveStatusController control={control} />
 
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+              <Box sx={styles.buttonContainer}>
                 <Button onClick={handleCancel} disabled={isSubmitting}>
                   Cancel
                 </Button>

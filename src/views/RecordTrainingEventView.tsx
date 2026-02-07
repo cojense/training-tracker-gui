@@ -1,5 +1,11 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { ChangeEvent, useEffect, useState, useCallback, useMemo } from 'react';
+import {
+  useForm,
+  Controller,
+  Control,
+  ControllerRenderProps,
+  FieldValues,
+} from 'react-hook-form';
 import {
   Box,
   Typography,
@@ -20,6 +26,17 @@ import { useAuth } from '~/utilities/useAuth';
 import { User } from '~/types/user';
 import { Training } from '~/types/training';
 
+const styles = {
+  container: { maxWidth: 600, mx: 'auto', mt: 4 },
+  buttonContainer: { display: 'flex', gap: 2, justifyContent: 'flex-end' },
+  centeredBox: { display: 'flex', justifyContent: 'center', py: 8 },
+  certBox: { mt: 1 },
+};
+
+const memberRules = { required: 'Member is required' };
+const trainingRules = { required: 'Training is required' };
+const dateRules = { required: 'Completion date is required' };
+
 interface RecordFormInput {
   user_id: string | number;
   training_id: string | number;
@@ -29,7 +46,170 @@ interface RecordFormInput {
   certificate: FileList | null;
 }
 
-export const RecordTrainingEventView: React.FC = () => {
+/**
+ * Components & Render Functions (Module Scope)
+ */
+
+interface renderDateFieldProps {
+  field: ControllerRenderProps<RecordFormInput, 'completion_date'>;
+  fieldState: { error?: { message?: string } };
+}
+const renderDateField = ({ field, fieldState }: renderDateFieldProps) => (
+  <TextField
+    {...field}
+    label="Completion Date"
+    type="date"
+    fullWidth
+    error={!!fieldState.error}
+    helperText={fieldState.error?.message}
+  />
+);
+
+// 2. CertificateToggle Component & Render Function
+interface CertificateToggleProps {
+  field: ControllerRenderProps<RecordFormInput, 'certificate_unavailable'>;
+}
+const CertificateToggle = ({ field }: CertificateToggleProps) => {
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      field.onChange(e.target.checked);
+    },
+    [field]
+  );
+
+  return (
+    <FormControlLabel
+      control={<Checkbox checked={field.value} onChange={handleChange} />}
+      label="Certificate Unavailable"
+    />
+  );
+};
+
+const renderCertificateToggle = ({
+  field,
+}: {
+  field: ControllerRenderProps<RecordFormInput, 'certificate_unavailable'>;
+}) => <CertificateToggle field={field} />;
+
+interface CertificateFileProps {
+  field: ControllerRenderProps<RecordFormInput, 'certificate'>;
+}
+const CertificateFile = ({ field }: CertificateFileProps) => {
+  const { onChange, ...fieldProps } = field;
+
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      onChange(e.target.files);
+    },
+    [onChange]
+  );
+
+  return (
+    <input
+      {...fieldProps}
+      type="file"
+      accept=".pdf,.png,.jpg,.jpeg"
+      onChange={handleChange}
+    />
+  );
+};
+
+const renderCertificateFile = ({
+  field,
+}: {
+  field: ControllerRenderProps<RecordFormInput, 'certificate'>;
+}) => <CertificateFile field={field} />;
+
+const renderCommentField = ({ field }: { field: FieldValues }) => (
+  <TextField {...field} label="Comments" fullWidth multiline rows={3} />
+);
+
+/**
+ * Sub-components
+ */
+interface UserSelectProps {
+  control: Control<RecordFormInput>;
+  users: User[];
+  error?: string;
+}
+const UserSelect = ({ control, users, error }: UserSelectProps) => {
+  const renderUserField = useMemo(
+    () =>
+      ({
+        field,
+      }: {
+        field: ControllerRenderProps<RecordFormInput, 'user_id'>;
+      }) => (
+        <TextField
+          {...field}
+          select
+          label="Member"
+          fullWidth
+          error={!!error}
+          helperText={error}
+        >
+          {users.map((u) => (
+            <MenuItem key={u.id} value={u.id}>
+              {u.last_name}, {u.first_name} ({u.email})
+            </MenuItem>
+          ))}
+        </TextField>
+      ),
+    [users, error]
+  );
+
+  return (
+    <Controller
+      name="user_id"
+      control={control}
+      rules={memberRules}
+      render={renderUserField}
+    />
+  );
+};
+
+interface TrainingSelectProps {
+  control: Control<RecordFormInput>;
+  trainings: Training[];
+  error?: string;
+}
+const TrainingSelect = ({ control, trainings, error }: TrainingSelectProps) => {
+  const renderTrainingField = useMemo(
+    () =>
+      ({
+        field,
+      }: {
+        field: ControllerRenderProps<RecordFormInput, 'training_id'>;
+      }) => (
+        <TextField
+          {...field}
+          select
+          label="Training Course"
+          fullWidth
+          error={!!error}
+          helperText={error}
+        >
+          {trainings.map((t) => (
+            <MenuItem key={t.id} value={t.id}>
+              {t.title}
+            </MenuItem>
+          ))}
+        </TextField>
+      ),
+    [trainings, error]
+  );
+
+  return (
+    <Controller
+      name="training_id"
+      control={control}
+      rules={trainingRules}
+      render={renderTrainingField}
+    />
+  );
+};
+
+export const RecordTrainingEventView = () => {
   const { user } = useAuth();
   const { showNotification } = useNotification();
   const navigate = useNavigate();
@@ -40,8 +220,10 @@ export const RecordTrainingEventView: React.FC = () => {
 
   const isManager = user?.is_admin ?? user?.is_training_manager ?? false;
 
-  // Extract initial IDs from query params if present (e.g. from Dashboard "Record" button)
-  const queryParams = new URLSearchParams(location.search);
+  const queryParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search]
+  );
   const initialTrainingId = queryParams.get('training_id') ?? '';
   const initialUserId = queryParams.get('user_id') ?? user?.id ?? '';
 
@@ -84,138 +266,91 @@ export const RecordTrainingEventView: React.FC = () => {
     void fetchData();
   }, [fetchData]);
 
-  const onSubmit = async (data: RecordFormInput) => {
-    try {
-      const formData = new FormData();
-      formData.append('user_id', String(data.user_id));
-      formData.append('training_id', String(data.training_id));
-      formData.append('completion_date', data.completion_date);
-      formData.append('comment', data.comment);
-      formData.append(
-        'certificate_unavailable',
-        String(data.certificate_unavailable)
-      );
+  const onSubmit = useCallback(
+    async (data: RecordFormInput) => {
+      try {
+        const formData = new FormData();
+        formData.append('user_id', String(data.user_id));
+        formData.append('training_id', String(data.training_id));
+        formData.append('completion_date', data.completion_date);
+        formData.append('comment', data.comment);
+        formData.append(
+          'certificate_unavailable',
+          String(data.certificate_unavailable)
+        );
 
-      if (data.certificate && data.certificate.length > 0) {
-        formData.append('certificate', data.certificate[0]);
+        if (data.certificate && data.certificate.length > 0) {
+          formData.append('certificate', data.certificate[0]);
+        }
+
+        await api.createEvent(formData);
+        showNotification('Training record saved successfully!', 'success');
+        void navigate('/');
+      } catch (error) {
+        console.error('Failed to record training:', error);
+        showNotification('Failed to save record.', 'error');
       }
-
-      await api.createEvent(formData);
-      showNotification('Training record saved successfully!', 'success');
-      void navigate('/');
-    } catch (error) {
-      console.error('Failed to record training:', error);
-      showNotification('Failed to save record.', 'error');
-    }
-  };
+    },
+    [navigate, showNotification]
+  );
 
   const handleCancel = useCallback(() => {
     void navigate(-1);
   }, [navigate]);
 
+  const handleFormSubmit = useCallback(
+    (e: React.FormEvent) => {
+      void handleSubmit(onSubmit)(e);
+    },
+    [handleSubmit, onSubmit]
+  );
+
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+      <Box sx={styles.centeredBox}>
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
+    <Box sx={styles.container}>
       <Typography variant="h4" gutterBottom>
         Record Training Completion
       </Typography>
       <Card elevation={2}>
         <CardContent>
-          <form
-            onSubmit={(e) => {
-              void handleSubmit(onSubmit)(e);
-            }}
-          >
+          <form onSubmit={handleFormSubmit}>
             <Stack spacing={3}>
               {isManager && (
-                <Controller
-                  name="user_id"
+                <UserSelect
                   control={control}
-                  rules={{ required: 'Member is required' }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      select
-                      label="Member"
-                      fullWidth
-                      error={!!errors.user_id}
-                      helperText={errors.user_id?.message}
-                    >
-                      {users.map((u) => (
-                        <MenuItem key={u.id} value={u.id}>
-                          {u.last_name}, {u.first_name} ({u.email})
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  )}
+                  users={users}
+                  error={errors.user_id?.message}
                 />
               )}
 
-              <Controller
-                name="training_id"
+              <TrainingSelect
                 control={control}
-                rules={{ required: 'Training is required' }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    select
-                    label="Training Course"
-                    fullWidth
-                    error={!!errors.training_id}
-                    helperText={errors.training_id?.message}
-                  >
-                    {trainings.map((t) => (
-                      <MenuItem key={t.id} value={t.id}>
-                        {t.title}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                )}
+                trainings={trainings}
+                error={errors.training_id?.message}
               />
 
               <Controller
                 name="completion_date"
                 control={control}
-                rules={{ required: 'Completion date is required' }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Completion Date"
-                    type="date"
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    error={!!errors.completion_date}
-                    helperText={errors.completion_date?.message}
-                  />
-                )}
+                rules={dateRules}
+                render={renderDateField}
               />
 
               <Controller
                 name="certificate_unavailable"
                 control={control}
-                render={({ field }) => (
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        {...field}
-                        checked={field.value}
-                        onChange={(e) => field.onChange(e.target.checked)}
-                      />
-                    }
-                    label="Certificate Unavailable"
-                  />
-                )}
+                render={renderCertificateToggle}
               />
 
               {!watchCertUnavailable && (
-                <Box>
+                <Box sx={styles.certBox}>
                   <Typography
                     variant="body2"
                     color="text.secondary"
@@ -226,14 +361,7 @@ export const RecordTrainingEventView: React.FC = () => {
                   <Controller
                     name="certificate"
                     control={control}
-                    render={({ field: { onChange, ...fieldProps } }) => (
-                      <input
-                        {...fieldProps}
-                        type="file"
-                        accept=".pdf,.png,.jpg,.jpeg"
-                        onChange={(e) => onChange(e.target.files)}
-                      />
-                    )}
+                    render={renderCertificateFile}
                   />
                 </Box>
               )}
@@ -241,18 +369,10 @@ export const RecordTrainingEventView: React.FC = () => {
               <Controller
                 name="comment"
                 control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Comments"
-                    fullWidth
-                    multiline
-                    rows={3}
-                  />
-                )}
+                render={renderCommentField}
               />
 
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+              <Box sx={styles.buttonContainer}>
                 <Button onClick={handleCancel} disabled={isSubmitting}>
                   Cancel
                 </Button>

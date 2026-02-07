@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Container, CssBaseline, Box } from '@mui/material';
 import Header from '~/components/Header';
@@ -32,41 +32,37 @@ import { UpdateTrainingEventView } from '~/views/UpdateTrainingEventView';
 import { UserEditView } from '~/views/UserEditView';
 import { UserListView } from '~/views/UserListView';
 
+const styles = {
+  appContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: '100vh',
+  },
+  mainLayout: { display: 'flex', flexGrow: 1 },
+  contentRoot: { flexGrow: 1, p: 3, width: { md: `calc(100% - 240px)` } },
+};
+
 interface AppProps {
   mode: 'light' | 'dark';
   toggleMode: () => void;
 }
-
-const App: React.FC<AppProps> = ({ mode, toggleMode }) => {
+const App = ({ mode, toggleMode }: AppProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { isAuthenticated } = useAuth();
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const layoutStyles = useMemo(
-    () => ({
-      appContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
-      },
-      mainLayout: { display: 'flex', flexGrow: 1 },
-      contentRoot: { flexGrow: 1, p: 3, width: { md: `calc(100% - 240px)` } },
-    }),
-    []
-  );
+  const handleDrawerToggle = React.useCallback(() => {
+    setMobileOpen((prev) => !prev);
+  }, []);
 
   return (
-    <Box sx={layoutStyles.appContainer}>
+    <Box sx={styles.appContainer}>
       <CssBaseline />
       <Header
         mode={mode}
         toggleMode={toggleMode}
         onMenuClick={handleDrawerToggle}
       />
-      <Box sx={layoutStyles.mainLayout}>
+      <Box sx={styles.mainLayout}>
         {isAuthenticated && (
           <Sidebar
             open={mobileOpen}
@@ -74,7 +70,7 @@ const App: React.FC<AppProps> = ({ mode, toggleMode }) => {
             mobile={true}
           />
         )}
-        <Box component="main" sx={layoutStyles.contentRoot}>
+        <Box component="main" sx={styles.contentRoot}>
           <Container maxWidth="lg">
             <Routes>
               {!isAuthenticated ? (
@@ -99,11 +95,11 @@ const App: React.FC<AppProps> = ({ mode, toggleMode }) => {
                     element={<TrainingDetailView />}
                   />
                   <Route
-                    path="/assignments/new"
+                    path="/groups/:groupId/assignments/new"
                     element={<AssignTrainingView />}
                   />
                   <Route
-                    path="/assignments/:id/edit"
+                    path="/groups/:groupId/assignments/:trainingId/edit"
                     element={<EditAssignmentView />}
                   />
                   <Route

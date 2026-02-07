@@ -1,6 +1,6 @@
 import { Project } from '~/types/projects';
 import { User, Group } from '~/types/user';
-import { AssignedTraining } from '~/types/assignments';
+import { AssignedTraining, Assignment } from '~/types/assignments';
 import { Training, TrainingEvent } from '~/types/training';
 
 const API_BASE_URL = 'http://localhost:5001/api';
@@ -70,6 +70,12 @@ export const api = {
   getTraining: (id: number | string) => apiFetch<Training>(`/trainings/${id}`),
 
   /**
+   * Fetches all completion events for a specific training.
+   */
+  getTrainingCompletions: (id: number | string) =>
+    apiFetch<TrainingEvent[]>(`/trainings/${id}/completions`),
+
+  /**
    * Creates a new training course.
    */
   createTraining: (data: Partial<Training>) =>
@@ -103,6 +109,11 @@ export const api = {
       method: 'POST',
       body: formData,
     }),
+
+  /**
+   * Fetches a single training event by ID.
+   */
+  getEvent: (id: number | string) => apiFetch<TrainingEvent>(`/events/${id}`),
 
   /**
    * Updates an existing training event. Supports certificate upload via FormData.
@@ -154,6 +165,17 @@ export const api = {
   getGroups: () => apiFetch<Group[]>('/groups'),
 
   /**
+   * Fetches a single group by ID.
+   */
+  getGroup: (id: number | string) => apiFetch<Group>(`/groups/${id}`),
+
+  /**
+   * Fetches the members of a group.
+   */
+  getGroupMembers: (id: number | string) =>
+    apiFetch<User[]>(`/groups/${id}/members`),
+
+  /**
    * Updates a user's group memberships.
    */
   updateUserGroups: (
@@ -166,12 +188,95 @@ export const api = {
     }),
 
   /**
+   * Fetches assignments for a specific group.
+   */
+  getGroupAssignments: (groupId: number | string) =>
+    apiFetch<Assignment[]>(`/groups/${groupId}/assignments`),
+
+  /**
+   * Fetches a specific assignment.
+   */
+  getAssignment: (groupId: number | string, trainingId: number | string) =>
+    apiFetch<Assignment>(`/groups/${groupId}/assignments/${trainingId}`),
+
+  /**
+   * Creates or updates a group assignment.
+   */
+  updateAssignment: (
+    groupId: number | string,
+    trainingId: number | string,
+    data: Partial<Assignment> & { project_id?: number | string }
+  ) =>
+    apiFetch<Assignment>(`/groups/${groupId}/assignments/${trainingId}`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  /**
+   * Deletes a group assignment.
+   */
+  deleteAssignment: (groupId: number | string, trainingId: number | string) =>
+    apiFetch<void>(`/groups/${groupId}/assignments/${trainingId}`, {
+      method: 'DELETE',
+    }),
+
+  /**
    * Fetches all projects in the system.
    */
   getProjects: () => apiFetch<Project[]>('/projects'),
 
   /**
+   * Fetches a single project by ID.
+   */
+  getProject: (id: number | string) => apiFetch<Project>(`/projects/${id}`),
+
+  /**
+   * Creates a new project.
+   */
+  createProject: (data: { name: string }) =>
+    apiFetch<Project>('/projects', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  /**
+   * Updates an existing project.
+   */
+  updateProject: (id: number | string, data: { name: string }) =>
+    apiFetch<Project>(`/projects/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  /**
+   * Deletes a project.
+   */
+  deleteProject: (id: number | string) =>
+    apiFetch<void>(`/projects/${id}`, {
+      method: 'DELETE',
+    }),
+
+  /**
    * Fetches the approval queue (unapproved trainings).
    */
   getApprovalQueue: () => apiFetch<TrainingEvent[]>('/approvals'),
+
+  /**
+   * Approves a training event.
+   */
+  approveEvent: (id: number | string) =>
+    apiFetch<{ status: string }>(`/approvals/${id}`, {
+      method: 'POST',
+    }),
+
+  /**
+   * Fetches the manager report (full system compliance).
+   */
+  getManagerReport: () => apiFetch<AssignedTraining[]>('/reports/manager'),
+
+  /**
+   * Fetches the supervisor report (team compliance).
+   */
+  getSupervisorReport: () =>
+    apiFetch<AssignedTraining[]>('/reports/supervisor'),
 };

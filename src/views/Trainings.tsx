@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Table,
   TableBody,
@@ -23,7 +23,68 @@ import { Training } from '~/types/training';
 import { api } from '~/utilities/api';
 import { useAuth } from '~/utilities/useAuth';
 
-const Trainings: React.FC = () => {
+const headerBoxStyles = {
+  p: 2,
+  bgcolor: 'primary.main',
+  color: 'primary.contrastText',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+};
+const contentRootStyles = { p: 0 };
+const centeredBoxStyles = { textAlign: 'center', py: 4 };
+const headerCellStyles = { fontWeight: 'bold' };
+const errorBoxStyles = { p: 2 };
+const trainingTableStyles = { minWidth: 650 };
+
+interface TrainingRowProps {
+  training: Training;
+  isManager: boolean;
+  onEdit: (id: number) => void;
+}
+const TrainingRow = ({ training, isManager, onEdit }: TrainingRowProps) => {
+  const handleEdit = useCallback(
+    () => onEdit(training.id),
+    [training.id, onEdit]
+  );
+
+  const trainingPath = useMemo(() => `/training/${training.id}`, [training.id]);
+  const externalUrl = training.url ?? '#';
+
+  return (
+    <TableRow hover>
+      <TableCell component="th" scope="row">
+        {training.id}
+      </TableCell>
+      <TableCell>{training.date}</TableCell>
+      <TableCell>
+        <MuiLink component={RouterLink} to={trainingPath} underline="hover">
+          {training.title}
+        </MuiLink>
+      </TableCell>
+      <TableCell>
+        <MuiLink
+          component="a"
+          href={externalUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          underline="hover"
+        >
+          {training.url}
+        </MuiLink>
+      </TableCell>
+      {isManager && (
+        <TableCell>
+          <Button size="small" startIcon={<EditIcon />} onClick={handleEdit}>
+            Edit
+          </Button>
+        </TableCell>
+      )}
+    </TableRow>
+  );
+};
+
+const Trainings = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [trainings, setTrainings] = useState<Training[]>([]);
@@ -61,20 +122,14 @@ const Trainings: React.FC = () => {
     [navigate]
   );
 
-  const isManager = user?.is_admin ?? user?.is_training_manager ?? false;
+  const isManager = useMemo(
+    () => user?.is_admin ?? user?.is_training_manager ?? false,
+    [user]
+  );
 
   return (
     <Card elevation={2}>
-      <Box
-        sx={{
-          p: 2,
-          bgcolor: 'primary.main',
-          color: 'primary.contrastText',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
+      <Box sx={headerBoxStyles}>
         <Typography variant="h6">
           Training List (All Courses in System)
         </Typography>
@@ -91,72 +146,37 @@ const Trainings: React.FC = () => {
         )}
       </Box>
       <Divider />
-      <CardContent sx={{ p: 0 }}>
+      <CardContent sx={contentRootStyles}>
         {loading ? (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Box sx={centeredBoxStyles}>
             <CircularProgress />
           </Box>
         ) : error ? (
-          <Box sx={{ p: 2 }}>
+          <Box sx={errorBoxStyles}>
             <Alert severity="error">{error}</Alert>
           </Box>
         ) : (
           <TableContainer component={Paper} elevation={0}>
-            <Table sx={{ minWidth: 650 }} aria-label="training table">
+            <Table sx={trainingTableStyles} aria-label="training table">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>
-                    Training Name
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>
-                    External URL
-                  </TableCell>
+                  <TableCell sx={headerCellStyles}>ID</TableCell>
+                  <TableCell sx={headerCellStyles}>Date</TableCell>
+                  <TableCell sx={headerCellStyles}>Training Name</TableCell>
+                  <TableCell sx={headerCellStyles}>External URL</TableCell>
                   {isManager && (
-                    <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                    <TableCell sx={headerCellStyles}>Actions</TableCell>
                   )}
                 </TableRow>
               </TableHead>
               <TableBody>
                 {trainings.map((training: Training) => (
-                  <TableRow key={training.id} hover>
-                    <TableCell component="th" scope="row">
-                      {training.id}
-                    </TableCell>
-                    <TableCell>{training.date}</TableCell>
-                    <TableCell>
-                      <MuiLink
-                        component={RouterLink}
-                        to={`/training/${training.id}`}
-                        underline="hover"
-                      >
-                        {training.title}
-                      </MuiLink>
-                    </TableCell>
-                    <TableCell>
-                      <MuiLink
-                        component="a"
-                        href={training.url ?? '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        underline="hover"
-                      >
-                        {training.url}
-                      </MuiLink>
-                    </TableCell>
-                    {isManager && (
-                      <TableCell>
-                        <Button
-                          size="small"
-                          startIcon={<EditIcon />}
-                          onClick={() => handleEditClick(training.id)}
-                        >
-                          Edit
-                        </Button>
-                      </TableCell>
-                    )}
-                  </TableRow>
+                  <TrainingRow
+                    key={training.id}
+                    training={training}
+                    isManager={isManager}
+                    onEdit={handleEditClick}
+                  />
                 ))}
               </TableBody>
             </Table>
