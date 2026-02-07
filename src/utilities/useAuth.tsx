@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useMemo,
-} from 'react';
+import React, { useState, useCallback, useMemo, ReactNode } from 'react';
 
 interface User {
   id: string;
@@ -21,21 +15,14 @@ interface AuthContextType {
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  // Initialize with a mock user for now to demonstrate UI
-  const [user, setUser] = useState<User | null>({
-    id: '1',
-    name: 'Mock User',
-    email: 'mock@shyftsolutions.io',
-    isAdmin: true,
-    isTrainingManager: true,
-  });
+  const [user, setUser] = useState<User | null>(null);
 
-  const login = () => {
+  const login = useCallback(() => {
     setUser({
       id: '1',
       name: 'Mock User',
@@ -43,11 +30,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       isAdmin: true,
       isTrainingManager: true,
     });
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
-  };
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -56,14 +43,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       login,
       logout,
     }),
-    [user]
+    [user, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
+  const context = React.useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }

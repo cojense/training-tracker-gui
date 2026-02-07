@@ -1,19 +1,39 @@
-import React from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { ThemeProvider, CssBaseline } from '@mui/material';
 import App from './App';
 import { AuthProvider } from './utilities/useAuth';
+import getTheme, { ThemeMode } from './utilities/theme';
 
-const container = document.getElementById('root');
-if (container) {
-  const root = createRoot(container);
-  root.render(
+const Main: React.FC = () => {
+  const prefersDark =
+    window.matchMedia &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const [mode, setMode] = useState<ThemeMode>(prefersDark ? 'dark' : 'light');
+
+  const toggleMode = useCallback(() => {
+    setMode((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  }, []);
+
+  const theme = useMemo(() => getTheme(mode), [mode]);
+
+  return (
     <React.StrictMode>
       <BrowserRouter>
         <AuthProvider>
-          <App />
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <App mode={mode} toggleMode={toggleMode} />
+          </ThemeProvider>
         </AuthProvider>
       </BrowserRouter>
     </React.StrictMode>
   );
+};
+
+const container = document.getElementById('root');
+if (container) {
+  const root = createRoot(container);
+  root.render(<Main />);
 }
