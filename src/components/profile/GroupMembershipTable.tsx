@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import {
   TableRow,
   Table,
@@ -10,60 +9,29 @@ import {
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
-import { Group } from '~/types/user';
+import { Group, User } from '~/types/user';
 
-const styles = {
-  header: { fontWeight: 'bold' },
-};
-
-interface StatusTableCellProps {
-  value: boolean;
+interface UserDetailTableProps {
+  user: User;
 }
-
-const StatusTableCell = ({ value }: StatusTableCellProps) => {
-  const statusIcon = useMemo(() => {
-    if (value === true) return <CheckIcon color="success" />;
-    return <CloseIcon color="error" />;
-  }, [value]);
-
-  return <TableCell>{statusIcon}</TableCell>;
-};
-
-interface GroupMembershipTableProps {
-  groups: Group[];
-}
-
-export const GroupMembershipTable = ({ groups }: GroupMembershipTableProps) => {
-  if (!groups || groups.length === 0) {
-    return (
-      <TableContainer component={Paper} elevation={0}>
-        <Table>
-          <TableBody>
-            <TableRow>
-              <TableCell align="center">
-                User is not a member of any groups.
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </TableContainer>
-    );
+export const GroupMembershipTable = ({ user }: UserDetailTableProps) => {
+  if (!user.groups || user.groups.length === 0) {
+    return <div>User is not a member of any groups.</div>;
   }
-
   return (
-    <TableContainer component={Paper} elevation={0}>
+    <TableContainer component={Paper} elevation={2}>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell sx={styles.header}>ID</TableCell>
-            <TableCell sx={styles.header}>Name</TableCell>
-            <TableCell sx={styles.header}>Admin</TableCell>
-            <TableCell sx={styles.header}>Training Manager</TableCell>
+            <TableCell>ID</TableCell>
+            <TableCell>Name</TableCell>
+            <TableCell>Admin</TableCell>
+            <TableCell>Training Manager</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {groups.map((group: Group) => (
-            <TableRow key={group.id} hover>
+          {user.groups.map((group: Group) => (
+            <TableRow key={group.id}>
               <TableCell>{group.id}</TableCell>
               <TableCell>{group.name}</TableCell>
               <StatusTableCell value={group.is_admin} />
@@ -74,4 +42,15 @@ export const GroupMembershipTable = ({ groups }: GroupMembershipTableProps) => {
       </Table>
     </TableContainer>
   );
+};
+
+interface StatusTableCellProps {
+  value: boolean;
+}
+const StatusTableCell = ({ value }: StatusTableCellProps) => {
+  let statusIcon;
+  if (value === true) statusIcon = <CheckIcon color="success" />;
+  else statusIcon = <CloseIcon color="error" />;
+
+  return <TableCell>{statusIcon}</TableCell>;
 };
