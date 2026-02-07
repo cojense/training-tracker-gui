@@ -1,18 +1,50 @@
-import React, { useMemo } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useState, useMemo } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Container, CssBaseline, Box } from '@mui/material';
-import Navbar from './components/Navbar';
-import Home from './views/Home';
-import Trainings from './views/Trainings';
-import Supervisor from './views/Supervisor';
-import Manager from './views/Manager';
-import Approve from './views/Approve';
-import Users from './views/Users';
-import Groups from './views/Groups';
-import Projects from './views/Projects';
-import Profile from './views/Profile';
+import Header from '~/components/Header';
+import Sidebar from '~/components/Sidebar';
+import Home from '~/views/Home';
+import Trainings from '~/views/Trainings';
+import { useAuth } from '~/utilities/useAuth';
+import LoginView from '~/views/LoginView';
+import Profile from '~/views/Profile';
 
-const App: React.FC = () => {
+// Restored View Imports from Stash
+import { ApprovalQueueView } from '~/views/ApprovalQueueView';
+import { AssignTrainingView } from '~/views/AssignTrainingView';
+import { ChangeGroupMembershipView } from '~/views/ChangeGroupMembershipView';
+import { EditAssignmentView } from '~/views/EditAssignmentView';
+import { GroupCreateView } from '~/views/GroupCreateView';
+import { GroupDetailView } from '~/views/GroupDetailView';
+import { GroupEditView } from '~/views/GroupEditView';
+import { GroupsView } from '~/views/GroupsView';
+import { ManagerReportView } from '~/views/ManagerReportView';
+import { ProjectCreateView } from '~/views/ProjectCreateView';
+import { ProjectDetailView } from '~/views/ProjectDetailView';
+import { ProjectEditView } from '~/views/ProjectEditView';
+import { ProjectsView } from '~/views/ProjectsView';
+import { RecordTrainingEventView } from '~/views/RecordTrainingEventView';
+import { SupervisorView } from '~/views/SupervisorView';
+import { TrainingCreateView } from '~/views/TrainingCreateView';
+import { TrainingDetailView } from '~/views/TrainingDetailView';
+import { TrainingEditView } from '~/views/TrainingEditView';
+import { UpdateTrainingEventView } from '~/views/UpdateTrainingEventView';
+import { UserEditView } from '~/views/UserEditView';
+import { UserListView } from '~/views/UserListView';
+
+interface AppProps {
+  mode: 'light' | 'dark';
+  toggleMode: () => void;
+}
+
+const App: React.FC<AppProps> = ({ mode, toggleMode }) => {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
   const layoutStyles = useMemo(
     () => ({
       appContainer: {
@@ -20,7 +52,8 @@ const App: React.FC = () => {
         flexDirection: 'column',
         minHeight: '100vh',
       },
-      mainContent: { mt: 4, mb: 4, flexGrow: 1 },
+      mainLayout: { display: 'flex', flexGrow: 1 },
+      contentRoot: { flexGrow: 1, p: 3, width: { md: `calc(100% - 240px)` } },
     }),
     []
   );
@@ -28,20 +61,91 @@ const App: React.FC = () => {
   return (
     <Box sx={layoutStyles.appContainer}>
       <CssBaseline />
-      <Navbar />
-      <Container component="main" sx={layoutStyles.mainContent}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/trainings" element={<Trainings />} />
-          <Route path="/supervisor" element={<Supervisor />} />
-          <Route path="/manager" element={<Manager />} />
-          <Route path="/approve" element={<Approve />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/groups" element={<Groups />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/profile" element={<Profile />} />
-        </Routes>
-      </Container>
+      <Header
+        mode={mode}
+        toggleMode={toggleMode}
+        onMenuClick={handleDrawerToggle}
+      />
+      <Box sx={layoutStyles.mainLayout}>
+        {isAuthenticated && (
+          <Sidebar
+            open={mobileOpen}
+            onClose={handleDrawerToggle}
+            mobile={true}
+          />
+        )}
+        <Box component="main" sx={layoutStyles.contentRoot}>
+          <Container maxWidth="lg">
+            <Routes>
+              {!isAuthenticated ? (
+                <>
+                  <Route path="/login" element={<LoginView />} />
+                  <Route path="*" element={<Navigate to="/login" replace />} />
+                </>
+              ) : (
+                <>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/trainings" element={<Trainings />} />
+                  <Route
+                    path="/training/new"
+                    element={<TrainingCreateView />}
+                  />
+                  <Route
+                    path="/training/:id/edit"
+                    element={<TrainingEditView />}
+                  />
+                  <Route
+                    path="/training/:id"
+                    element={<TrainingDetailView />}
+                  />
+                  <Route
+                    path="/assignments/new"
+                    element={<AssignTrainingView />}
+                  />
+                  <Route
+                    path="/assignments/:id/edit"
+                    element={<EditAssignmentView />}
+                  />
+                  <Route
+                    path="/events/record"
+                    element={<RecordTrainingEventView />}
+                  />
+                  <Route
+                    path="/events/:id/edit"
+                    element={<UpdateTrainingEventView />}
+                  />
+                  <Route path="/approval" element={<ApprovalQueueView />} />
+                  <Route
+                    path="/manager-report"
+                    element={<ManagerReportView />}
+                  />
+                  <Route path="/supervisor" element={<SupervisorView />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/users/:id/edit" element={<UserEditView />} />
+                  <Route
+                    path="/users/:id/groups"
+                    element={<ChangeGroupMembershipView />}
+                  />
+                  <Route path="/users" element={<UserListView />} />
+                  <Route path="/projects/new" element={<ProjectCreateView />} />
+                  <Route
+                    path="/projects/:id/edit"
+                    element={<ProjectEditView />}
+                  />
+                  <Route path="/projects/:id" element={<ProjectDetailView />} />
+                  <Route path="/projects" element={<ProjectsView />} />
+                  <Route path="/groups" element={<GroupsView />} />
+                  <Route path="/groups/:id/edit" element={<GroupEditView />} />
+                  <Route path="/groups/:id" element={<GroupDetailView />} />
+                  <Route path="/groups/new" element={<GroupCreateView />} />
+                  <Route path="/login" element={<Navigate to="/" replace />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </>
+              )}
+            </Routes>
+          </Container>
+        </Box>
+      </Box>
     </Box>
   );
 };
