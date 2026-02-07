@@ -11,7 +11,6 @@ export default defineConfig(
   {
     ignores: ['dist/**', 'eslint.config.js', 'vitest.config.ts'],
   },
-  // @ts-ignore - InfiniteArray type mismatch in flat config
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
