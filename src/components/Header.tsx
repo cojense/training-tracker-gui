@@ -10,7 +10,12 @@ import {
   Avatar,
   Tooltip,
 } from '@mui/material';
-import { LightMode, DarkMode, Menu as MenuIcon } from '@mui/icons-material';
+import {
+  LightMode,
+  DarkMode,
+  Menu as MenuIcon,
+  OpenInNew as OpenInNewIcon,
+} from '@mui/icons-material';
 import { useAuth } from '~/utilities/useAuth';
 
 interface HeaderProps {
@@ -36,8 +41,16 @@ const Header: React.FC<HeaderProps> = ({ mode, toggleMode, onMenuClick }) => {
     void navigate('/login');
   }, [navigate]);
 
-  const fullName = user ? `${user.first_name} ${user.last_name}` : '';
+  const handleFlaskUIClick = useCallback(() => {
+    window.location.href = 'http://localhost:5001/';
+  }, []);
 
+  const handleProfileClick = useCallback(() => {
+    void navigate('/profile');
+  }, [navigate]);
+
+  const fullName = user ? `${user.first_name} ${user.last_name}` : '';
+  
   return (
     <AppBar
       position="sticky"
@@ -86,6 +99,16 @@ const Header: React.FC<HeaderProps> = ({ mode, toggleMode, onMenuClick }) => {
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Button
+            color="inherit"
+            size="small"
+            startIcon={<OpenInNewIcon />}
+            onClick={handleFlaskUIClick}
+            sx={{ display: { xs: 'none', sm: 'flex' } }}
+          >
+            Flask UI
+          </Button>
+
           <Tooltip
             title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}
           >
@@ -95,7 +118,7 @@ const Header: React.FC<HeaderProps> = ({ mode, toggleMode, onMenuClick }) => {
           </Tooltip>
 
           {isAuthenticated && user ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box onClick={handleProfileClick} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Box
                 sx={{
                   display: { xs: 'none', md: 'block' },
