@@ -8,7 +8,10 @@ import {
   Divider,
   CircularProgress,
   Alert,
+  Button,
 } from '@mui/material';
+import { Add as AddIcon } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { UserDetailTable } from '~/components/profile/UserDetailTable';
 import { TrainingDueTable } from '~/components/TrainingDueTable';
 import { GroupMembershipTable } from '~/components/profile/GroupMembershipTable';
@@ -20,6 +23,7 @@ import { Group } from '~/types/user';
 import { TrainingEvent } from '~/types/training';
 
 const Profile: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [assignments, setAssignments] = useState<AssignedTraining[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
@@ -51,6 +55,18 @@ const Profile: React.FC = () => {
     void fetchData();
   }, [fetchData]);
 
+  const handleEditUserClick = useCallback(() => {
+    if (user) void navigate(`/users/${user.id}/edit`);
+  }, [navigate, user]);
+
+  const handleChangeGroupsClick = useCallback(() => {
+    if (user) void navigate(`/users/${user.id}/groups`);
+  }, [navigate, user]);
+
+  const handleRecordTrainingClick = useCallback(() => {
+    void navigate('/events/record');
+  }, [navigate]);
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -58,6 +74,8 @@ const Profile: React.FC = () => {
       </Box>
     );
   }
+
+  const isManager = user?.is_admin ?? user?.is_training_manager ?? false;
 
   return (
     <Stack spacing={3}>
@@ -70,9 +88,26 @@ const Profile: React.FC = () => {
       {/* User Details Card */}
       <Card elevation={2}>
         <Box
-          sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}
+          sx={{
+            p: 2,
+            bgcolor: 'primary.main',
+            color: 'primary.contrastText',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
         >
           <Typography variant="h6">Personal Details</Typography>
+          {user?.is_admin && (
+            <Button
+              variant="contained"
+              color="secondary"
+              size="small"
+              onClick={handleEditUserClick}
+            >
+              Edit User
+            </Button>
+          )}
         </Box>
         <Divider />
         <CardContent sx={{ p: 0 }}>
@@ -96,9 +131,26 @@ const Profile: React.FC = () => {
       {/* Group Membership Card */}
       <Card elevation={2}>
         <Box
-          sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}
+          sx={{
+            p: 2,
+            bgcolor: 'primary.main',
+            color: 'primary.contrastText',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
         >
           <Typography variant="h6">Group Memberships</Typography>
+          {isManager && (
+            <Button
+              variant="contained"
+              color="secondary"
+              size="small"
+              onClick={handleChangeGroupsClick}
+            >
+              Change Groups
+            </Button>
+          )}
         </Box>
         <Divider />
         <CardContent sx={{ p: 0 }}>
@@ -109,9 +161,25 @@ const Profile: React.FC = () => {
       {/* Training Record Card */}
       <Card elevation={2}>
         <Box
-          sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}
+          sx={{
+            p: 2,
+            bgcolor: 'primary.main',
+            color: 'primary.contrastText',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
         >
           <Typography variant="h6">Training Record</Typography>
+          <Button
+            variant="contained"
+            color="secondary"
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={handleRecordTrainingClick}
+          >
+            Record Training
+          </Button>
         </Box>
         <Divider />
         <CardContent sx={{ p: 0 }}>
