@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import React from 'react';
 import {
   Card,
   CardContent,
@@ -8,8 +8,8 @@ import {
   Stack,
 } from '@mui/material';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
-const FRONTEND_URL = window.location.origin;
+const BACKEND_URL = 'http://localhost:5001';
+const FRONTEND_URL = 'http://localhost:5173';
 
 const styles = {
   container: {
@@ -18,20 +18,23 @@ const styles = {
     alignItems: 'center',
     minHeight: '60vh',
   },
-  card: { maxWidth: 400, textAlign: 'center', p: 2 },
-  description: { mb: 3 },
+  card: {
+    maxWidth: 400,
+    textAlign: 'center',
+    p: 2,
+  },
+  secondaryText: { mb: 3 },
 };
-
-const LoginView = () => {
-  const handleGoogleLogin = useCallback(() => {
+const LoginView: React.FC = () => {
+  const handleGoogleLogin = () => {
     // Perform full page redirect to backend OAuth route with next parameter
     window.location.href = `${BACKEND_URL}/oauth2/login/google?next=${encodeURIComponent(FRONTEND_URL)}`;
-  }, []);
+  };
 
-  const handleDevLogin = useCallback(() => {
+  const handleDevLogin = () => {
     // Perform full page redirect to backend dev login route with next parameter
     window.location.href = `${BACKEND_URL}/dev/login?next=${encodeURIComponent(FRONTEND_URL)}`;
-  }, []);
+  };
 
   return (
     <Box sx={styles.container}>
@@ -43,7 +46,7 @@ const LoginView = () => {
           <Typography
             variant="body1"
             color="text.secondary"
-            sx={styles.description}
+            sx={styles.secondaryText}
           >
             Please sign in to access your training requirements.
           </Typography>

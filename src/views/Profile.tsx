@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Typography,
   Stack,
@@ -8,10 +8,7 @@ import {
   Divider,
   CircularProgress,
   Alert,
-  Button,
 } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
 import { UserDetailTable } from '~/components/profile/UserDetailTable';
 import { TrainingDueTable } from '~/components/TrainingDueTable';
 import { GroupMembershipTable } from '~/components/profile/GroupMembershipTable';
@@ -22,26 +19,7 @@ import { AssignedTraining } from '~/types/assignments';
 import { Group } from '~/types/user';
 import { TrainingEvent } from '~/types/training';
 
-const styles = {
-  headerBox: {
-    p: 2,
-    bgcolor: 'primary.main',
-    color: 'primary.contrastText',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  plainHeaderBox: {
-    p: 2,
-    bgcolor: 'primary.main',
-    color: 'primary.contrastText',
-  },
-  contentRoot: { p: 0 },
-  centeredBox: { display: 'flex', justifyContent: 'center', py: 8 },
-};
-
-const Profile = () => {
-  const navigate = useNavigate();
+const Profile: React.FC = () => {
   const { user } = useAuth();
   const [assignments, setAssignments] = useState<AssignedTraining[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
@@ -73,27 +51,13 @@ const Profile = () => {
     void fetchData();
   }, [fetchData]);
 
-  const handleEditUserClick = useCallback(() => {
-    if (user) void navigate(`/users/${user.id}/edit`);
-  }, [navigate, user]);
-
-  const handleChangeGroupsClick = useCallback(() => {
-    if (user) void navigate(`/users/${user.id}/groups`);
-  }, [navigate, user]);
-
-  const handleRecordTrainingClick = useCallback(() => {
-    void navigate('/events/record');
-  }, [navigate]);
-
   if (loading) {
     return (
-      <Box sx={styles.centeredBox}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
         <CircularProgress />
       </Box>
     );
   }
-
-  const isManager = user?.is_admin ?? user?.is_training_manager ?? false;
 
   return (
     <Stack spacing={3}>
@@ -105,73 +69,52 @@ const Profile = () => {
 
       {/* User Details Card */}
       <Card elevation={2}>
-        <Box sx={styles.headerBox}>
+        <Box
+          sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}
+        >
           <Typography variant="h6">Personal Details</Typography>
-          {user?.is_admin && (
-            <Button
-              variant="contained"
-              color="secondary"
-              size="small"
-              onClick={handleEditUserClick}
-            >
-              Edit User
-            </Button>
-          )}
         </Box>
         <Divider />
-        <CardContent sx={styles.contentRoot}>
+        <CardContent sx={{ p: 0 }}>
           {user && <UserDetailTable user={user} />}
         </CardContent>
       </Card>
 
       {/* Training Requirements Card */}
       <Card elevation={2}>
-        <Box sx={styles.plainHeaderBox}>
+        <Box
+          sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}
+        >
           <Typography variant="h6">Current Training Requirements</Typography>
         </Box>
         <Divider />
-        <CardContent sx={styles.contentRoot}>
+        <CardContent sx={{ p: 0 }}>
           <TrainingDueTable assignments={assignments} />
         </CardContent>
       </Card>
 
       {/* Group Membership Card */}
       <Card elevation={2}>
-        <Box sx={styles.headerBox}>
+        <Box
+          sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}
+        >
           <Typography variant="h6">Group Memberships</Typography>
-          {isManager && (
-            <Button
-              variant="contained"
-              color="secondary"
-              size="small"
-              onClick={handleChangeGroupsClick}
-            >
-              Change Groups
-            </Button>
-          )}
         </Box>
         <Divider />
-        <CardContent sx={styles.contentRoot}>
+        <CardContent sx={{ p: 0 }}>
           <GroupMembershipTable groups={groups} />
         </CardContent>
       </Card>
 
       {/* Training Record Card */}
       <Card elevation={2}>
-        <Box sx={styles.headerBox}>
+        <Box
+          sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}
+        >
           <Typography variant="h6">Training Record</Typography>
-          <Button
-            variant="contained"
-            color="secondary"
-            size="small"
-            startIcon={<AddIcon />}
-            onClick={handleRecordTrainingClick}
-          >
-            Record Training
-          </Button>
         </Box>
         <Divider />
-        <CardContent sx={styles.contentRoot}>
+        <CardContent sx={{ p: 0 }}>
           <TrainingRecordTable record={record} />
         </CardContent>
       </Card>

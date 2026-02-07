@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -14,18 +14,7 @@ import { TrainingDueTable } from '~/components/TrainingDueTable';
 import { api } from '~/utilities/api';
 import { AssignedTraining } from '~/types/assignments';
 
-const styles = {
-  headerBox: {
-    p: 2,
-    bgcolor: 'primary.main',
-    color: 'primary.contrastText',
-  },
-  contentRoot: { p: 0 },
-  centeredBox: { textAlign: 'center', py: 4 },
-  errorBox: { p: 2 },
-};
-
-const Home = () => {
+const Home: React.FC = () => {
   const { user } = useAuth();
   const [assignments, setAssignments] = useState<AssignedTraining[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,23 +56,25 @@ const Home = () => {
       </Card>
 
       <Card elevation={2}>
-        <Box sx={styles.headerBox}>
+        <Box
+          sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}
+        >
           <Typography variant="h6">Your Training Requirements</Typography>
         </Box>
         <Divider />
-        <CardContent sx={styles.contentRoot}>
+        <CardContent sx={{ p: 0 }}>
           {loading ? (
-            <Box sx={styles.centeredBox}>
+            <Box sx={{ textAlign: 'center', py: 4 }}>
               <CircularProgress />
             </Box>
           ) : error ? (
-            <Box sx={styles.errorBox}>
+            <Box sx={{ p: 2 }}>
               <Alert severity="error">{error}</Alert>
             </Box>
           ) : assignments.length > 0 ? (
             <TrainingDueTable assignments={assignments} />
           ) : (
-            <Box sx={styles.centeredBox}>
+            <Box sx={{ textAlign: 'center', py: 4 }}>
               <Typography variant="h6" color="text.secondary">
                 ✅ You have no training due!
               </Typography>
