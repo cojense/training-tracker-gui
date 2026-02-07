@@ -22,9 +22,14 @@ export const TrainingDueTable = ({
 }: TrainingDueTableProps) => {
   const navigate = useNavigate();
 
-  const handleRecordClick = useCallback(() => {
-    void navigate('/events/record');
-  }, [navigate]);
+  const handleRecordClick = useCallback(
+    (trainingId: number | string, userId: number | string) => {
+      void navigate(
+        `/events/record?training_id=${trainingId}&user_id=${userId}`
+      );
+    },
+    [navigate]
+  );
 
   return (
     <TableContainer component={Paper} elevation={0}>
@@ -47,7 +52,12 @@ export const TrainingDueTable = ({
                   size="small"
                   variant="outlined"
                   startIcon={<EditIcon />}
-                  onClick={handleRecordClick}
+                  onClick={() =>
+                    handleRecordClick(
+                      training.assignment.training.id,
+                      training.member.id
+                    )
+                  }
                 >
                   Record
                 </Button>
