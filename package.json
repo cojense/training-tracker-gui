@@ -9,19 +9,7 @@
     "build": "tsc && vite build",
     "lint": "eslint",
     "lint:fix": "eslint ./ --fix",
-    "depcheck": "depcheck",
     "test": "vitest run"
-  },
-  "depcheck": {
-    "ignorePatterns": [
-      "dist"
-    ],
-    "alias": {
-      "~": "src"
-    },
-    "ignores": [
-      "@types/*"
-    ]
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

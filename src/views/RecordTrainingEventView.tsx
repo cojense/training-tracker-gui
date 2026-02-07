@@ -19,11 +19,10 @@ import {
   MenuItem,
   CircularProgress,
 } from '@mui/material';
-import { TrainingService } from '~/services/TrainingService';
-import { UserService } from '~/services/UserService';
-import { useNotification } from '~/hooks/NotificationContext';
+import { api } from '~/utilities/api';
+import { useNotification } from '~/utilities/NotificationContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '~/hooks/useAuth';
+import { useAuth } from '~/utilities/useAuth';
 import { User } from '~/types/user';
 import { Training } from '~/types/training';
 
@@ -96,7 +95,7 @@ interface CertificateFileProps {
   field: ControllerRenderProps<RecordFormInput, 'certificate'>;
 }
 const CertificateFile = ({ field }: CertificateFileProps) => {
-  const { onChange, value, ...fieldProps } = field;
+  const { onChange, ...fieldProps } = field;
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -111,7 +110,6 @@ const CertificateFile = ({ field }: CertificateFileProps) => {
       type="file"
       accept=".pdf,.png,.jpg,.jpeg"
       onChange={handleChange}
-      value={value === null ? '' : undefined}
     />
   );
 };
@@ -233,7 +231,6 @@ export const RecordTrainingEventView = () => {
     control,
     handleSubmit,
     watch,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<RecordFormInput>({
     defaultValues: {
@@ -248,18 +245,12 @@ export const RecordTrainingEventView = () => {
 
   const watchCertUnavailable = watch('certificate_unavailable');
 
-  useEffect(() => {
-    if (watchCertUnavailable) {
-      setValue('certificate', null);
-    }
-  }, [watchCertUnavailable, setValue]);
-
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const [trainingsData, usersData] = await Promise.all([
-        TrainingService.getTrainings(),
-        isManager ? UserService.getUsers() : Promise.resolve([]),
+        api.getTrainings(),
+        isManager ? api.getUsers() : Promise.resolve([]),
       ]);
       setTrainings(trainingsData);
       if (isManager) setUsers(usersData);
@@ -292,7 +283,7 @@ export const RecordTrainingEventView = () => {
           formData.append('certificate', data.certificate[0]);
         }
 
-        await TrainingService.createEvent(formData);
+        await api.createEvent(formData);
         showNotification('Training record saved successfully!', 'success');
         void navigate('/');
       } catch (error) {

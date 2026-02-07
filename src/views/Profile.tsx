@@ -16,8 +16,8 @@ import { UserDetailTable } from '~/components/profile/UserDetailTable';
 import { TrainingDueTable } from '~/components/TrainingDueTable';
 import { GroupMembershipTable } from '~/components/profile/GroupMembershipTable';
 import { TrainingRecordTable } from '~/components/profile/TrainingRecordTable';
-import { useAuth } from '~/hooks/useAuth';
-import { UserService } from '~/services/UserService';
+import { useAuth } from '~/utilities/useAuth';
+import { api } from '~/utilities/api';
 import { AssignedTraining } from '~/types/assignments';
 import { Group } from '~/types/user';
 import { TrainingEvent } from '~/types/training';
@@ -54,9 +54,9 @@ const Profile = () => {
       setLoading(true);
       setError(null);
       const [assignmentsData, groupsData, recordData] = await Promise.all([
-        UserService.getCurrentUserAssignments(),
-        UserService.getCurrentUserGroups(),
-        UserService.getCurrentUserRecord(),
+        api.getCurrentUserAssignments(),
+        api.getCurrentUserGroups(),
+        api.getCurrentUserRecord(),
       ]);
       setAssignments(assignmentsData);
       setGroups(groupsData);

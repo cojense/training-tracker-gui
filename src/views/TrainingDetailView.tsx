@@ -23,9 +23,9 @@ import {
   OpenInNew as OpenInNewIcon,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { TrainingService } from '~/services/TrainingService';
+import { api } from '~/utilities/api';
 import { Training, TrainingEvent } from '~/types/training';
-import { useAuth } from '~/hooks/useAuth';
+import { useAuth } from '~/utilities/useAuth';
 
 const styles = {
   headerBox: {
@@ -56,8 +56,8 @@ export const TrainingDetailView = () => {
       setLoading(true);
       setError(null);
       const [trainingData, completionsData] = await Promise.all([
-        TrainingService.getTraining(id),
-        TrainingService.getTrainingCompletions(id),
+        api.getTraining(id),
+        api.getTrainingCompletions(id),
       ]);
       setTraining(trainingData);
       setCompletions(completionsData);

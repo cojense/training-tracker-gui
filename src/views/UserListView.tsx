@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   Table,
   TableBody,
@@ -16,27 +16,16 @@ import {
   Alert,
   IconButton,
   Tooltip,
-  TextField,
-  InputAdornment,
-  TableSortLabel,
 } from '@mui/material';
-import {
-  Edit as EditIcon,
-  Groups as GroupsIcon,
-  Visibility as ViewIcon,
-  Search as SearchIcon,
-} from '@mui/icons-material';
-import { UserService } from '~/services/UserService';
+import { Edit as EditIcon, Groups as GroupsIcon } from '@mui/icons-material';
+import { api } from '~/utilities/api';
 import { User } from '~/types/user';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const headerBoxStyles = {
   p: 2,
   bgcolor: 'primary.main',
   color: 'primary.contrastText',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
 };
 const contentRootStyles = { p: 0 };
 const centeredBoxStyles = { textAlign: 'center', py: 4 };
@@ -72,15 +61,6 @@ const UserRow = ({ user, onEdit, onGroups }: UserRowProps) => {
       <TableCell>{user.email}</TableCell>
       <TableCell>{roles}</TableCell>
       <TableCell>
-        <Tooltip title="View Profile">
-          <IconButton
-            size="small"
-            component={RouterLink}
-            to={`/users/${user.id}`}
-          >
-            <ViewIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
         <Tooltip title="Edit Profile">
           <IconButton size="small" onClick={handleEdit}>
             <EditIcon fontSize="small" />
@@ -96,22 +76,17 @@ const UserRow = ({ user, onEdit, onGroups }: UserRowProps) => {
   );
 };
 
-type Order = 'asc' | 'desc';
-
 export const UserListView = () => {
   const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [orderBy, setOrderBy] = useState<keyof User | 'full_name'>('last_name');
-  const [order, setOrder] = useState<Order>('asc');
 
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await UserService.getUsers();
+      const data = await api.getUsers();
       setUsers(data);
     } catch (err) {
       console.error('Failed to fetch users:', err);
@@ -124,40 +99,6 @@ export const UserListView = () => {
   useEffect(() => {
     void fetchUsers();
   }, [fetchUsers]);
-
-  const handleRequestSort = (property: keyof User | 'full_name') => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
-
-  const filteredUsers = useMemo(() => {
-    return users
-      .filter((u) => {
-        const fullName = `${u.first_name} ${u.last_name}`.toLowerCase();
-        const searchLower = search.toLowerCase();
-        return (
-          fullName.includes(searchLower) ||
-          u.email.toLowerCase().includes(searchLower)
-        );
-      })
-      .sort((a, b) => {
-        let valA: string | number = '';
-        let valB: string | number = '';
-
-        if (orderBy === 'full_name') {
-          valA = `${a.last_name}, ${a.first_name}`;
-          valB = `${b.last_name}, ${b.first_name}`;
-        } else {
-          valA = (a[orderBy] as string | number) ?? '';
-          valB = (b[orderBy] as string | number) ?? '';
-        }
-
-        if (valA < valB) return order === 'asc' ? -1 : 1;
-        if (valA > valB) return order === 'asc' ? 1 : -1;
-        return 0;
-      });
-  }, [users, search, order, orderBy]);
 
   const handleEditClick = useCallback(
     (id: number) => {
@@ -177,24 +118,6 @@ export const UserListView = () => {
     <Card elevation={2}>
       <Box sx={headerBoxStyles}>
         <Typography variant="h6">User Directory</Typography>
-        <TextField
-          size="small"
-          placeholder="Search users..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          sx={{
-            bgcolor: 'background.paper',
-            borderRadius: 1,
-            width: { xs: '100%', sm: 250 },
-          }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon fontSize="small" />
-              </InputAdornment>
-            ),
-          }}
-        />
       </Box>
       <Divider />
       <CardContent sx={contentRootStyles}>
@@ -211,39 +134,15 @@ export const UserListView = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={headerCellStyles}>
-                    <TableSortLabel
-                      active={orderBy === 'id'}
-                      direction={orderBy === 'id' ? order : 'asc'}
-                      onClick={() => handleRequestSort('id')}
-                    >
-                      ID
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell sx={headerCellStyles}>
-                    <TableSortLabel
-                      active={orderBy === 'full_name'}
-                      direction={orderBy === 'full_name' ? order : 'asc'}
-                      onClick={() => handleRequestSort('full_name')}
-                    >
-                      Name
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell sx={headerCellStyles}>
-                    <TableSortLabel
-                      active={orderBy === 'email'}
-                      direction={orderBy === 'email' ? order : 'asc'}
-                      onClick={() => handleRequestSort('email')}
-                    >
-                      Email
-                    </TableSortLabel>
-                  </TableCell>
+                  <TableCell sx={headerCellStyles}>ID</TableCell>
+                  <TableCell sx={headerCellStyles}>Name</TableCell>
+                  <TableCell sx={headerCellStyles}>Email</TableCell>
                   <TableCell sx={headerCellStyles}>Roles</TableCell>
                   <TableCell sx={headerCellStyles}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredUsers.map((u) => (
+                {users.map((u) => (
                   <UserRow
                     key={u.id}
                     user={u}

@@ -1,12 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { TrainingDetailView } from '../TrainingDetailView';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { TrainingService } from '~/services/TrainingService';
-import { AuthProvider } from '~/hooks/useAuth';
+import { api } from '~/utilities/api';
+import { AuthProvider } from '~/utilities/useAuth';
 import { vi, MockedFunction } from 'vitest';
 
-vi.mock('~/services/TrainingService', () => ({
-  TrainingService: {
+vi.mock('~/utilities/api', () => ({
+  api: {
     getTraining: vi.fn(),
     getTrainingCompletions: vi.fn(),
     getCurrentUser: vi.fn(),
@@ -36,11 +36,11 @@ const mockCompletions = [
 
 describe('TrainingDetailView', () => {
   it('renders training details and completion history', async () => {
-    (TrainingService.getTraining as MockedFunction<any>).mockResolvedValue(mockTraining);
-    (TrainingService.getTrainingCompletions as MockedFunction<any>).mockResolvedValue(
+    (api.getTraining as MockedFunction<any>).mockResolvedValue(mockTraining);
+    (api.getTrainingCompletions as MockedFunction<any>).mockResolvedValue(
       mockCompletions
     );
-    (TrainingService.getCurrentUser as MockedFunction<any>).mockResolvedValue({
+    (api.getCurrentUser as MockedFunction<any>).mockResolvedValue({
       id: 1,
       first_name: 'Test',
       last_name: 'User',

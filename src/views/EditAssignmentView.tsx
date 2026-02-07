@@ -18,9 +18,8 @@ import {
   DialogContentText,
   DialogActions,
 } from '@mui/material';
-import { GroupService } from '~/services/GroupService';
-import { ProjectService } from '~/services/ProjectService';
-import { useNotification } from '~/hooks/NotificationContext';
+import { api } from '~/utilities/api';
+import { useNotification } from '~/utilities/NotificationContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Project } from '~/types/projects';
 import { Group } from '~/types/user';
@@ -60,9 +59,9 @@ export const EditAssignmentView = () => {
     try {
       setLoading(true);
       const [groupData, assignmentData, projectsData] = await Promise.all([
-        GroupService.getGroup(groupId),
-        GroupService.getAssignment(groupId, trainingId),
-        ProjectService.getProjects(),
+        api.getGroup(groupId),
+        api.getAssignment(groupId, trainingId),
+        api.getProjects(),
       ]);
       setGroup(groupData);
       setAssignment(assignmentData);
@@ -91,7 +90,7 @@ export const EditAssignmentView = () => {
   const onSubmit = async (data: EditAssignFormInput) => {
     if (!groupId || !trainingId) return;
     try {
-      await GroupService.updateAssignment(groupId, trainingId, {
+      await api.updateAssignment(groupId, trainingId, {
         ...data,
         project_id: data.project_id,
       });
@@ -106,7 +105,7 @@ export const EditAssignmentView = () => {
   const handleDelete = async () => {
     if (!groupId || !trainingId) return;
     try {
-      await GroupService.deleteAssignment(groupId, trainingId);
+      await api.deleteAssignment(groupId, trainingId);
       showNotification('Assignment deleted.', 'success');
       setDeleteDialogOpen(false);
       void navigate(`/groups/${groupId}`);
