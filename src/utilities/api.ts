@@ -14,11 +14,13 @@ async function apiFetch<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
 
+  const isFormData = options.body instanceof FormData;
+
   const defaultOptions: RequestInit = {
     ...options,
     credentials: 'include', // Crucial for sending/receiving HttpOnly session cookies
     headers: {
-      'Content-Type': 'application/json',
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...options.headers,
     },
   };
@@ -41,7 +43,8 @@ async function apiFetch<T>(
     throw new Error(errorData.message ?? `API error: ${response.status}`);
   }
 
-  return response.json() as Promise<T>;
+  const data = (await response.json()) as T;
+  return data;
 }
 
 export const api = {
@@ -67,7 +70,7 @@ export const api = {
   getTraining: (id: number | string) => apiFetch<Training>(`/trainings/${id}`),
 
   /**
-   * Creates a new training.
+   * Creates a new training course.
    */
   createTraining: (data: Partial<Training>) =>
     apiFetch<Training>('/trainings', {
@@ -76,7 +79,7 @@ export const api = {
     }),
 
   /**
-   * Updates an existing training.
+   * Updates an existing training course.
    */
   updateTraining: (id: number | string, data: Partial<Training>) =>
     apiFetch<Training>(`/trainings/${id}`, {
@@ -85,7 +88,7 @@ export const api = {
     }),
 
   /**
-   * Deletes a training.
+   * Deletes a training course.
    */
   deleteTraining: (id: number | string) =>
     apiFetch<void>(`/trainings/${id}`, {
@@ -93,9 +96,33 @@ export const api = {
     }),
 
   /**
+   * Records a new training event (completion). Supports certificate upload via FormData.
+   */
+  createEvent: (formData: FormData) =>
+    apiFetch<TrainingEvent>('/events', {
+      method: 'POST',
+      body: formData,
+    }),
+
+  /**
+   * Updates an existing training event. Supports certificate upload via FormData.
+   */
+  updateEvent: (id: number | string, formData: FormData) =>
+    apiFetch<TrainingEvent>(`/events/${id}`, {
+      method: 'PUT',
+      body: formData,
+    }),
+
+  /**
    * Fetches the groups for the current authenticated user.
    */
   getCurrentUserGroups: () => apiFetch<Group[]>('/users/me/groups'),
+
+  /**
+   * Fetches the groups for a specific user.
+   */
+  getUserGroups: (id: number | string) =>
+    apiFetch<Group[]>(`/users/${id}/groups`),
 
   /**
    * Fetches the training record for the current authenticated user.
@@ -108,9 +135,35 @@ export const api = {
   getUsers: () => apiFetch<User[]>('/users'),
 
   /**
+   * Fetches a single user by ID.
+   */
+  getUser: (id: number | string) => apiFetch<User>(`/users/${id}`),
+
+  /**
+   * Updates a user's profile.
+   */
+  updateUser: (id: number | string, data: Partial<User>) =>
+    apiFetch<User>(`/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  /**
    * Fetches all groups in the system.
    */
   getGroups: () => apiFetch<Group[]>('/groups'),
+
+  /**
+   * Updates a user's group memberships.
+   */
+  updateUserGroups: (
+    user_id: number | string,
+    groupStates: Record<number, boolean>
+  ) =>
+    apiFetch<{ status: string }>(`/users/${user_id}/groups`, {
+      method: 'POST',
+      body: JSON.stringify(groupStates),
+    }),
 
   /**
    * Fetches all projects in the system.
