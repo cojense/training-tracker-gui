@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import App from './App';
 import { AuthProvider } from './utilities/useAuth';
+import { NotificationProvider } from './utilities/NotificationContext';
 import getTheme, { ThemeMode } from './utilities/theme';
 
 const Main: React.FC = () => {
@@ -22,10 +23,12 @@ const Main: React.FC = () => {
     <React.StrictMode>
       <BrowserRouter>
         <AuthProvider>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <App mode={mode} toggleMode={toggleMode} />
-          </ThemeProvider>
+          <NotificationProvider>
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <App mode={mode} toggleMode={toggleMode} />
+            </ThemeProvider>
+          </NotificationProvider>
         </AuthProvider>
       </BrowserRouter>
     </React.StrictMode>

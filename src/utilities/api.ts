@@ -30,6 +30,10 @@ async function apiFetch<T>(
     throw new Error('UNAUTHORIZED');
   }
 
+  if (response.status === 204) {
+    return {} as T;
+  }
+
   if (!response.ok) {
     const errorData = (await response.json().catch(() => ({}))) as {
       message?: string;
@@ -56,6 +60,37 @@ export const api = {
    * Fetches the full list of available trainings.
    */
   getTrainings: () => apiFetch<Training[]>('/trainings'),
+
+  /**
+   * Fetches a single training by ID.
+   */
+  getTraining: (id: number | string) => apiFetch<Training>(`/trainings/${id}`),
+
+  /**
+   * Creates a new training.
+   */
+  createTraining: (data: Partial<Training>) =>
+    apiFetch<Training>('/trainings', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  /**
+   * Updates an existing training.
+   */
+  updateTraining: (id: number | string, data: Partial<Training>) =>
+    apiFetch<Training>(`/trainings/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  /**
+   * Deletes a training.
+   */
+  deleteTraining: (id: number | string) =>
+    apiFetch<void>(`/trainings/${id}`, {
+      method: 'DELETE',
+    }),
 
   /**
    * Fetches the groups for the current authenticated user.
