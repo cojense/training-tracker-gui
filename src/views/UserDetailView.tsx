@@ -9,12 +9,12 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { UserDetailTable } from '~/components/profile/UserDetailTable';
 import { TrainingDueTable } from '~/components/TrainingDueTable';
 import { GroupMembershipTable } from '~/components/profile/GroupMembershipTable';
 import { TrainingRecordTable } from '~/components/profile/TrainingRecordTable';
-import { UserService } from '~/services/UserService';
+import { api } from '~/utilities/api';
 import { AssignedTraining } from '~/types/assignments';
 import { Group, User } from '~/types/user';
 import { TrainingEvent } from '~/types/training';
@@ -39,6 +39,7 @@ const styles = {
 
 export const UserDetailView = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [targetUser, setTargetUser] = useState<User | null>(null);
   const [assignments, setAssignments] = useState<AssignedTraining[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
@@ -51,22 +52,19 @@ export const UserDetailView = () => {
     try {
       setLoading(true);
       setError(null);
-      const [userData, assignmentsData, groupsData, recordData] =
-        await Promise.all([
-          UserService.getUser(id),
-          UserService.getUserAssignments(id),
-          UserService.getUserGroups(id),
-          UserService.getUserRecord(id),
-        ]);
+      const [userData, assignmentsData, groupsData, recordData] = await Promise.all([
+        api.getUser(id),
+        api.getUserAssignments(id),
+        api.getUserGroups(id),
+        api.getUserRecord(id),
+      ]);
       setTargetUser(userData);
       setAssignments(assignmentsData);
       setGroups(groupsData);
       setRecord(recordData);
     } catch (err) {
       console.error('Failed to fetch user detail data:', err);
-      setError(
-        'Could not load user details. They may not exist or you may lack permission.'
-      );
+      setError('Could not load user details. They may not exist or you may lack permission.');
     } finally {
       setLoading(false);
     }
@@ -87,7 +85,7 @@ export const UserDetailView = () => {
   if (error || !targetUser) {
     return (
       <Box sx={{ p: 3 }}>
-        <Alert severity="error">{error ?? 'User not found'}</Alert>
+        <Alert severity="error">{error || 'User not found'}</Alert>
       </Box>
     );
   }
