@@ -60,6 +60,12 @@ export const api = {
     apiFetch<AssignedTraining[]>('/users/me/assignments'),
 
   /**
+   * Fetches the due trainings for a specific user.
+   */
+  getUserAssignments: (id: number | string) =>
+    apiFetch<AssignedTraining[]>(`/users/${id}/assignments`),
+
+  /**
    * Fetches the full list of available trainings.
    */
   getTrainings: () => apiFetch<Training[]>('/trainings'),
@@ -139,6 +145,12 @@ export const api = {
    * Fetches the training record for the current authenticated user.
    */
   getCurrentUserRecord: () => apiFetch<TrainingEvent[]>('/users/me/record'),
+
+  /**
+   * Fetches the training record for a specific user.
+   */
+  getUserRecord: (id: number | string) =>
+    apiFetch<TrainingEvent[]>(`/users/${id}/record`),
 
   /**
    * Fetches all users in the system (Admin/Manager only).

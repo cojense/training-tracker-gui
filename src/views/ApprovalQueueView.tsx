@@ -69,7 +69,15 @@ const QueueRow = ({
       <TableCell padding="checkbox">
         <Checkbox checked={selected} onChange={() => onToggle(event.id!)} />
       </TableCell>
-      <TableCell>{userName}</TableCell>
+      <TableCell>
+        <Link
+          component={RouterLink}
+          to={`/users/${event.user_id}`}
+          underline="hover"
+        >
+          {userName}
+        </Link>
+      </TableCell>
       <TableCell>{event.training.title}</TableCell>
       <TableCell>{event.completion_date}</TableCell>
       <TableCell>

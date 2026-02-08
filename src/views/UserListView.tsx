@@ -16,11 +16,16 @@ import {
   Alert,
   IconButton,
   Tooltip,
+  Link,
 } from '@mui/material';
-import { Edit as EditIcon, Groups as GroupsIcon } from '@mui/icons-material';
+import {
+  Edit as EditIcon,
+  Groups as GroupsIcon,
+  Visibility as ViewIcon,
+} from '@mui/icons-material';
 import { api } from '~/utilities/api';
 import { User } from '~/types/user';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 
 const headerBoxStyles = {
   p: 2,
@@ -61,6 +66,15 @@ const UserRow = ({ user, onEdit, onGroups }: UserRowProps) => {
       <TableCell>{user.email}</TableCell>
       <TableCell>{roles}</TableCell>
       <TableCell>
+        <Tooltip title="View Profile">
+          <IconButton
+            size="small"
+            component={RouterLink}
+            to={`/users/${user.id}`}
+          >
+            <ViewIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
         <Tooltip title="Edit Profile">
           <IconButton size="small" onClick={handleEdit}>
             <EditIcon fontSize="small" />
