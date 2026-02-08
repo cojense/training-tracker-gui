@@ -144,7 +144,13 @@ export const SupervisorView = () => {
                     hover
                   >
                     <TableCell>
-                      {row.member.last_name}, {row.member.first_name}
+                      <MuiLink
+                        component={Link}
+                        to={`/users/${row.member.id}`}
+                        underline="hover"
+                      >
+                        {row.member.last_name}, {row.member.first_name}
+                      </MuiLink>
                     </TableCell>
                     <TableCell>{row.assignment.training.title}</TableCell>
                     <TableCell>{row.completion_date ?? 'Never'}</TableCell>

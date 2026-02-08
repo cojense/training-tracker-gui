@@ -31,6 +31,7 @@ import { TrainingEditView } from '~/views/TrainingEditView';
 import { UpdateTrainingEventView } from '~/views/UpdateTrainingEventView';
 import { UserEditView } from '~/views/UserEditView';
 import { UserListView } from '~/views/UserListView';
+import { UserDetailView } from '~/views/UserDetailView';
 
 const styles = {
   appContainer: {
@@ -117,6 +118,7 @@ const App = ({ mode, toggleMode }: AppProps) => {
                   />
                   <Route path="/supervisor" element={<SupervisorView />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/users/:id" element={<UserDetailView />} />
                   <Route path="/users/:id/edit" element={<UserEditView />} />
                   <Route
                     path="/users/:id/groups"

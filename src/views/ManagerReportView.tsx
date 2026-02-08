@@ -189,7 +189,13 @@ export const ManagerReportView = () => {
                       </Button>
                     </TableCell>
                     <TableCell>
-                      {row.member.last_name}, {row.member.first_name}
+                      <MuiLink
+                        component={Link}
+                        to={`/users/${row.member.id}`}
+                        underline="hover"
+                      >
+                        {row.member.last_name}, {row.member.first_name}
+                      </MuiLink>
                     </TableCell>
                     <TableCell>
                       <MuiLink
