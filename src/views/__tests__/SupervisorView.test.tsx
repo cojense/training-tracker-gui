@@ -37,7 +37,9 @@ describe('SupervisorView', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Doe, John')).toBeInTheDocument();
+      const userLink = screen.getByRole('link', { name: 'Doe, John' });
+      expect(userLink).toBeInTheDocument();
+      expect(userLink).toHaveAttribute('href', '/users/1');
     });
 
     const exportButton = screen.getByText(/Export CSV/);

@@ -1,11 +1,11 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { UserListView } from '../UserListView';
 import { MemoryRouter } from 'react-router-dom';
-import { UserService } from '~/services/UserService';
+import { api } from '~/utilities/api';
 import { vi, MockedFunction } from 'vitest';
 
-vi.mock('~/services/UserService', () => ({
-  UserService: {
+vi.mock('~/utilities/api', () => ({
+  api: {
     getUsers: vi.fn(),
   },
 }));
@@ -23,7 +23,7 @@ const mockUsers = [
 
 describe('UserListView', () => {
   it('renders user directory and links to profile', async () => {
-    (UserService.getUsers as MockedFunction<any>).mockResolvedValue(mockUsers);
+    (api.getUsers as MockedFunction<any>).mockResolvedValue(mockUsers);
 
     render(
       <MemoryRouter>

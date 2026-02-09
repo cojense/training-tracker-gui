@@ -1,11 +1,11 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { ManagerReportView } from '../ManagerReportView';
 import { BrowserRouter } from 'react-router-dom';
-import { ReportService } from '~/services/ReportService';
+import { api } from '~/utilities/api';
 import { vi, MockedFunction } from 'vitest';
 
-vi.mock('~/services/ReportService', () => ({
-  ReportService: {
+vi.mock('~/utilities/api', () => ({
+  api: {
     getManagerReport: vi.fn(),
   },
 }));
@@ -23,7 +23,7 @@ const mockReport = [
 
 describe('ManagerReportView', () => {
   it('renders report and links to profile', async () => {
-    (ReportService.getManagerReport as MockedFunction<any>).mockResolvedValue(mockReport);
+    (api.getManagerReport as MockedFunction<any>).mockResolvedValue(mockReport);
 
     render(
       <BrowserRouter>

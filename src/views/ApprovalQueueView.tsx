@@ -27,7 +27,7 @@ import {
 import { api } from '~/utilities/api';
 import { TrainingEvent } from '~/types/training';
 import { useNotification } from '~/utilities/NotificationContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 
 const styles = {
   headerBox: {
