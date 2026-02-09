@@ -28,7 +28,7 @@ import {
 import { api } from '~/utilities/api';
 import { AssignedTraining } from '~/types/assignments';
 import { exportToCSV } from '~/utilities/csvExport';
-import { differenceInDays, parseISO } from 'date-fns';
+import { getStatusBackgroundColor } from '~/utilities/statusColors';
 
 const styles = {
   headerBox: {
@@ -92,31 +92,6 @@ export const ManagerReportView = () => {
     exportToCSV(`manager_report_${Date.now()}.csv`, headers, data);
   }, [report]);
 
-  const getRowStyles = useCallback(
-    (row: AssignedTraining) => {
-      if (row.assignment.no_nag) {
-        return {
-          backgroundColor:
-            theme.palette.mode === 'light' ? '#e1f5fe' : '#01579b',
-        };
-      }
-      if (row.due_date) {
-        const daysUntilDue = differenceInDays(
-          parseISO(row.due_date),
-          new Date()
-        );
-        if (daysUntilDue <= 0) {
-          return { backgroundColor: alpha(theme.palette.error.main, 0.2) };
-        }
-        if (daysUntilDue <= 30) {
-          return { backgroundColor: alpha(theme.palette.warning.main, 0.2) };
-        }
-      }
-      return {};
-    },
-    [theme]
-  );
-
   return (
     <Card elevation={2}>
       <Box sx={styles.headerBox}>
@@ -175,7 +150,7 @@ export const ManagerReportView = () => {
                 {report.map((row, index) => (
                   <TableRow
                     key={`${row.member.id}-${row.assignment.training.id}-${index}`}
-                    sx={getRowStyles(row)}
+                    sx={{ backgroundColor: getStatusBackgroundColor(row, theme) }}
                     hover
                   >
                     <TableCell>

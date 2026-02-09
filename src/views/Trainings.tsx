@@ -16,9 +16,16 @@ import {
   CircularProgress,
   Alert,
   Button,
+  TextField,
+  InputAdornment,
+  TableSortLabel,
 } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
+import {
+  Add as AddIcon,
+  Edit as EditIcon,
+  Search as SearchIcon,
+} from '@mui/icons-material';
 import { Training } from '~/types/training';
 import { api } from '~/utilities/api';
 import { useAuth } from '~/utilities/useAuth';
@@ -84,12 +91,17 @@ const TrainingRow = ({ training, isManager, onEdit }: TrainingRowProps) => {
   );
 };
 
+type Order = 'asc' | 'desc';
+
 const Trainings = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [orderBy, setOrderBy] = useState<keyof Training>('title');
+  const [order, setOrder] = useState<Order>('asc');
 
   const fetchTrainings = useCallback(async () => {
     try {
@@ -111,6 +123,24 @@ const Trainings = () => {
     void fetchTrainings();
   }, [fetchTrainings]);
 
+  const handleRequestSort = (property: keyof Training) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
+  const filteredTrainings = useMemo(() => {
+    return trainings
+      .filter((t) => t.title.toLowerCase().includes(search.toLowerCase()))
+      .sort((a, b) => {
+        const valA = (a[orderBy] as string | number) ?? '';
+        const valB = (b[orderBy] as string | number) ?? '';
+        if (valA < valB) return order === 'asc' ? -1 : 1;
+        if (valA > valB) return order === 'asc' ? 1 : -1;
+        return 0;
+      });
+  }, [trainings, search, order, orderBy]);
+
   const handleCreateClick = useCallback(() => {
     void navigate('/training/new');
   }, [navigate]);
@@ -130,20 +160,38 @@ const Trainings = () => {
   return (
     <Card elevation={2}>
       <Box sx={headerBoxStyles}>
-        <Typography variant="h6">
-          Training List (All Courses in System)
-        </Typography>
-        {isManager && (
-          <Button
-            variant="contained"
-            color="secondary"
-            startIcon={<AddIcon />}
-            onClick={handleCreateClick}
+        <Typography variant="h6">Training Directory</Typography>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <TextField
             size="small"
-          >
-            Create Training
-          </Button>
-        )}
+            placeholder="Search trainings..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            sx={{
+              bgcolor: 'background.paper',
+              borderRadius: 1,
+              width: { xs: '100%', sm: 250 },
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
+          />
+          {isManager && (
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<AddIcon />}
+              onClick={handleCreateClick}
+              size="small"
+            >
+              Create
+            </Button>
+          )}
+        </Box>
       </Box>
       <Divider />
       <CardContent sx={contentRootStyles}>
@@ -160,9 +208,33 @@ const Trainings = () => {
             <Table sx={trainingTableStyles} aria-label="training table">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={headerCellStyles}>ID</TableCell>
-                  <TableCell sx={headerCellStyles}>Date</TableCell>
-                  <TableCell sx={headerCellStyles}>Training Name</TableCell>
+                  <TableCell sx={headerCellStyles}>
+                    <TableSortLabel
+                      active={orderBy === 'id'}
+                      direction={orderBy === 'id' ? order : 'asc'}
+                      onClick={() => handleRequestSort('id')}
+                    >
+                      ID
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell sx={headerCellStyles}>
+                    <TableSortLabel
+                      active={orderBy === 'date'}
+                      direction={orderBy === 'date' ? order : 'asc'}
+                      onClick={() => handleRequestSort('date')}
+                    >
+                      Date
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell sx={headerCellStyles}>
+                    <TableSortLabel
+                      active={orderBy === 'title'}
+                      direction={orderBy === 'title' ? order : 'asc'}
+                      onClick={() => handleRequestSort('title')}
+                    >
+                      Training Name
+                    </TableSortLabel>
+                  </TableCell>
                   <TableCell sx={headerCellStyles}>External URL</TableCell>
                   {isManager && (
                     <TableCell sx={headerCellStyles}>Actions</TableCell>
@@ -170,7 +242,7 @@ const Trainings = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {trainings.map((training: Training) => (
+                {filteredTrainings.map((training: Training) => (
                   <TrainingRow
                     key={training.id}
                     training={training}
