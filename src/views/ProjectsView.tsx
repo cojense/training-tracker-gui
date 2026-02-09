@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Table,
   TableBody,
@@ -16,8 +16,15 @@ import {
   Alert,
   IconButton,
   Tooltip,
+  TextField,
+  InputAdornment,
+  TableSortLabel,
 } from '@mui/material';
-import { Edit as EditIcon, Visibility as ViewIcon } from '@mui/icons-material';
+import {
+  Edit as EditIcon,
+  Visibility as ViewIcon,
+  Search as SearchIcon,
+} from '@mui/icons-material';
 import { api } from '~/utilities/api';
 import { Project } from '~/types/projects';
 import { useNavigate } from 'react-router-dom';
@@ -68,11 +75,16 @@ const ProjectRow = ({ project, onDetails, onEdit }: ProjectRowProps) => {
   );
 };
 
+type Order = 'asc' | 'desc';
+
 export const ProjectsView = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [orderBy, setOrderBy] = useState<keyof Project>('name');
+  const [order, setOrder] = useState<Order>('asc');
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -92,6 +104,24 @@ export const ProjectsView = () => {
     void fetchProjects();
   }, [fetchProjects]);
 
+  const handleRequestSort = (property: keyof Project) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
+  const filteredProjects = useMemo(() => {
+    return projects
+      .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
+      .sort((a, b) => {
+        const valA = (a[orderBy] as string | number) ?? '';
+        const valB = (b[orderBy] as string | number) ?? '';
+        if (valA < valB) return order === 'asc' ? -1 : 1;
+        if (valA > valB) return order === 'asc' ? 1 : -1;
+        return 0;
+      });
+  }, [projects, search, order, orderBy]);
+
   const handleDetailsClick = useCallback(
     (id: number | null) => {
       if (id !== null) void navigate(`/projects/${id}`);
@@ -108,8 +138,35 @@ export const ProjectsView = () => {
 
   return (
     <Card elevation={2}>
-      <Box sx={headerBoxStyles}>
+      <Box
+        sx={{
+          p: 2,
+          bgcolor: 'primary.main',
+          color: 'primary.contrastText',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
         <Typography variant="h6">Projects List</Typography>
+        <TextField
+          size="small"
+          placeholder="Search projects..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          sx={{
+            bgcolor: 'background.paper',
+            borderRadius: 1,
+            width: { xs: '100%', sm: 250 },
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
+        />
       </Box>
       <Divider />
       <CardContent sx={contentRootStyles}>
@@ -126,13 +183,29 @@ export const ProjectsView = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={headerCellStyles}>ID</TableCell>
-                  <TableCell sx={headerCellStyles}>Name</TableCell>
+                  <TableCell sx={headerCellStyles}>
+                    <TableSortLabel
+                      active={orderBy === 'id'}
+                      direction={orderBy === 'id' ? order : 'asc'}
+                      onClick={() => handleRequestSort('id')}
+                    >
+                      ID
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell sx={headerCellStyles}>
+                    <TableSortLabel
+                      active={orderBy === 'name'}
+                      direction={orderBy === 'name' ? order : 'asc'}
+                      onClick={() => handleRequestSort('name')}
+                    >
+                      Name
+                    </TableSortLabel>
+                  </TableCell>
                   <TableCell sx={headerCellStyles}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {projects.map((p) => (
+                {filteredProjects.map((p) => (
                   <ProjectRow
                     key={p.id ?? 'new'}
                     project={p}

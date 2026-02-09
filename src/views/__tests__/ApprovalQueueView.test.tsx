@@ -45,7 +45,9 @@ describe('ApprovalQueueView', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Doe, John')).toBeInTheDocument();
+      const userLink = screen.getByRole('link', { name: 'Doe, John' });
+      expect(userLink).toBeInTheDocument();
+      expect(userLink).toHaveAttribute('href', '/users/1');
     });
 
     const checkboxes = screen.getAllByRole('checkbox');
