@@ -21,7 +21,7 @@ import {
   useTheme,
 } from '@mui/material';
 import { Download as DownloadIcon } from '@mui/icons-material';
-import { api } from '~/utilities/api';
+import { ReportService } from '~/services/ReportService';
 import { AssignedTraining } from '~/types/assignments';
 import { exportToCSV } from '~/utilities/csvExport';
 import { getStatusBackgroundColor } from '~/utilities/statusColors';
@@ -50,7 +50,7 @@ export const SupervisorView = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.getSupervisorReport();
+      const data = await ReportService.getSupervisorReport();
       setReport(data);
     } catch (err) {
       console.error('Failed to fetch supervisor report:', err);
@@ -117,7 +117,9 @@ export const SupervisorView = () => {
                 {report.map((row, index) => (
                   <TableRow
                     key={`${row.member.id}-${row.assignment.training.id}-${index}`}
-                    sx={{ backgroundColor: getStatusBackgroundColor(row, theme) }}
+                    sx={{
+                      backgroundColor: getStatusBackgroundColor(row, theme),
+                    }}
                     hover
                   >
                     <TableCell>

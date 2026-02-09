@@ -16,7 +16,10 @@ export const getStatusBackgroundColor = (
   }
 
   if (assignment.due_date) {
-    const daysUntilDue = differenceInDays(parseISO(assignment.due_date), new Date());
+    const daysUntilDue = differenceInDays(
+      parseISO(assignment.due_date),
+      new Date()
+    );
 
     if (daysUntilDue <= 0) {
       // Red for overdue

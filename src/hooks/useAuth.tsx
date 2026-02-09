@@ -5,7 +5,7 @@ import React, {
   ReactNode,
   useEffect,
 } from 'react';
-import { api } from './api';
+import { UserService } from '~/services/UserService';
 import { Box, CircularProgress } from '@mui/material';
 import { User } from '~/types/user';
 
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const verifySession = useCallback(async () => {
     try {
       setIsLoading(true);
-      const userData = await api.getCurrentUser();
+      const userData = await UserService.getCurrentUser();
       setUser(userData);
     } catch (error) {
       console.warn('Session verification failed:', error);
@@ -48,7 +48,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = useCallback(() => {
     // For real logout, we'll redirect to backend /logout with next parameter
-    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+    const BACKEND_URL =
+      import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
     const FRONTEND_URL = window.location.origin;
     window.location.href = `${BACKEND_URL}/oauth2/logout?next=${encodeURIComponent(`${FRONTEND_URL}/login`)}`;
   }, []);

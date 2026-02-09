@@ -25,7 +25,7 @@ import {
   Visibility as ViewIcon,
   Search as SearchIcon,
 } from '@mui/icons-material';
-import { api } from '~/utilities/api';
+import { ProjectService } from '~/services/ProjectService';
 import { Project } from '~/types/projects';
 import { useNavigate } from 'react-router-dom';
 
@@ -90,7 +90,7 @@ export const ProjectsView = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.getProjects();
+      const data = await ProjectService.getProjects();
       setProjects(data);
     } catch (err) {
       console.error('Failed to fetch projects:', err);
@@ -114,8 +114,8 @@ export const ProjectsView = () => {
     return projects
       .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
       .sort((a, b) => {
-        const valA = (a[orderBy] as string | number) ?? '';
-        const valB = (b[orderBy] as string | number) ?? '';
+        const valA = a[orderBy]! ?? '';
+        const valB = b[orderBy]! ?? '';
         if (valA < valB) return order === 'asc' ? -1 : 1;
         if (valA > valB) return order === 'asc' ? 1 : -1;
         return 0;

@@ -27,8 +27,8 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { Training } from '~/types/training';
-import { api } from '~/utilities/api';
-import { useAuth } from '~/utilities/useAuth';
+import { TrainingService } from '~/services/TrainingService';
+import { useAuth } from '~/hooks/useAuth';
 
 const headerBoxStyles = {
   p: 2,
@@ -107,7 +107,7 @@ const Trainings = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.getTrainings();
+      const data = await TrainingService.getTrainings();
       setTrainings(data);
     } catch (err) {
       console.error('Failed to fetch trainings:', err);
@@ -133,8 +133,8 @@ const Trainings = () => {
     return trainings
       .filter((t) => t.title.toLowerCase().includes(search.toLowerCase()))
       .sort((a, b) => {
-        const valA = (a[orderBy] as string | number) ?? '';
-        const valB = (b[orderBy] as string | number) ?? '';
+        const valA = a[orderBy]! ?? '';
+        const valB = b[orderBy]! ?? '';
         if (valA < valB) return order === 'asc' ? -1 : 1;
         if (valA > valB) return order === 'asc' ? 1 : -1;
         return 0;

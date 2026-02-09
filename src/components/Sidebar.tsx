@@ -23,7 +23,7 @@ import {
   AccountCircle as ProfileIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '~/utilities/useAuth';
+import { useAuth } from '~/hooks/useAuth';
 
 const drawerWidth = 240;
 

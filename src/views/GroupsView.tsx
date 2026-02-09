@@ -25,7 +25,7 @@ import {
   Visibility as ViewIcon,
   Search as SearchIcon,
 } from '@mui/icons-material';
-import { api } from '~/utilities/api';
+import { GroupService } from '~/services/GroupService';
 import { Group } from '~/types/user';
 import { useNavigate } from 'react-router-dom';
 
@@ -92,7 +92,7 @@ export const GroupsView = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.getGroups();
+      const data = await GroupService.getGroups();
       setGroups(data);
     } catch (err) {
       console.error('Failed to fetch groups:', err);

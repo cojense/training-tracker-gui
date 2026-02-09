@@ -25,7 +25,7 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
 } from '@mui/icons-material';
-import { api } from '~/utilities/api';
+import { ReportService } from '~/services/ReportService';
 import { AssignedTraining } from '~/types/assignments';
 import { exportToCSV } from '~/utilities/csvExport';
 import { getStatusBackgroundColor } from '~/utilities/statusColors';
@@ -54,7 +54,7 @@ export const ManagerReportView = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.getManagerReport();
+      const data = await ReportService.getManagerReport();
       setReport(data);
     } catch (err) {
       console.error('Failed to fetch manager report:', err);
@@ -150,7 +150,9 @@ export const ManagerReportView = () => {
                 {report.map((row, index) => (
                   <TableRow
                     key={`${row.member.id}-${row.assignment.training.id}-${index}`}
-                    sx={{ backgroundColor: getStatusBackgroundColor(row, theme) }}
+                    sx={{
+                      backgroundColor: getStatusBackgroundColor(row, theme),
+                    }}
                     hover
                   >
                     <TableCell>

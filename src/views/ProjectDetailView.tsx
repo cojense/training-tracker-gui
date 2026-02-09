@@ -12,9 +12,9 @@ import {
 } from '@mui/material';
 import { Edit as EditIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { api } from '~/utilities/api';
+import { ProjectService } from '~/services/ProjectService';
 import { Project } from '~/types/projects';
-import { useAuth } from '~/utilities/useAuth';
+import { useAuth } from '~/hooks/useAuth';
 
 const styles = {
   headerBox: {
@@ -42,7 +42,7 @@ export const ProjectDetailView = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.getProject(id);
+      const data = await ProjectService.getProject(id);
       setProject(data);
     } catch (err) {
       console.error('Failed to fetch project details:', err);

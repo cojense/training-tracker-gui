@@ -100,7 +100,7 @@ describe('TrainingDueTable', () => {
     expect(rows[0]).not.toHaveStyle('background-color: inherit');
 
     // Row 2: No Nag
-    // #e1f5fe (light mode)
-    expect(rows[1]).toHaveStyle('background-color: rgb(225, 245, 254)');
+    // #f5f5f5 (light mode)
+    expect(rows[1]).toHaveStyle('background-color: rgb(245, 245, 245)');
   });
 });

@@ -20,8 +20,8 @@ import {
   DialogContentText,
   DialogActions,
 } from '@mui/material';
-import { api } from '~/utilities/api';
-import { useNotification } from '~/utilities/NotificationContext';
+import { TrainingService } from '~/services/TrainingService';
+import { useNotification } from '~/hooks/NotificationContext';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const styles = {
@@ -177,7 +177,7 @@ export const TrainingEditView = () => {
     if (!id) return;
     try {
       setLoading(true);
-      const data = await api.getTraining(id);
+      const data = await TrainingService.getTraining(id);
       reset({
         date: data.date ?? '',
         title: data.title ?? '',
@@ -201,7 +201,7 @@ export const TrainingEditView = () => {
     async (data: TrainingFormInput) => {
       if (!id) return;
       try {
-        await api.updateTraining(id, data);
+        await TrainingService.updateTraining(id, data);
         showNotification('Training course updated successfully!', 'success');
         void navigate('/trainings');
       } catch (error) {
@@ -215,7 +215,7 @@ export const TrainingEditView = () => {
   const handleDelete = useCallback(async () => {
     if (!id) return;
     try {
-      await api.deleteTraining(id);
+      await TrainingService.deleteTraining(id);
       showNotification('Training course deleted.', 'success');
       setDeleteDialogOpen(false);
       void navigate('/trainings');

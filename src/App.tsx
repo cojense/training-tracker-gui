@@ -5,7 +5,7 @@ import Header from '~/components/Header';
 import Sidebar from '~/components/Sidebar';
 import Home from '~/views/Home';
 import Trainings from '~/views/Trainings';
-import { useAuth } from '~/utilities/useAuth';
+import { useAuth } from '~/hooks/useAuth';
 import LoginView from '~/views/LoginView';
 import Profile from '~/views/Profile';
 

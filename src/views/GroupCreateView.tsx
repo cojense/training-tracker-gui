@@ -10,8 +10,8 @@ import {
   FormControlLabel,
   Checkbox,
 } from '@mui/material';
-import { api } from '~/utilities/api';
-import { useNotification } from '~/utilities/NotificationContext';
+import { GroupService } from '~/services/GroupService';
+import { useNotification } from '~/hooks/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 
 interface GroupFormInput {
@@ -38,7 +38,7 @@ export const GroupCreateView = () => {
 
   const onSubmit = async (data: GroupFormInput) => {
     try {
-      await api.createGroup(data);
+      await GroupService.createGroup(data);
       showNotification('Group created successfully!', 'success');
       void navigate('/groups');
     } catch (error) {

@@ -1,12 +1,12 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { ApprovalQueueView } from '../ApprovalQueueView';
 import { BrowserRouter } from 'react-router-dom';
-import { api } from '~/utilities/api';
-import { NotificationProvider } from '~/utilities/NotificationContext';
+import { TrainingService } from '~/services/TrainingService';
+import { NotificationProvider } from '~/hooks/NotificationContext';
 import { vi } from 'vitest';
 
-vi.mock('~/utilities/api', () => ({
-  api: {
+vi.mock('~/services/TrainingService', () => ({
+  TrainingService: {
     getApprovalQueue: vi.fn(),
     approveEvent: vi.fn(),
   },
@@ -33,8 +33,8 @@ const mockQueue = [
 
 describe('ApprovalQueueView', () => {
   it('renders queue and handles bulk approval', async () => {
-    (api.getApprovalQueue as any).mockResolvedValue(mockQueue);
-    (api.approveEvent as any).mockResolvedValue({ status: 'success' });
+    (TrainingService.getApprovalQueue as any).mockResolvedValue(mockQueue);
+    (TrainingService.approveEvent as any).mockResolvedValue({ status: 'success' });
 
     render(
       <BrowserRouter>
@@ -59,7 +59,7 @@ describe('ApprovalQueueView', () => {
 
     await waitFor(() => {
       // Should call approveEvent twice
-      expect(api.approveEvent).toHaveBeenCalledTimes(2);
+      expect(TrainingService.approveEvent).toHaveBeenCalledTimes(2);
     });
   });
 });

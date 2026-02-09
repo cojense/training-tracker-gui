@@ -15,8 +15,8 @@ import {
   DialogContentText,
   DialogActions,
 } from '@mui/material';
-import { api } from '~/utilities/api';
-import { useNotification } from '~/utilities/NotificationContext';
+import { ProjectService } from '~/services/ProjectService';
+import { useNotification } from '~/hooks/NotificationContext';
 import { useNavigate, useParams } from 'react-router-dom';
 
 interface ProjectFormInput {
@@ -41,7 +41,7 @@ export const ProjectEditView = () => {
     if (!id) return;
     try {
       setLoading(true);
-      const data = await api.getProject(id);
+      const data = await ProjectService.getProject(id);
       reset({
         name: data.name,
       });
@@ -61,7 +61,7 @@ export const ProjectEditView = () => {
   const onSubmit = async (data: ProjectFormInput) => {
     if (!id) return;
     try {
-      await api.updateProject(id, data);
+      await ProjectService.updateProject(id, data);
       showNotification('Project updated successfully!', 'success');
       void navigate(`/projects/${id}`);
     } catch (error) {
@@ -73,7 +73,7 @@ export const ProjectEditView = () => {
   const handleDelete = async () => {
     if (!id) return;
     try {
-      await api.deleteProject(id);
+      await ProjectService.deleteProject(id);
       showNotification('Project deleted.', 'success');
       setDeleteDialogOpen(false);
       void navigate('/projects');
