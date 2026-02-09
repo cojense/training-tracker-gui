@@ -1,12 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import Profile from '../Profile';
 import { MemoryRouter } from 'react-router-dom';
-import { UserService } from '~/services/UserService';
-import { AuthProvider } from '~/hooks/useAuth';
+import { api } from '~/utilities/api';
+import { AuthProvider } from '~/utilities/useAuth';
 import { vi, MockedFunction } from 'vitest';
 
-vi.mock('~/services/UserService', () => ({
-  UserService: {
+vi.mock('~/utilities/api', () => ({
+  api: {
     getCurrentUser: vi.fn(),
     getCurrentUserAssignments: vi.fn(),
     getCurrentUserGroups: vi.fn(),
@@ -25,12 +25,10 @@ const mockUser = {
 
 describe('Profile', () => {
   it('renders personal profile details', async () => {
-    (UserService.getCurrentUser as MockedFunction<any>).mockResolvedValue(mockUser);
-    (UserService.getCurrentUserAssignments as MockedFunction<any>).mockResolvedValue(
-      []
-    );
-    (UserService.getCurrentUserGroups as MockedFunction<any>).mockResolvedValue([]);
-    (UserService.getCurrentUserRecord as MockedFunction<any>).mockResolvedValue([]);
+    (api.getCurrentUser as MockedFunction<any>).mockResolvedValue(mockUser);
+    (api.getCurrentUserAssignments as MockedFunction<any>).mockResolvedValue([]);
+    (api.getCurrentUserGroups as MockedFunction<any>).mockResolvedValue([]);
+    (api.getCurrentUserRecord as MockedFunction<any>).mockResolvedValue([]);
 
     render(
       <MemoryRouter>
