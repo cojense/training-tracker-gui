@@ -1,12 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { UserDetailView } from '../UserDetailView';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { UserService } from '~/services/UserService';
-import { AuthProvider } from '~/hooks/useAuth';
+import { api } from '~/utilities/api';
+import { AuthProvider } from '~/utilities/useAuth';
 import { vi, MockedFunction } from 'vitest';
 
-vi.mock('~/services/UserService', () => ({
-  UserService: {
+vi.mock('~/utilities/api', () => ({
+  api: {
     getUser: vi.fn(),
     getUserAssignments: vi.fn(),
     getUserGroups: vi.fn(),
@@ -36,7 +36,9 @@ const mockAssignments = [
   },
 ];
 
-const mockGroups = [{ id: 1, name: 'Engineers' }];
+const mockGroups = [
+  { id: 1, name: 'Engineers' },
+];
 
 const mockRecord = [
   {
@@ -51,13 +53,11 @@ const mockRecord = [
 
 describe('UserDetailView', () => {
   it('renders user details, assignments, groups, and record', async () => {
-    (UserService.getUser as MockedFunction<any>).mockResolvedValue(mockUser);
-    (UserService.getUserAssignments as MockedFunction<any>).mockResolvedValue(
-      mockAssignments
-    );
-    (UserService.getUserGroups as MockedFunction<any>).mockResolvedValue(mockGroups);
-    (UserService.getUserRecord as MockedFunction<any>).mockResolvedValue(mockRecord);
-    (UserService.getCurrentUser as MockedFunction<any>).mockResolvedValue(mockUser);
+    (api.getUser as MockedFunction<any>).mockResolvedValue(mockUser);
+    (api.getUserAssignments as MockedFunction<any>).mockResolvedValue(mockAssignments);
+    (api.getUserGroups as MockedFunction<any>).mockResolvedValue(mockGroups);
+    (api.getUserRecord as MockedFunction<any>).mockResolvedValue(mockRecord);
+    (api.getCurrentUser as MockedFunction<any>).mockResolvedValue(mockUser);
 
     render(
       <MemoryRouter initialEntries={['/users/42']}>
@@ -75,10 +75,8 @@ describe('UserDetailView', () => {
 
     expect(screen.getByText('Personal Details')).toBeInTheDocument();
     expect(screen.getByText('alice@example.com')).toBeInTheDocument();
-
-    expect(
-      screen.getByText('Current Training Requirements')
-    ).toBeInTheDocument();
+    
+    expect(screen.getByText('Current Training Requirements')).toBeInTheDocument();
     expect(screen.getAllByText('Security 101')).toHaveLength(2);
     expect(screen.getByText('2024-12-31')).toBeInTheDocument();
 
@@ -90,10 +88,8 @@ describe('UserDetailView', () => {
   });
 
   it('renders error message when API fails', async () => {
-    (UserService.getUser as MockedFunction<any>).mockRejectedValue(
-      new Error('Unauthorized')
-    );
-    (UserService.getCurrentUser as MockedFunction<any>).mockResolvedValue(mockUser);
+    (api.getUser as MockedFunction<any>).mockRejectedValue(new Error('Unauthorized'));
+    (api.getCurrentUser as MockedFunction<any>).mockResolvedValue(mockUser);
 
     render(
       <MemoryRouter initialEntries={['/users/42']}>
@@ -106,9 +102,7 @@ describe('UserDetailView', () => {
     );
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/Could not load user details/)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/Could not load user details/)).toBeInTheDocument();
     });
   });
 });
