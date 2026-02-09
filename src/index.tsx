@@ -3,7 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import App from './App';
-import { AuthProvider } from './utilities/useAuth';
+import { AuthProvider } from './hooks/useAuth';
+import { NotificationProvider } from './hooks/NotificationContext';
 import getTheme, { ThemeMode } from './utilities/theme';
 
 const Main: React.FC = () => {
@@ -22,10 +23,12 @@ const Main: React.FC = () => {
     <React.StrictMode>
       <BrowserRouter>
         <AuthProvider>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <App mode={mode} toggleMode={toggleMode} />
-          </ThemeProvider>
+          <NotificationProvider>
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <App mode={mode} toggleMode={toggleMode} />
+            </ThemeProvider>
+          </NotificationProvider>
         </AuthProvider>
       </BrowserRouter>
     </React.StrictMode>

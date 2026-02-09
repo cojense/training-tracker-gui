@@ -1,0 +1,65 @@
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { ApprovalQueueView } from '../ApprovalQueueView';
+import { BrowserRouter } from 'react-router-dom';
+import { TrainingService } from '~/services/TrainingService';
+import { NotificationProvider } from '~/hooks/NotificationContext';
+import { vi } from 'vitest';
+
+vi.mock('~/services/TrainingService', () => ({
+  TrainingService: {
+    getApprovalQueue: vi.fn(),
+    approveEvent: vi.fn(),
+  },
+}));
+
+const mockQueue = [
+  {
+    id: 1,
+    user_id: 1,
+    completion_date: '2023-01-01',
+    training: { id: 101, title: 'Safety Training' },
+    user: { first_name: 'John', last_name: 'Doe' },
+    training_certificates: [],
+  },
+  {
+    id: 2,
+    user_id: 2,
+    completion_date: '2023-01-02',
+    training: { id: 102, title: 'Ethics Training' },
+    user: { first_name: 'Jane', last_name: 'Smith' },
+    training_certificates: [],
+  },
+];
+
+describe('ApprovalQueueView', () => {
+  it('renders queue and handles bulk approval', async () => {
+    (TrainingService.getApprovalQueue as any).mockResolvedValue(mockQueue);
+    (TrainingService.approveEvent as any).mockResolvedValue({ status: 'success' });
+
+    render(
+      <BrowserRouter>
+        <NotificationProvider>
+          <ApprovalQueueView />
+        </NotificationProvider>
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      const userLink = screen.getByRole('link', { name: 'Doe, John' });
+      expect(userLink).toBeInTheDocument();
+      expect(userLink).toHaveAttribute('href', '/users/1');
+    });
+
+    const checkboxes = screen.getAllByRole('checkbox');
+    // checkbox[0] is Toggle All, 1 and 2 are for rows
+    fireEvent.click(checkboxes[0]); // Select all
+
+    const approveButton = screen.getByText(/Approve Selected/);
+    fireEvent.click(approveButton);
+
+    await waitFor(() => {
+      // Should call approveEvent twice
+      expect(TrainingService.approveEvent).toHaveBeenCalledTimes(2);
+    });
+  });
+});
