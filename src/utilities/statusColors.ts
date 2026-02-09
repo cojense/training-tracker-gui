@@ -8,16 +8,18 @@ import { AssignedTraining } from '~/types/assignments';
  */
 export const getStatusBackgroundColor = (
   assignment: AssignedTraining,
-  theme: Theme,
-  now: Date = new Date()
+  theme: Theme
 ): string => {
   if (assignment.assignment.no_nag) {
     // Gray for No Nag
-    return theme.palette.mode === 'light' ? '#bae6fd' : '#1e3a5f';
+    return theme.palette.mode === 'light' ? '#f5f5f5' : '#424242';
   }
 
   if (assignment.due_date) {
-    const daysUntilDue = differenceInDays(parseISO(assignment.due_date), now);
+    const daysUntilDue = differenceInDays(
+      parseISO(assignment.due_date),
+      new Date()
+    );
 
     if (daysUntilDue <= 0) {
       // Red for overdue

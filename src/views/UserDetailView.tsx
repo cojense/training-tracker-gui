@@ -8,18 +8,15 @@ import {
   Divider,
   CircularProgress,
   Alert,
-  Button,
 } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { UserDetailTable } from '~/components/profile/UserDetailTable';
 import { TrainingDueTable } from '~/components/TrainingDueTable';
 import { GroupMembershipTable } from '~/components/profile/GroupMembershipTable';
 import { TrainingRecordTable } from '~/components/profile/TrainingRecordTable';
-import { useAuth } from '~/hooks/useAuth';
 import { UserService } from '~/services/UserService';
 import { AssignedTraining } from '~/types/assignments';
-import { Group } from '~/types/user';
+import { Group, User } from '~/types/user';
 import { TrainingEvent } from '~/types/training';
 
 const styles = {
@@ -40,9 +37,10 @@ const styles = {
   centeredBox: { display: 'flex', justifyContent: 'center', py: 8 },
 };
 
-const Profile = () => {
+export const UserDetailView = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const [targetUser, setTargetUser] = useState<User | null>(null);
   const [assignments, setAssignments] = useState<AssignedTraining[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [record, setRecord] = useState<TrainingEvent[]>([]);
@@ -50,40 +48,34 @@ const Profile = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
+    if (!id) return;
     try {
       setLoading(true);
       setError(null);
-      const [assignmentsData, groupsData, recordData] = await Promise.all([
-        UserService.getCurrentUserAssignments(),
-        UserService.getCurrentUserGroups(),
-        UserService.getCurrentUserRecord(),
-      ]);
+      const [userData, assignmentsData, groupsData, recordData] =
+        await Promise.all([
+          UserService.getUser(id),
+          UserService.getUserAssignments(id),
+          UserService.getUserGroups(id),
+          UserService.getUserRecord(id),
+        ]);
+      setTargetUser(userData);
       setAssignments(assignmentsData);
       setGroups(groupsData);
       setRecord(recordData);
     } catch (err) {
-      console.error('Failed to fetch profile data:', err);
-      setError('Could not load profile details. Please try again later.');
+      console.error('Failed to fetch user detail data:', err);
+      setError(
+        'Could not load user details. They may not exist or you may lack permission.'
+      );
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [id]);
 
   useEffect(() => {
     void fetchData();
   }, [fetchData]);
-
-  const handleEditUserClick = useCallback(() => {
-    if (user) void navigate(`/users/${user.id}/edit`);
-  }, [navigate, user]);
-
-  const handleChangeGroupsClick = useCallback(() => {
-    if (user) void navigate(`/users/${user.id}/groups`);
-  }, [navigate, user]);
-
-  const handleRecordTrainingClick = useCallback(() => {
-    void navigate('/events/record');
-  }, [navigate]);
 
   if (loading) {
     return (
@@ -93,34 +85,28 @@ const Profile = () => {
     );
   }
 
-  const isManager = user?.is_admin ?? user?.is_training_manager ?? false;
+  if (error || !targetUser) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error">{error || 'User not found'}</Alert>
+      </Box>
+    );
+  }
 
   return (
     <Stack spacing={3}>
       <Typography variant="h4" gutterBottom>
-        User Profile
+        User Detail: {targetUser.first_name} {targetUser.last_name}
       </Typography>
-
-      {error && <Alert severity="error">{error}</Alert>}
 
       {/* User Details Card */}
       <Card elevation={2}>
-        <Box sx={styles.headerBox}>
+        <Box sx={styles.plainHeaderBox}>
           <Typography variant="h6">Personal Details</Typography>
-          {user?.is_admin && (
-            <Button
-              variant="contained"
-              color="secondary"
-              size="small"
-              onClick={handleEditUserClick}
-            >
-              Edit User
-            </Button>
-          )}
         </Box>
         <Divider />
         <CardContent sx={styles.contentRoot}>
-          {user && <UserDetailTable user={user} />}
+          <UserDetailTable user={targetUser} />
         </CardContent>
       </Card>
 
@@ -137,18 +123,8 @@ const Profile = () => {
 
       {/* Group Membership Card */}
       <Card elevation={2}>
-        <Box sx={styles.headerBox}>
+        <Box sx={styles.plainHeaderBox}>
           <Typography variant="h6">Group Memberships</Typography>
-          {isManager && (
-            <Button
-              variant="contained"
-              color="secondary"
-              size="small"
-              onClick={handleChangeGroupsClick}
-            >
-              Change Groups
-            </Button>
-          )}
         </Box>
         <Divider />
         <CardContent sx={styles.contentRoot}>
@@ -158,17 +134,8 @@ const Profile = () => {
 
       {/* Training Record Card */}
       <Card elevation={2}>
-        <Box sx={styles.headerBox}>
+        <Box sx={styles.plainHeaderBox}>
           <Typography variant="h6">Training Record</Typography>
-          <Button
-            variant="contained"
-            color="secondary"
-            size="small"
-            startIcon={<AddIcon />}
-            onClick={handleRecordTrainingClick}
-          >
-            Record Training
-          </Button>
         </Box>
         <Divider />
         <CardContent sx={styles.contentRoot}>
@@ -178,5 +145,3 @@ const Profile = () => {
     </Stack>
   );
 };
-
-export default Profile;

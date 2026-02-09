@@ -1,10 +1,5 @@
-export const BACKEND_URL: string =
-  (import.meta.env.VITE_BACKEND_URL as string | undefined) ??
-  'http://localhost:5001';
-
-export const API_BASE_URL: string =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined) ??
-  `${BACKEND_URL}/api`;
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
 
 /**
  * Generic fetch wrapper with credentials enabled for session-based auth.
@@ -13,10 +8,7 @@ export async function apiFetch<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const normalizedEndpoint = endpoint.startsWith('/')
-    ? endpoint
-    : `/${endpoint}`;
-  const url = `${API_BASE_URL}${normalizedEndpoint}`;
+  const url = `${API_BASE_URL}${endpoint}`;
 
   const isFormData = options.body instanceof FormData;
 
@@ -33,7 +25,6 @@ export async function apiFetch<T>(
 
   if (response.status === 401) {
     // Handle unauthorized (session expired or not logged in)
-    window.dispatchEvent(new CustomEvent('auth:unauthorized'));
     throw new Error('UNAUTHORIZED');
   }
 
