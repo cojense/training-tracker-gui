@@ -26,7 +26,7 @@ import {
   Visibility as ViewIcon,
   Search as SearchIcon,
 } from '@mui/icons-material';
-import { api } from '~/utilities/api';
+import { UserService } from '~/services/UserService';
 import { User } from '~/types/user';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 
@@ -111,7 +111,7 @@ export const UserListView = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.getUsers();
+      const data = await UserService.getUsers();
       setUsers(data);
     } catch (err) {
       console.error('Failed to fetch users:', err);
@@ -149,8 +149,8 @@ export const UserListView = () => {
           valA = `${a.last_name}, ${a.first_name}`;
           valB = `${b.last_name}, ${b.first_name}`;
         } else {
-          valA = (a[orderBy as keyof User] as string | number) ?? '';
-          valB = (b[orderBy as keyof User] as string | number) ?? '';
+          valA = (a[orderBy] as string | number) ?? '';
+          valB = (b[orderBy] as string | number) ?? '';
         }
 
         if (valA < valB) return order === 'asc' ? -1 : 1;

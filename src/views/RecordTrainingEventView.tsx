@@ -19,10 +19,11 @@ import {
   MenuItem,
   CircularProgress,
 } from '@mui/material';
-import { api } from '~/utilities/api';
-import { useNotification } from '~/utilities/NotificationContext';
+import { TrainingService } from '~/services/TrainingService';
+import { UserService } from '~/services/UserService';
+import { useNotification } from '~/hooks/NotificationContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '~/utilities/useAuth';
+import { useAuth } from '~/hooks/useAuth';
 import { User } from '~/types/user';
 import { Training } from '~/types/training';
 
@@ -257,8 +258,8 @@ export const RecordTrainingEventView = () => {
     try {
       setLoading(true);
       const [trainingsData, usersData] = await Promise.all([
-        api.getTrainings(),
-        isManager ? api.getUsers() : Promise.resolve([]),
+        TrainingService.getTrainings(),
+        isManager ? UserService.getUsers() : Promise.resolve([]),
       ]);
       setTrainings(trainingsData);
       if (isManager) setUsers(usersData);
@@ -291,7 +292,7 @@ export const RecordTrainingEventView = () => {
           formData.append('certificate', data.certificate[0]);
         }
 
-        await api.createEvent(formData);
+        await TrainingService.createEvent(formData);
         showNotification('Training record saved successfully!', 'success');
         void navigate('/');
       } catch (error) {

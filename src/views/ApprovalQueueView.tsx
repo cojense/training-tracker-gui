@@ -24,9 +24,9 @@ import {
   Edit as EditIcon,
   CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
-import { api } from '~/utilities/api';
+import { TrainingService } from '~/services/TrainingService';
 import { TrainingEvent } from '~/types/training';
-import { useNotification } from '~/utilities/NotificationContext';
+import { useNotification } from '~/hooks/NotificationContext';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 
 const styles = {
@@ -138,7 +138,7 @@ export const ApprovalQueueView = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.getApprovalQueue();
+      const data = await TrainingService.getApprovalQueue();
       setQueue(data);
       setSelectedIds(new Set());
     } catch (err) {
@@ -180,7 +180,7 @@ export const ApprovalQueueView = () => {
     async (id: number) => {
       try {
         setApproving(true);
-        await api.approveEvent(id);
+        await TrainingService.approveEvent(id);
         showNotification('Training approved.', 'success');
         void fetchQueue();
       } catch (err) {
@@ -201,7 +201,7 @@ export const ApprovalQueueView = () => {
       setApproving(true);
       // Sequential API calls as requested to avoid backend modification
       for (const id of ids) {
-        await api.approveEvent(id);
+        await TrainingService.approveEvent(id);
       }
       showNotification(
         `Successfully approved ${ids.length} records.`,

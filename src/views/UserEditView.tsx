@@ -18,8 +18,8 @@ import {
   MenuItem,
   CircularProgress,
 } from '@mui/material';
-import { api } from '~/utilities/api';
-import { useNotification } from '~/utilities/NotificationContext';
+import { UserService } from '~/services/UserService';
+import { useNotification } from '~/hooks/NotificationContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { User } from '~/types/user';
 
@@ -192,8 +192,8 @@ export const UserEditView = () => {
     if (!id) return;
     try {
       setLoading(true);
-      const userData = await api.getUser(id);
-      const allUsersData = await api.getUsers();
+      const userData = await UserService.getUser(id);
+      const allUsersData = await UserService.getUsers();
 
       setUsers(allUsersData);
       reset({
@@ -223,7 +223,7 @@ export const UserEditView = () => {
         const supervisorId = data.supervisor_id
           ? Number(data.supervisor_id)
           : undefined;
-        await api.updateUser(id, {
+        await UserService.updateUser(id, {
           ...data,
           supervisor_id: supervisorId,
         });

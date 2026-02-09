@@ -11,8 +11,9 @@ import {
   CircularProgress,
   Divider,
 } from '@mui/material';
-import { api } from '~/utilities/api';
-import { useNotification } from '~/utilities/NotificationContext';
+import { GroupService } from '~/services/GroupService';
+import { UserService } from '~/services/UserService';
+import { useNotification } from '~/hooks/NotificationContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Group, User } from '~/types/user';
 
@@ -62,9 +63,9 @@ export const ChangeGroupMembershipView = () => {
     if (!id) return;
     try {
       setLoading(true);
-      const userData = await api.getUser(id);
-      const groupsData = await api.getGroups();
-      const userGroupsData = await api.getUserGroups(id);
+      const userData = await UserService.getUser(id);
+      const groupsData = await GroupService.getGroups();
+      const userGroupsData = await UserService.getUserGroups(id);
 
       setUser(userData);
       setAllGroups(groupsData);
@@ -111,7 +112,7 @@ export const ChangeGroupMembershipView = () => {
           }
         });
 
-        await api.updateUserGroups(id, groupStates);
+        await UserService.updateUserGroups(id, groupStates);
         showNotification('Group memberships updated successfully!', 'success');
         void navigate('/profile');
       } catch (error) {

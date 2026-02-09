@@ -1,12 +1,12 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { SupervisorView } from '../SupervisorView';
 import { BrowserRouter } from 'react-router-dom';
-import { api } from '~/utilities/api';
+import { ReportService } from '~/services/ReportService';
 import { vi } from 'vitest';
 import * as csvExport from '~/utilities/csvExport';
 
-vi.mock('~/utilities/api', () => ({
-  api: {
+vi.mock('~/services/ReportService', () => ({
+  ReportService: {
     getSupervisorReport: vi.fn(),
   },
 }));
@@ -28,7 +28,7 @@ const mockReport = [
 
 describe('SupervisorView', () => {
   it('renders report and handles export', async () => {
-    (api.getSupervisorReport as any).mockResolvedValue(mockReport);
+    (ReportService.getSupervisorReport as any).mockResolvedValue(mockReport);
 
     render(
       <BrowserRouter>

@@ -17,8 +17,8 @@ import {
   Checkbox,
   CircularProgress,
 } from '@mui/material';
-import { api } from '~/utilities/api';
-import { useNotification } from '~/utilities/NotificationContext';
+import { TrainingService } from '~/services/TrainingService';
+import { useNotification } from '~/hooks/NotificationContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TrainingEvent } from '~/types/training';
 
@@ -152,7 +152,7 @@ export const UpdateTrainingEventView = () => {
     if (!id) return;
     try {
       setLoading(true);
-      const data = await api.getEvent(id);
+      const data = await TrainingService.getEvent(id);
       setEvent(data);
       reset({
         completion_date: data.completion_date,
@@ -189,7 +189,7 @@ export const UpdateTrainingEventView = () => {
           formData.append('certificate', data.certificate[0]);
         }
 
-        await api.updateEvent(id, formData);
+        await TrainingService.updateEvent(id, formData);
         showNotification('Training record updated successfully!', 'success');
         void navigate('/profile');
       } catch (error) {

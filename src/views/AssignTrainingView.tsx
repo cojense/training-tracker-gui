@@ -13,8 +13,10 @@ import {
   MenuItem,
   CircularProgress,
 } from '@mui/material';
-import { api } from '~/utilities/api';
-import { useNotification } from '~/utilities/NotificationContext';
+import { GroupService } from '~/services/GroupService';
+import { TrainingService } from '~/services/TrainingService';
+import { ProjectService } from '~/services/ProjectService';
+import { useNotification } from '~/hooks/NotificationContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Training } from '~/types/training';
 import { Project } from '~/types/projects';
@@ -60,9 +62,9 @@ export const AssignTrainingView = () => {
     try {
       setLoading(true);
       const [groupData, trainingsData, projectsData] = await Promise.all([
-        api.getGroup(groupId),
-        api.getTrainings(),
-        api.getProjects(),
+        GroupService.getGroup(groupId),
+        TrainingService.getTrainings(),
+        ProjectService.getProjects(),
       ]);
       setGroup(groupData);
       setTrainings(trainingsData);
@@ -83,7 +85,7 @@ export const AssignTrainingView = () => {
   const onSubmit = async (data: AssignFormInput) => {
     if (!groupId) return;
     try {
-      await api.updateAssignment(groupId, data.training_id, {
+      await GroupService.updateAssignment(groupId, data.training_id, {
         ...data,
         project_id: data.project_id,
       });
