@@ -88,7 +88,7 @@ const QueueRow = ({
         ) : (
           event.training_certificates.map((cert, index) => {
             const BACKEND_URL =
-              import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+              import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:5001';
             return (
               <Link
                 key={cert.id ?? index}

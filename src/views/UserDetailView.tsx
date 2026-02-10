@@ -9,7 +9,7 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { UserDetailTable } from '~/components/profile/UserDetailTable';
 import { TrainingDueTable } from '~/components/TrainingDueTable';
 import { GroupMembershipTable } from '~/components/profile/GroupMembershipTable';
@@ -39,7 +39,6 @@ const styles = {
 
 export const UserDetailView = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [targetUser, setTargetUser] = useState<User | null>(null);
   const [assignments, setAssignments] = useState<AssignedTraining[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
@@ -88,7 +87,7 @@ export const UserDetailView = () => {
   if (error || !targetUser) {
     return (
       <Box sx={{ p: 3 }}>
-        <Alert severity="error">{error || 'User not found'}</Alert>
+        <Alert severity="error">{error ?? 'User not found'}</Alert>
       </Box>
     );
   }
