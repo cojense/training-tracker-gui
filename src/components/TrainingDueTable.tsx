@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from 'react';
 import {
   Table,
   TableContainer,
@@ -6,43 +7,100 @@ import {
   TableCell,
   TableBody,
   Paper,
+  Button,
+  useTheme,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { Edit as EditIcon } from '@mui/icons-material';
 import { AssignedTraining } from '~/types/assignments';
 import { TrainingDetailsModalButton } from './TrainingDetailsModal';
+import { getStatusBackgroundColor } from '~/utilities/statusColors';
+
+const styles = {
+  header: { fontWeight: 'bold' },
+};
+
+interface RowProps {
+  assignment: AssignedTraining;
+  onRecord: (trainingId: number | string, userId: number | string) => void;
+}
+
+const TrainingDueRow = ({ assignment, onRecord }: RowProps) => {
+  const theme = useTheme();
+  const handleRecord = useCallback(() => {
+    onRecord(assignment.assignment.training.id, assignment.member.id);
+  }, [assignment, onRecord]);
+
+  const backgroundColor = useMemo(
+    () => getStatusBackgroundColor(assignment, theme),
+    [assignment, theme]
+  );
+
+  const projectNames = useMemo(() => {
+    return assignment.projects.map((p) => p.name).join(', ');
+  }, [assignment.projects]);
+
+  return (
+    <TableRow hover sx={{ backgroundColor }}>
+      <TableCell>
+        <Button
+          size="small"
+          variant="outlined"
+          startIcon={<EditIcon />}
+          onClick={handleRecord}
+        >
+          Record
+        </Button>
+      </TableCell>
+      <TableCell>
+        <TrainingDetailsModalButton training={assignment.assignment.training} />
+      </TableCell>
+      <TableCell>{projectNames}</TableCell>
+      <TableCell>{assignment.completion_date ?? 'Never'}</TableCell>
+      <TableCell>{assignment.approved_date ?? 'N/A'}</TableCell>
+      <TableCell>{assignment.due_date}</TableCell>
+    </TableRow>
+  );
+};
 
 interface TrainingDueTableProps {
   assignments?: AssignedTraining[];
 }
+
 export const TrainingDueTable = ({
   assignments = [],
 }: TrainingDueTableProps) => {
+  const navigate = useNavigate();
+
+  const handleRecordClick = useCallback(
+    (trainingId: number | string, userId: number | string) => {
+      void navigate(
+        `/events/record?training_id=${trainingId}&user_id=${userId}`
+      );
+    },
+    [navigate]
+  );
+
   return (
-    <TableContainer component={Paper} elevation={2}>
+    <TableContainer component={Paper} elevation={0}>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell></TableCell>
-            <TableCell>Training Due</TableCell>
-            <TableCell>Bill To</TableCell>
-            <TableCell>Last Completed</TableCell>
-            <TableCell>Approved</TableCell>
-            <TableCell>Due Date</TableCell>
+            <TableCell sx={styles.header}>Actions</TableCell>
+            <TableCell sx={styles.header}>Training Due</TableCell>
+            <TableCell sx={styles.header}>Bill To</TableCell>
+            <TableCell sx={styles.header}>Last Completed</TableCell>
+            <TableCell sx={styles.header}>Approved</TableCell>
+            <TableCell sx={styles.header}>Due Date</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {assignments.map((training: AssignedTraining) => (
-            <TableRow key={training.assignment.training.id}>
-              <TableCell>[Record]</TableCell>
-              <TableCell>
-                <TrainingDetailsModalButton
-                  training={training.assignment.training}
-                />
-              </TableCell>
-              <TableCell>{training.assignment.project.name}</TableCell>
-              <TableCell>{training.completion_date}</TableCell>
-              <TableCell>{training.approved_date}</TableCell>
-              <TableCell>{training.due_date}</TableCell>
-            </TableRow>
+          {assignments.map((training) => (
+            <TrainingDueRow
+              key={training.assignment.training.id}
+              assignment={training}
+              onRecord={handleRecordClick}
+            />
           ))}
         </TableBody>
       </Table>
