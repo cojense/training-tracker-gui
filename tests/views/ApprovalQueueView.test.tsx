@@ -1,9 +1,9 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { ApprovalQueueView } from '../ApprovalQueueView';
+import { ApprovalQueueView } from '~/views/ApprovalQueueView';
 import { BrowserRouter } from 'react-router-dom';
 import { TrainingService } from '~/services/TrainingService';
 import { NotificationProvider } from '~/hooks/NotificationContext';
-import { vi } from 'vitest';
+import { expect, vi } from 'vitest';
 
 vi.mock('~/services/TrainingService', () => ({
   TrainingService: {
@@ -34,7 +34,9 @@ const mockQueue = [
 describe('ApprovalQueueView', () => {
   it('renders queue and handles bulk approval', async () => {
     (TrainingService.getApprovalQueue as any).mockResolvedValue(mockQueue);
-    (TrainingService.approveEvent as any).mockResolvedValue({ status: 'success' });
+    (TrainingService.approveEvent as any).mockResolvedValue({
+      status: 'success',
+    });
 
     render(
       <BrowserRouter>

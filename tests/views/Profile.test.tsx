@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import Profile from '../Profile';
+import Profile from '~/views/Profile';
 import { MemoryRouter } from 'react-router-dom';
 import { UserService } from '~/services/UserService';
 import { AuthProvider } from '~/hooks/useAuth';
@@ -25,12 +25,18 @@ const mockUser = {
 
 describe('Profile', () => {
   it('renders personal profile details', async () => {
-    (UserService.getCurrentUser as MockedFunction<any>).mockResolvedValue(mockUser);
-    (UserService.getCurrentUserAssignments as MockedFunction<any>).mockResolvedValue(
+    (UserService.getCurrentUser as MockedFunction<any>).mockResolvedValue(
+      mockUser
+    );
+    (
+      UserService.getCurrentUserAssignments as MockedFunction<any>
+    ).mockResolvedValue([]);
+    (UserService.getCurrentUserGroups as MockedFunction<any>).mockResolvedValue(
       []
     );
-    (UserService.getCurrentUserGroups as MockedFunction<any>).mockResolvedValue([]);
-    (UserService.getCurrentUserRecord as MockedFunction<any>).mockResolvedValue([]);
+    (UserService.getCurrentUserRecord as MockedFunction<any>).mockResolvedValue(
+      []
+    );
 
     render(
       <MemoryRouter>

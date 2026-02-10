@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { UserListView } from '../UserListView';
+import { UserListView } from '~/views/UserListView';
 import { MemoryRouter } from 'react-router-dom';
 import { UserService } from '~/services/UserService';
 import { vi, MockedFunction } from 'vitest';
