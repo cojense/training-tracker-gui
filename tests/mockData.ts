@@ -1,6 +1,6 @@
 import { Training } from '~/types/training';
-import { AssignedTraining } from '../types/assignments';
-import { User } from '../types/user';
+import { AssignedTraining } from '~/types/assignments';
+import { User } from '~/types/user';
 import { addDays, subDays, format } from 'date-fns';
 
 const today = new Date();

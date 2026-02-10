@@ -1,7 +1,15 @@
-import React, { useCallback } from 'react';
-import { Card, CardContent, Typography, Button, Box } from '@mui/material';
-import { useAuth } from '~/utilities/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useCallback } from 'react';
+import {
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Box,
+  Stack,
+} from '@mui/material';
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:5001';
+const FRONTEND_URL = window.location.origin;
 
 const styles = {
   container: {
@@ -10,21 +18,20 @@ const styles = {
     alignItems: 'center',
     minHeight: '60vh',
   },
-  card: {
-    maxWidth: 400,
-    textAlign: 'center',
-    p: 2,
-  },
-  secondaryText: { mb: 3 },
+  card: { maxWidth: 400, textAlign: 'center', p: 2 },
+  description: { mb: 3 },
 };
-const LoginView: React.FC = () => {
-  const { login } = useAuth();
-  const navigate = useNavigate();
 
-  const handleLogin = useCallback(() => {
-    login();
-    void navigate('/');
-  }, [login, navigate]);
+const LoginView = () => {
+  const handleGoogleLogin = useCallback(() => {
+    // Perform full page redirect to backend OAuth route with next parameter
+    window.location.href = `${BACKEND_URL}/oauth2/login/google?next=${encodeURIComponent(FRONTEND_URL)}`;
+  }, []);
+
+  const handleDevLogin = useCallback(() => {
+    // Perform full page redirect to backend dev login route with next parameter
+    window.location.href = `${BACKEND_URL}/dev/login?next=${encodeURIComponent(FRONTEND_URL)}`;
+  }, []);
 
   return (
     <Box sx={styles.container}>
@@ -36,18 +43,30 @@ const LoginView: React.FC = () => {
           <Typography
             variant="body1"
             color="text.secondary"
-            sx={styles.secondaryText}
+            sx={styles.description}
           >
             Please sign in to access your training requirements.
           </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            onClick={handleLogin}
-          >
-            Sign In (Mock)
-          </Button>
+
+          <Stack spacing={2}>
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              onClick={handleGoogleLogin}
+            >
+              Sign In with Google
+            </Button>
+
+            <Button
+              variant="outlined"
+              color="secondary"
+              fullWidth
+              onClick={handleDevLogin}
+            >
+              Dev Login (Bypass)
+            </Button>
+          </Stack>
         </CardContent>
       </Card>
     </Box>

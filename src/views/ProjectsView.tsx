@@ -29,11 +29,6 @@ import { ProjectService } from '~/services/ProjectService';
 import { Project } from '~/types/projects';
 import { useNavigate } from 'react-router-dom';
 
-const headerBoxStyles = {
-  p: 2,
-  bgcolor: 'primary.main',
-  color: 'primary.contrastText',
-};
 const contentRootStyles = { p: 0 };
 const centeredBoxStyles = { textAlign: 'center', py: 4 };
 const headerCellStyles = { fontWeight: 'bold' };
