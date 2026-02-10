@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { UserDetailView } from '../UserDetailView';
+import { UserDetailView } from '~/views/UserDetailView';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { UserService } from '~/services/UserService';
 import { AuthProvider } from '~/hooks/useAuth';
@@ -55,9 +55,15 @@ describe('UserDetailView', () => {
     (UserService.getUserAssignments as MockedFunction<any>).mockResolvedValue(
       mockAssignments
     );
-    (UserService.getUserGroups as MockedFunction<any>).mockResolvedValue(mockGroups);
-    (UserService.getUserRecord as MockedFunction<any>).mockResolvedValue(mockRecord);
-    (UserService.getCurrentUser as MockedFunction<any>).mockResolvedValue(mockUser);
+    (UserService.getUserGroups as MockedFunction<any>).mockResolvedValue(
+      mockGroups
+    );
+    (UserService.getUserRecord as MockedFunction<any>).mockResolvedValue(
+      mockRecord
+    );
+    (UserService.getCurrentUser as MockedFunction<any>).mockResolvedValue(
+      mockUser
+    );
 
     render(
       <MemoryRouter initialEntries={['/users/42']}>
@@ -93,7 +99,9 @@ describe('UserDetailView', () => {
     (UserService.getUser as MockedFunction<any>).mockRejectedValue(
       new Error('Unauthorized')
     );
-    (UserService.getCurrentUser as MockedFunction<any>).mockResolvedValue(mockUser);
+    (UserService.getCurrentUser as MockedFunction<any>).mockResolvedValue(
+      mockUser
+    );
 
     render(
       <MemoryRouter initialEntries={['/users/42']}>

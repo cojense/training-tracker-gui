@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { TrainingDueTable } from '../TrainingDueTable';
+import { TrainingDueTable } from '~/components/TrainingDueTable';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material';
 import { AssignedTraining } from '~/types/assignments';

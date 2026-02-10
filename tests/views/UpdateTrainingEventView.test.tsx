@@ -1,5 +1,5 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { UpdateTrainingEventView } from '../UpdateTrainingEventView';
+import { UpdateTrainingEventView } from '~/views/UpdateTrainingEventView';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { TrainingService } from '~/services/TrainingService';
 import { NotificationProvider } from '~/hooks/NotificationContext';

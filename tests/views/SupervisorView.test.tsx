@@ -1,5 +1,5 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { SupervisorView } from '../SupervisorView';
+import { SupervisorView } from '~/views/SupervisorView';
 import { BrowserRouter } from 'react-router-dom';
 import { ReportService } from '~/services/ReportService';
 import { vi } from 'vitest';

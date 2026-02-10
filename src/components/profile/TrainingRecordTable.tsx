@@ -34,7 +34,7 @@ const CertificateLink = ({ certId, index, sx }: CertificateLinkProps) => {
     [index]
   );
   const BACKEND_URL =
-    import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+    import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:5001';
   const href = useMemo(
     () => `${BACKEND_URL}/api/certificates/${certId}`,
     [certId, BACKEND_URL]

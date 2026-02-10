@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { TrainingRecordTable } from '../TrainingRecordTable';
+import { TrainingRecordTable } from '~/components/profile/TrainingRecordTable';
 import { BrowserRouter } from 'react-router-dom';
 import { TrainingEvent } from '~/types/training';
 

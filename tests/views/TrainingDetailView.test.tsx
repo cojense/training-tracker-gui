@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { TrainingDetailView } from '../TrainingDetailView';
+import { TrainingDetailView } from '~/views/TrainingDetailView';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { TrainingService } from '~/services/TrainingService';
 import { AuthProvider } from '~/hooks/useAuth';
@@ -36,10 +36,12 @@ const mockCompletions = [
 
 describe('TrainingDetailView', () => {
   it('renders training details and completion history', async () => {
-    (TrainingService.getTraining as MockedFunction<any>).mockResolvedValue(mockTraining);
-    (TrainingService.getTrainingCompletions as MockedFunction<any>).mockResolvedValue(
-      mockCompletions
+    (TrainingService.getTraining as MockedFunction<any>).mockResolvedValue(
+      mockTraining
     );
+    (
+      TrainingService.getTrainingCompletions as MockedFunction<any>
+    ).mockResolvedValue(mockCompletions);
     (TrainingService.getCurrentUser as MockedFunction<any>).mockResolvedValue({
       id: 1,
       first_name: 'Test',

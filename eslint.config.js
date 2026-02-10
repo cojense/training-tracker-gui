@@ -1,56 +1,41 @@
-import eslint from '@eslint/js';
-import { defineConfig } from 'eslint/config';
-import tseslint from 'typescript-eslint';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
-
-import reactPlugin from 'eslint-plugin-react';
+import js from '@eslint/js';
+import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
-import reactPerfPlugin from 'eslint-plugin-react-perf';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
 
-export default defineConfig(
+export default tseslint.config(
+  { ignores: ['dist', 'node_modules', 'conductor'] },
   {
-    ignores: ['dist/**', 'eslint.config.js', 'vitest.config.ts'],
-  },
-  // @ts-ignore - InfiniteArray type mismatch in flat config
-  eslint.configs.recommended,
-  // @ts-ignore - Type mismatch in flat config
-  ...tseslint.configs.recommendedTypeChecked,
-  // @ts-ignore - Type mismatch in flat config
-  ...tseslint.configs.stylisticTypeChecked,
-  {
-    files: ['**/*.{js,jsx,ts,tsx}'],
-    ...reactPlugin.configs.flat.recommended,
-    ...reactPerfPlugin.configs.flat.recommended,
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: {
+      ecmaVersion: 5,
+      globals: globals.browser,
+    },
     plugins: {
       'react-hooks': reactHooks,
-      'react-perf': reactPerfPlugin,
+      'react-refresh': reactRefresh,
     },
     rules: {
-      // rules-of-hooks finds hooks that are called incorrectly (conditionally or in loops)
-      'react-hooks/rules-of-hooks': 'error',
-      // exhaustive-deps finds hooks with inproper effect dependencies
-      'react-hooks/exhaustive-deps': 'error',
-      'react-perf/jsx-no-new-function-as-prop': 'warn',
-      'react-perf/jsx-no-new-object-as-prop': 'warn',
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unsafe-assignment': 'warn',
-      '@typescript-eslint/no-unsafe-member-access': 'warn',
-      '@typescript-eslint/no-unsafe-call': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn',
-      '@typescript-eslint/no-misused-promises': [
-        'error',
-        {
-          checksVoidReturn: false,
-        },
+      // --- CORE RULES (Do Not Disable) ---
+      ...reactHooks.configs.recommended.rules,
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true },
       ],
+
+      // --- NEGOTIABLE RULES (Agent may ask to disable) ---
+      // These are often stylistic or overly strict for rapid prototyping.
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_' },
+      ],
+      'no-console': ['warn', { allow: ['warn', 'error'] }], // Allow warn/error, warn on log
+
+      // --- PROJECT SPECIFIC OVERRIDES ---
+      // Add user-negotiated overrides here (Conductor will append below)
     },
-    languageOptions: {
-      ...reactPlugin.configs.flat.recommended.languageOptions,
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-  },
-  eslintPluginPrettierRecommended
+  }
 );

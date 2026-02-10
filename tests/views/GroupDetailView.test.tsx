@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { GroupDetailView } from '../GroupDetailView';
+import { GroupDetailView } from '~/views/GroupDetailView';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { GroupService } from '~/services/GroupService';
 import { vi } from 'vitest';
@@ -34,7 +34,9 @@ const mockMembers = [
 describe('GroupDetailView', () => {
   it('renders group details, assignments and members', async () => {
     (GroupService.getGroup as any).mockResolvedValue(mockGroup);
-    (GroupService.getGroupAssignments as any).mockResolvedValue(mockAssignments);
+    (GroupService.getGroupAssignments as any).mockResolvedValue(
+      mockAssignments
+    );
     (GroupService.getGroupMembers as any).mockResolvedValue(mockMembers);
 
     render(
