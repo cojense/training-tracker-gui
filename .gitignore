@@ -1,5 +1,33 @@
-# Logs
-logs
+# --- System & IDEs ---
+.DS_Store
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.bak
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# --- Dependencies & Build ---
+node_modules/
+dist/
+dist-ssr/
+.venv/
+venv/
+/db/
+
+# --- Environment & Sensitive Files ---
+.env
+*.local
+.geminiignore
+
+# --- Logs ---
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,28 +35,24 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# --- AI Agents & Caches ---
+.gemini/logs/
+.claude/
+conductor/tracks/*
+conductor/code_styleguides/*
+examples/
+*.md.template
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-*.bak
+# --- Media & Temporary Files ---
+*.png
+*.jpg
+*.jpeg
+docker-compose.dev.yml
 
-# Extras
-.env
-GEMINI.md
-.vscode/
-.gemini/
-conductor/
-.geminiignore
+# --- Whitelist (Keep these) ---
+!README.md
+!GEMINI.md
+!CLAUDE.md
 
+# --- Gemini Creds ---
+gha-creds-*.json
