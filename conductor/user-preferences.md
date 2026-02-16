@@ -7,5 +7,6 @@
 * [Example] Use "Early Return" pattern in React components.
 
 ## Workflow Preferences
+* **Commits:** NEVER execute `git commit` commands. The user will handle all commits manually. Creating commits through the agent breaks the CLI environment.
 * **Commits:** Do not create intermediate commits. Squash everything into one commit at the end of the track.
 * **Linting:** Always run `bun run lint:fix` before asking for review. Ask for guidance on specific lint rule violations.

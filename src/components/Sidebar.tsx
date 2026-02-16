@@ -15,8 +15,6 @@ import {
   Home as HomeIcon,
   School as TrainingIcon,
   SupervisorAccount as SupervisorIcon,
-  AdminPanelSettings as ManagerIcon,
-  CheckCircle as ApproveIcon,
   People as UsersIcon,
   Groups as GroupsIcon,
   Assignment as ProjectsIcon,
@@ -67,7 +65,6 @@ interface NavListItemProps {
   onClick: (path: string) => void;
   sx?: SxProps<Theme>;
 }
-
 const NavListItem = ({ item, isActive, onClick, sx }: NavListItemProps) => {
   const handleClick = useCallback(() => {
     onClick(item.path);
@@ -95,8 +92,7 @@ interface SidebarProps {
   onClose: () => void;
   mobile: boolean;
 }
-
-const Sidebar = ({ open, onClose, mobile }: SidebarProps) => {
+export const Sidebar = ({ open, onClose, mobile }: SidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
@@ -109,7 +105,7 @@ const Sidebar = ({ open, onClose, mobile }: SidebarProps) => {
     [navigate, mobile, onClose]
   );
 
-  const isAdminOrManager = user?.is_admin ?? user?.is_training_manager ?? false;
+  const isAdminOrManager = user?.is_admin || user?.is_training_manager || false;
 
   const navItems = useMemo(
     () => [
@@ -124,18 +120,6 @@ const Sidebar = ({ open, onClose, mobile }: SidebarProps) => {
         text: 'Supervisor',
         path: '/supervisor',
         icon: <SupervisorIcon />,
-        visible: isAuthenticated,
-      },
-      {
-        text: 'Manager',
-        path: '/manager-report',
-        icon: <ManagerIcon />,
-        visible: isAdminOrManager,
-      },
-      {
-        text: 'Approve',
-        path: '/approval',
-        icon: <ApproveIcon />,
         visible: isAdminOrManager,
       },
       {
@@ -217,5 +201,3 @@ const Sidebar = ({ open, onClose, mobile }: SidebarProps) => {
     </Box>
   );
 };
-
-export default Sidebar;

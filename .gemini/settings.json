@@ -1,0 +1,9 @@
+{
+  "context": {
+    "loadMemoryFromIncludeDirectories": true
+  },
+  "general": {
+    "debugKeystrokeLogging": true,
+    "previewFeatures": true
+  }
+}
