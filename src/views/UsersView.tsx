@@ -1,12 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   Typography,
   Card,
   CardContent,
@@ -14,85 +7,36 @@ import {
   Divider,
   CircularProgress,
   Alert,
-  IconButton,
-  Tooltip,
   TextField,
   InputAdornment,
-  TableSortLabel,
 } from '@mui/material';
 import {
-  Edit as EditIcon,
-  Groups as GroupsIcon,
-  Visibility as ViewIcon,
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { UserService } from '~/services/UserService';
 import { User } from '~/types/user';
-import { UserEditModal } from '~/components/modals/UserEditModal';
-import { UserGroupsModal } from '~/components/modals/UserGroupsModal';
-import { UserDetailModal } from '~/components/modals/UserDetailModal';
+import { UserEditModal } from '~/components/users/UserEditModal';
+import { UserGroupsModal } from '~/components/users/UserGroupsModal';
+import { UserDetailModal } from '~/components/users/UserDetailModal';
+import { UserTable } from '~/components/users/UserTable';
 
-const headerBoxStyles = {
-  p: 2,
-  bgcolor: 'primary.main',
-  color: 'primary.contrastText',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-};
-const contentRootStyles = { p: 0 };
-const centeredBoxStyles = { textAlign: 'center', py: 4 };
-const headerCellStyles = { fontWeight: 'bold' };
-const errorBoxStyles = { p: 2 };
-
-interface UserRowProps {
-  user: User;
-  onEdit: (id: number) => void;
-  onGroups: (id: number) => void;
-  onView: (id: number) => void;
-}
-const UserRow = ({ user, onEdit, onGroups, onView }: UserRowProps) => {
-  const handleEdit = useCallback(() => onEdit(user.id), [user.id, onEdit]);
-  const handleGroups = useCallback(
-    () => onGroups(user.id),
-    [user.id, onGroups]
-  );
-  const handleView = useCallback(() => onView(user.id), [user.id, onView]);
-
-  const userName = `${user.last_name}, ${user.first_name}`;
-  const roles = [
-    user.is_admin ? 'Admin' : '',
-    user.is_training_manager ? 'Manager' : '',
-    !user.is_admin && !user.is_training_manager ? 'Employee' : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
-
-  return (
-    <TableRow hover>
-      <TableCell>{user.id}</TableCell>
-      <TableCell>{userName}</TableCell>
-      <TableCell>{user.email}</TableCell>
-      <TableCell>{roles}</TableCell>
-      <TableCell>
-        <Tooltip title="View Profile">
-          <IconButton size="small" onClick={handleView}>
-            <ViewIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Edit Profile">
-          <IconButton size="small" onClick={handleEdit}>
-            <EditIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Change Groups">
-          <IconButton size="small" onClick={handleGroups}>
-            <GroupsIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      </TableCell>
-    </TableRow>
-  );
+const Styles = {
+  headerBox: {
+    p: 2,
+    bgcolor: 'primary.main',
+    color: 'primary.contrastText',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  contentRoot: { p: 0 },
+  centeredBox: { textAlign: 'center', py: 4 },
+  errorBox: { p: 2 },
+  searchField: {
+    bgcolor: 'background.paper',
+    borderRadius: 1,
+    width: { xs: '100%', sm: 250 },
+  },
 };
 
 type Order = 'asc' | 'desc';
@@ -200,86 +144,45 @@ export const UsersView = () => {
   return (
     <>
       <Card elevation={2}>
-        <Box sx={headerBoxStyles}>
+        <Box sx={Styles.headerBox}>
           <Typography variant="h6">User Directory</Typography>
           <TextField
             size="small"
             placeholder="Search users..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            sx={{
-              bgcolor: 'background.paper',
-              borderRadius: 1,
-              width: { xs: '100%', sm: 250 },
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
-                </InputAdornment>
-              ),
+            sx={Styles.searchField}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }
             }}
           />
         </Box>
         <Divider />
-        <CardContent sx={contentRootStyles}>
+        <CardContent sx={Styles.contentRoot}>
           {loading ? (
-            <Box sx={centeredBoxStyles}>
+            <Box sx={Styles.centeredBox}>
               <CircularProgress />
             </Box>
           ) : error ? (
-            <Box sx={errorBoxStyles}>
+            <Box sx={Styles.errorBox}>
               <Alert severity="error">{error}</Alert>
             </Box>
           ) : (
-            <TableContainer component={Paper} elevation={0}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={headerCellStyles}>
-                      <TableSortLabel
-                        active={orderBy === 'id'}
-                        direction={orderBy === 'id' ? order : 'asc'}
-                        onClick={() => handleRequestSort('id')}
-                      >
-                        ID
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell sx={headerCellStyles}>
-                      <TableSortLabel
-                        active={orderBy === 'full_name'}
-                        direction={orderBy === 'full_name' ? order : 'asc'}
-                        onClick={() => handleRequestSort('full_name')}
-                      >
-                        Name
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell sx={headerCellStyles}>
-                      <TableSortLabel
-                        active={orderBy === 'email'}
-                        direction={orderBy === 'email' ? order : 'asc'}
-                        onClick={() => handleRequestSort('email')}
-                      >
-                        Email
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell sx={headerCellStyles}>Roles</TableCell>
-                    <TableCell sx={headerCellStyles}>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredUsers.map((u) => (
-                    <UserRow
-                      key={u.id}
-                      user={u}
-                      onEdit={handleEditClick}
-                      onGroups={handleGroupsClick}
-                      onView={handleViewClick}
-                    />
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+            <UserTable
+              users={filteredUsers}
+              orderBy={orderBy}
+              order={order}
+              onRequestSort={handleRequestSort}
+              onEdit={handleEditClick}
+              onGroups={handleGroupsClick}
+              onView={handleViewClick}
+            />
           )}
         </CardContent>
       </Card>

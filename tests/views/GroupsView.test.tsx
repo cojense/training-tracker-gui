@@ -15,7 +15,7 @@ vi.mock('../../src/hooks/useAuth', () => ({
   }),
 }));
 
-const GroupServiceMock = GroupService as any;
+const GroupServiceMock = vi.mocked(GroupService);
 
 const theme = createTheme();
 

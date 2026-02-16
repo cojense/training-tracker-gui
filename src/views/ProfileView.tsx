@@ -11,18 +11,18 @@ import {
   Button,
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
-import { UserDetailTable } from '~/components/profile/UserDetailTable';
+import { UserDetailTable } from '~/components/users/UserDetailTable';
 import { TrainingDueTable } from '~/components/TrainingDueTable';
-import { GroupMembershipTable } from '~/components/profile/GroupMembershipTable';
-import { TrainingRecordTable } from '~/components/profile/TrainingRecordTable';
+import { GroupMembershipTable } from '~/components/users/GroupMembershipTable';
+import { TrainingRecordTable } from '~/components/users/TrainingRecordTable';
 import { useAuth } from '~/hooks/useAuth';
 import { UserService } from '~/services/UserService';
 import { AssignedTraining } from '~/types/assignments';
 import { Group } from '~/types/user';
 import { TrainingEvent } from '~/types/training';
-import { UserEditModal } from '~/components/modals/UserEditModal';
-import { UserGroupsModal } from '~/components/modals/UserGroupsModal';
-import { TrainingEventModal } from '~/components/modals/TrainingEventModal';
+import { UserEditModal } from '~/components/users/UserEditModal';
+import { UserGroupsModal } from '~/components/users/UserGroupsModal';
+import { TrainingEventModal } from '~/components/trainings/TrainingEventModal';
 
 const styles = {
   headerBox: {

@@ -1,13 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Link as MuiLink,
   Typography,
   Card,
   CardContent,
@@ -18,21 +10,20 @@ import {
   Button,
   TextField,
   InputAdornment,
-  TableSortLabel,
 } from '@mui/material';
 import {
   Add as AddIcon,
-  Edit as EditIcon,
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { Training, TrainingEvent } from '~/types/training';
 import { TrainingService } from '~/services/TrainingService';
 import { useAuth } from '~/hooks/useAuth';
-import { TrainingCreateModal } from '~/components/modals/TrainingCreateModal';
-import { TrainingEditModal } from '~/components/modals/TrainingEditModal';
-import { TrainingDetailModal } from '~/components/modals/TrainingDetailModal';
-import { TrainingEventModal } from '~/components/modals/TrainingEventModal';
-import { TrainingAssignModal } from '~/components/modals/TrainingAssignModal';
+import { TrainingCreateModal } from '~/components/trainings/TrainingCreateModal';
+import { TrainingEditModal } from '~/components/trainings/TrainingEditModal';
+import { TrainingDetailModal } from '~/components/trainings/TrainingDetailModal';
+import { TrainingEventModal } from '~/components/trainings/TrainingEventModal';
+import { TrainingAssignModal } from '~/components/trainings/TrainingAssignModal';
+import { TrainingTable } from '~/components/trainings/TrainingTable';
 import { Group } from '~/types/user';
 
 const headerBoxStyles = {
@@ -45,70 +36,7 @@ const headerBoxStyles = {
 };
 const contentRootStyles = { p: 0 };
 const centeredBoxStyles = { textAlign: 'center', py: 4 };
-const headerCellStyles = { fontWeight: 'bold' };
 const errorBoxStyles = { p: 2 };
-const trainingTableStyles = { minWidth: 650 };
-
-interface TrainingRowProps {
-  training: Training;
-  isManager: boolean;
-  onEdit: (id: number) => void;
-  onView: (id: number) => void;
-}
-const TrainingRow = ({
-  training,
-  isManager,
-  onEdit,
-  onView,
-}: TrainingRowProps) => {
-  const handleEdit = useCallback(
-    () => onEdit(training.id),
-    [training.id, onEdit]
-  );
-  const handleView = useCallback(
-    () => onView(training.id),
-    [training.id, onView]
-  );
-
-  const externalUrl = training.url ?? '#';
-
-  return (
-    <TableRow hover>
-      <TableCell component="th" scope="row">
-        {training.id}
-      </TableCell>
-      <TableCell>{training.date}</TableCell>
-      <TableCell>
-        <MuiLink
-          onClick={handleView}
-          underline="hover"
-          sx={{ cursor: 'pointer' }}
-          aria-label="View Details"
-        >
-          {training.title}
-        </MuiLink>
-      </TableCell>
-      <TableCell>
-        <MuiLink
-          component="a"
-          href={externalUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          underline="hover"
-        >
-          {training.url}
-        </MuiLink>
-      </TableCell>
-      {isManager && (
-        <TableCell>
-          <Button size="small" startIcon={<EditIcon />} onClick={handleEdit}>
-            Edit
-          </Button>
-        </TableCell>
-      )}
-    </TableRow>
-  );
-};
 
 type Order = 'asc' | 'desc';
 
@@ -242,12 +170,14 @@ export const TrainingsView = () => {
                 borderRadius: 1,
                 width: { xs: '100%', sm: 250 },
               }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }
               }}
             />
             {isManager && (
@@ -285,56 +215,15 @@ export const TrainingsView = () => {
               <Alert severity="error">{error}</Alert>
             </Box>
           ) : (
-            <TableContainer component={Paper} elevation={0}>
-              <Table sx={trainingTableStyles} aria-label="training table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={headerCellStyles}>
-                      <TableSortLabel
-                        active={orderBy === 'id'}
-                        direction={orderBy === 'id' ? order : 'asc'}
-                        onClick={() => handleRequestSort('id')}
-                      >
-                        ID
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell sx={headerCellStyles}>
-                      <TableSortLabel
-                        active={orderBy === 'date'}
-                        direction={orderBy === 'date' ? order : 'asc'}
-                        onClick={() => handleRequestSort('date')}
-                      >
-                        Date
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell sx={headerCellStyles}>
-                      <TableSortLabel
-                        active={orderBy === 'title'}
-                        direction={orderBy === 'title' ? order : 'asc'}
-                        onClick={() => handleRequestSort('title')}
-                      >
-                        Training Name
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell sx={headerCellStyles}>External URL</TableCell>
-                    {isManager && (
-                      <TableCell sx={headerCellStyles}>Actions</TableCell>
-                    )}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredTrainings.map((training: Training) => (
-                    <TrainingRow
-                      key={training.id}
-                      training={training}
-                      isManager={isManager}
-                      onEdit={handleEditClick}
-                      onView={handleViewClick}
-                    />
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+            <TrainingTable
+              trainings={filteredTrainings}
+              isManager={isManager}
+              orderBy={orderBy}
+              order={order}
+              onRequestSort={handleRequestSort}
+              onEdit={handleEditClick}
+              onView={handleViewClick}
+            />
           )}
         </CardContent>
       </Card>

@@ -1,6 +1,13 @@
-import { useContext } from 'react';
-import { NotificationContext } from './NotificationContext';
+import { createContext, useContext } from 'react';
 import { AlertColor } from '@mui/material';
+
+export interface NotificationContextType {
+  showNotification: (message: string, severity?: AlertColor) => void;
+}
+
+export const NotificationContext = createContext<
+  NotificationContextType | undefined
+>(undefined);
 
 export const useNotification = () => {
   const context = useContext(NotificationContext);
@@ -11,6 +18,3 @@ export const useNotification = () => {
   }
   return context;
 };
-interface NotificationContextType {
-  showNotification: (message: string, severity?: AlertColor) => void;
-}

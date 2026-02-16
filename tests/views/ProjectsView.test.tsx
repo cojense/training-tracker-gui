@@ -15,7 +15,7 @@ vi.mock('../../src/hooks/useAuth', () => ({
   }),
 }));
 
-const ProjectServiceMock = ProjectService as any;
+const ProjectServiceMock = vi.mocked(ProjectService);
 
 const theme = createTheme();
 

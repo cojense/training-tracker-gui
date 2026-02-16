@@ -14,9 +14,9 @@ import {
 import { Edit as EditIcon } from '@mui/icons-material';
 import { AssignedTraining } from '~/types/assignments';
 import { getStatusBackgroundColor } from '~/utilities/statusColors';
-import { TrainingEventModal } from '~/components/modals/TrainingEventModal';
-import { TrainingDetailModal } from '~/components/modals/TrainingDetailModal';
-import { TrainingEditModal } from '~/components/modals/TrainingEditModal';
+import { TrainingEventModal } from '~/components/trainings/TrainingEventModal';
+import { TrainingDetailModal } from '~/components/trainings/TrainingDetailModal';
+import { TrainingEditModal } from '~/components/trainings/TrainingEditModal';
 import { Training, TrainingEvent } from '~/types/training';
 
 const styles = {

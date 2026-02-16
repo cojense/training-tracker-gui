@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
 import { FormControlLabel, Switch } from '@mui/material';
-import { ControllerRenderProps } from 'react-hook-form';
+import { ControllerRenderProps, FieldValues } from 'react-hook-form';
 
 interface ActiveStatusSwitchProps {
-  field: ControllerRenderProps<any, 'is_active'>;
+  field: ControllerRenderProps<FieldValues, 'is_active'>;
 }
 
 export const ActiveStatusSwitch = ({ field }: ActiveStatusSwitchProps) => {

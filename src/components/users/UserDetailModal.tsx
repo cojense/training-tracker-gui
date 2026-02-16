@@ -15,10 +15,10 @@ import { AssignedTraining } from '~/types/assignments';
 import { TrainingEvent } from '~/types/training';
 import { Group } from '~/types/user';
 import { UserService } from '~/services/UserService';
-import { UserDetailTable } from '~/components/profile/UserDetailTable';
+import { UserDetailTable } from '~/components/users/UserDetailTable';
 import { TrainingDueTable } from '~/components/TrainingDueTable';
-import { GroupMembershipTable } from '~/components/profile/GroupMembershipTable';
-import { TrainingRecordTable } from '~/components/profile/TrainingRecordTable';
+import { GroupMembershipTable } from '~/components/users/GroupMembershipTable';
+import { TrainingRecordTable } from '~/components/users/TrainingRecordTable';
 
 const modalStyle = {
   position: 'absolute' as const,

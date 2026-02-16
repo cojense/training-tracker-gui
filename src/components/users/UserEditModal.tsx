@@ -10,9 +10,9 @@ import {
 } from '@mui/material';
 import { User } from '~/types/user';
 import { UserService } from '~/services/UserService';
-import { useForm, Controller, Control, ControllerRenderProps } from 'react-hook-form';
+import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
 import { useNotification } from '~/hooks/useNotification';
-import { ActiveStatusSwitch } from './shared/FormFields';
+import { ActiveStatusSwitch } from '~/components/shared/FormFields';
 
 const modalStyle = {
   position: 'absolute' as const,

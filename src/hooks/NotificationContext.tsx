@@ -3,23 +3,16 @@ import {
   useCallback,
   ReactNode,
   useMemo,
-  createContext,
   SyntheticEvent,
 } from 'react';
 import { Snackbar, Alert, AlertColor, SnackbarOrigin } from '@mui/material';
-
-interface NotificationContextType {
-  showNotification: (message: string, severity?: AlertColor) => void;
-}
-
-export const NotificationContext = createContext<NotificationContextType | undefined>(
-  undefined
-);
+import { NotificationContext} from './useNotification';
 
 const anchorOrigin: SnackbarOrigin = {
   vertical: 'bottom',
   horizontal: 'right',
 };
+
 const alertStyles = { width: '100%' };
 
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
