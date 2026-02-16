@@ -1,0 +1,16 @@
+services:
+  frontend:
+    build:
+      context: .
+      target: development
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:5001/api}
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:5001/api}
+    ports:
+      - "${GUI_PORT:-8080}:5173"
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./index.html:/app/index.html
+      - ./vite.config.ts:/app/vite.config.ts
