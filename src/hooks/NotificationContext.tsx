@@ -1,10 +1,9 @@
 import {
-  createContext,
-  useContext,
   useState,
   useCallback,
   ReactNode,
   useMemo,
+  createContext,
   SyntheticEvent,
 } from 'react';
 import { Snackbar, Alert, AlertColor, SnackbarOrigin } from '@mui/material';
@@ -13,7 +12,7 @@ interface NotificationContextType {
   showNotification: (message: string, severity?: AlertColor) => void;
 }
 
-const NotificationContext = createContext<NotificationContextType | undefined>(
+export const NotificationContext = createContext<NotificationContextType | undefined>(
   undefined
 );
 
@@ -72,14 +71,4 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       </Snackbar>
     </NotificationContext.Provider>
   );
-};
-
-export const useNotification = () => {
-  const context = useContext(NotificationContext);
-  if (context === undefined) {
-    throw new Error(
-      'useNotification must be used within a NotificationProvider'
-    );
-  }
-  return context;
 };

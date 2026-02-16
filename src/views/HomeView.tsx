@@ -25,7 +25,7 @@ const styles = {
   errorBox: { p: 2 },
 };
 
-const Home = () => {
+export const HomeView = () => {
   const { user } = useAuth();
   const [assignments, setAssignments] = useState<AssignedTraining[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,7 +81,10 @@ const Home = () => {
               <Alert severity="error">{error}</Alert>
             </Box>
           ) : assignments.length > 0 ? (
-            <TrainingDueTable assignments={assignments} />
+            <TrainingDueTable
+              assignments={assignments}
+              onSaveSuccess={fetchAssignments}
+            />
           ) : (
             <Box sx={styles.centeredBox}>
               <Typography variant="h6" color="text.secondary">
@@ -98,4 +101,3 @@ const Home = () => {
   );
 };
 
-export default Home;

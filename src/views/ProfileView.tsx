@@ -8,16 +8,21 @@ import {
   Divider,
   CircularProgress,
   Alert,
+  Button,
 } from '@mui/material';
-import { useParams } from 'react-router-dom';
+import { Add as AddIcon } from '@mui/icons-material';
 import { UserDetailTable } from '~/components/profile/UserDetailTable';
 import { TrainingDueTable } from '~/components/TrainingDueTable';
 import { GroupMembershipTable } from '~/components/profile/GroupMembershipTable';
 import { TrainingRecordTable } from '~/components/profile/TrainingRecordTable';
+import { useAuth } from '~/hooks/useAuth';
 import { UserService } from '~/services/UserService';
 import { AssignedTraining } from '~/types/assignments';
-import { Group, User } from '~/types/user';
+import { Group } from '~/types/user';
 import { TrainingEvent } from '~/types/training';
+import { UserEditModal } from '~/components/modals/UserEditModal';
+import { UserGroupsModal } from '~/components/modals/UserGroupsModal';
+import { TrainingEventModal } from '~/components/modals/TrainingEventModal';
 
 const styles = {
   headerBox: {
@@ -37,44 +42,48 @@ const styles = {
   centeredBox: { display: 'flex', justifyContent: 'center', py: 8 },
 };
 
-export const UserDetailView = () => {
-  const { id } = useParams<{ id: string }>();
-  const [targetUser, setTargetUser] = useState<User | null>(null);
+export const ProfileView = () => {
+  const { user } = useAuth();
   const [assignments, setAssignments] = useState<AssignedTraining[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [record, setRecord] = useState<TrainingEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [groupsModalOpen, setGroupsModalOpen] = useState(false);
+  const [eventModalOpen, setEventModalOpen] = useState(false);
+
   const fetchData = useCallback(async () => {
-    if (!id) return;
     try {
       setLoading(true);
       setError(null);
-      const [userData, assignmentsData, groupsData, recordData] =
-        await Promise.all([
-          UserService.getUser(id),
-          UserService.getUserAssignments(id),
-          UserService.getUserGroups(id),
-          UserService.getUserRecord(id),
-        ]);
-      setTargetUser(userData);
+      const [assignmentsData, groupsData, recordData] = await Promise.all([
+        UserService.getCurrentUserAssignments(),
+        UserService.getCurrentUserGroups(),
+        UserService.getCurrentUserRecord(),
+      ]);
       setAssignments(assignmentsData);
       setGroups(groupsData);
       setRecord(recordData);
     } catch (err) {
-      console.error('Failed to fetch user detail data:', err);
-      setError(
-        'Could not load user details. They may not exist or you may lack permission.'
-      );
+      console.error('Failed to fetch profile data:', err);
+      setError('Could not load profile details. Please try again later.');
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, []);
 
   useEffect(() => {
     void fetchData();
   }, [fetchData]);
+
+  const handleCloseModal = () => {
+    setEditModalOpen(false);
+    setGroupsModalOpen(false);
+    setEventModalOpen(false);
+    void fetchData();
+  };
 
   if (loading) {
     return (
@@ -84,28 +93,32 @@ export const UserDetailView = () => {
     );
   }
 
-  if (error || !targetUser) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Alert severity="error">{error ?? 'User not found'}</Alert>
-      </Box>
-    );
-  }
+  const isManager = user?.is_admin ?? user?.is_training_manager ?? false;
 
   return (
     <Stack spacing={3}>
       <Typography variant="h4" gutterBottom>
-        User Detail: {targetUser.first_name} {targetUser.last_name}
+        User Profile
       </Typography>
+
+      {error && <Alert severity="error">{error}</Alert>}
 
       {/* User Details Card */}
       <Card elevation={2}>
-        <Box sx={styles.plainHeaderBox}>
+        <Box sx={styles.headerBox}>
           <Typography variant="h6">Personal Details</Typography>
+          <Button
+            variant="contained"
+            color="secondary"
+            size="small"
+            onClick={() => setEditModalOpen(true)}
+          >
+            Edit Profile
+          </Button>
         </Box>
         <Divider />
         <CardContent sx={styles.contentRoot}>
-          <UserDetailTable user={targetUser} />
+          {user && <UserDetailTable user={user} />}
         </CardContent>
       </Card>
 
@@ -116,14 +129,24 @@ export const UserDetailView = () => {
         </Box>
         <Divider />
         <CardContent sx={styles.contentRoot}>
-          <TrainingDueTable assignments={assignments} />
+          <TrainingDueTable assignments={assignments} onSaveSuccess={fetchData} />
         </CardContent>
       </Card>
 
       {/* Group Membership Card */}
       <Card elevation={2}>
-        <Box sx={styles.plainHeaderBox}>
+        <Box sx={styles.headerBox}>
           <Typography variant="h6">Group Memberships</Typography>
+          {isManager && (
+            <Button
+              variant="contained"
+              color="secondary"
+              size="small"
+              onClick={() => setGroupsModalOpen(true)}
+            >
+              Change Groups
+            </Button>
+          )}
         </Box>
         <Divider />
         <CardContent sx={styles.contentRoot}>
@@ -133,14 +156,40 @@ export const UserDetailView = () => {
 
       {/* Training Record Card */}
       <Card elevation={2}>
-        <Box sx={styles.plainHeaderBox}>
+        <Box sx={styles.headerBox}>
           <Typography variant="h6">Training Record</Typography>
+          <Button
+            variant="contained"
+            color="secondary"
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={() => setEventModalOpen(true)}
+          >
+            Record Training
+          </Button>
         </Box>
         <Divider />
         <CardContent sx={styles.contentRoot}>
           <TrainingRecordTable record={record} />
         </CardContent>
       </Card>
+
+      <UserEditModal
+        user={user}
+        open={editModalOpen}
+        onClose={handleCloseModal}
+      />
+      <UserGroupsModal
+        user={user}
+        open={groupsModalOpen}
+        onClose={handleCloseModal}
+      />
+      <TrainingEventModal
+        open={eventModalOpen}
+        onClose={handleCloseModal}
+        mode="create"
+        initialUserId={user?.id}
+      />
     </Stack>
   );
 };

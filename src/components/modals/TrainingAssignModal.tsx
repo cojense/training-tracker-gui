@@ -1,26 +1,38 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useForm, Controller } from 'react-hook-form';
 import {
-  Box,
   Typography,
-  TextField,
+  Box,
+  CircularProgress,
   Button,
-  Card,
-  CardContent,
+  TextField,
+  Modal,
   Stack,
   FormControlLabel,
   Checkbox,
   MenuItem,
-  CircularProgress,
 } from '@mui/material';
-import { GroupService } from '~/services/GroupService';
+import { Training } from '~/types/training';
+import { Group } from '~/types/user';
+import { Project } from '~/types/projects';
 import { TrainingService } from '~/services/TrainingService';
 import { ProjectService } from '~/services/ProjectService';
-import { useNotification } from '~/hooks/NotificationContext';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Training } from '~/types/training';
-import { Project } from '~/types/projects';
-import { Group } from '~/types/user';
+import { GroupService } from '~/services/GroupService';
+import { useForm, Controller } from 'react-hook-form';
+import { useNotification } from '~/hooks/useNotification';
+
+const modalStyle = {
+  position: 'absolute' as const,
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 600,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+  maxHeight: '90vh',
+  overflowY: 'auto',
+};
 
 interface AssignFormInput {
   training_id: string | number;
@@ -32,11 +44,20 @@ interface AssignFormInput {
   no_nag: boolean;
 }
 
-export const AssignTrainingView = () => {
-  const { groupId } = useParams<{ groupId: string }>();
+interface TrainingAssignModalProps {
+  open: boolean;
+  onClose: () => void;
+  group: Group | null;
+  onSaveSuccess?: () => void;
+}
+
+export const TrainingAssignModal = ({
+  open,
+  onClose,
+  group,
+  onSaveSuccess,
+}: TrainingAssignModalProps) => {
   const { showNotification } = useNotification();
-  const navigate = useNavigate();
-  const [group, setGroup] = useState<Group | null>(null);
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,70 +79,61 @@ export const AssignTrainingView = () => {
   });
 
   const fetchData = useCallback(async () => {
-    if (!groupId) return;
+    if (!group) return;
     try {
       setLoading(true);
-      const [groupData, trainingsData, projectsData] = await Promise.all([
-        GroupService.getGroup(groupId),
+      const [trainingsData, projectsData] = await Promise.all([
         TrainingService.getTrainings(),
         ProjectService.getProjects(),
       ]);
-      setGroup(groupData);
       setTrainings(trainingsData);
       setProjects(projectsData);
     } catch (error) {
       console.error('Failed to fetch data:', error);
       showNotification('Could not load required data.', 'error');
-      void navigate('/groups');
+      onClose();
     } finally {
       setLoading(false);
     }
-  }, [groupId, navigate, showNotification]);
+  }, [group, onClose, showNotification]);
 
   useEffect(() => {
-    void fetchData();
-  }, [fetchData]);
+    if (open) {
+      void fetchData();
+    }
+  }, [open, fetchData]);
 
   const onSubmit = async (data: AssignFormInput) => {
-    if (!groupId) return;
+    if (!group || group.id === null) return;
     try {
-      await GroupService.updateAssignment(groupId, data.training_id, {
+      await GroupService.updateAssignment(group.id, String(data.training_id), {
         ...data,
         project_id: data.project_id,
       });
       showNotification('Training assigned successfully!', 'success');
-      void navigate(`/groups/${groupId}`);
+      if (onSaveSuccess) onSaveSuccess();
+      onClose();
     } catch (error) {
       console.error('Failed to assign training:', error);
       showNotification('Failed to assign training.', 'error');
     }
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
-    <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Assign Training
-      </Typography>
-      {group && (
-        <Typography variant="h6" color="text.secondary" gutterBottom>
-          Group: {group.name}
+    <Modal open={open} onClose={onClose}>
+      <Box sx={modalStyle}>
+        <Typography variant="h4" gutterBottom>
+          Assign Training
         </Typography>
-      )}
-      <Card elevation={2}>
-        <CardContent>
-          <form
-            onSubmit={(e) => {
-              void handleSubmit(onSubmit)(e);
-            }}
-          >
+        {group && (
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            Group: {group.name}
+          </Typography>
+        )}
+        {loading ? (
+          <CircularProgress />
+        ) : (
+          <form onSubmit={(e) => void handleSubmit(onSubmit)(e)}>
             <Stack spacing={3}>
               <Controller
                 name="training_id"
@@ -159,7 +171,7 @@ export const AssignTrainingView = () => {
                     helperText={errors.project_id?.message}
                   >
                     {projects.map((p) => (
-                      <MenuItem key={p.id} value={p.id}>
+                      <MenuItem key={p.id} value={p.id ?? ''}>
                         {p.name}
                       </MenuItem>
                     ))}
@@ -242,22 +254,22 @@ export const AssignTrainingView = () => {
               />
 
               <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                <Button onClick={() => navigate(-1)} disabled={isSubmitting}>
+                <Button onClick={onClose} disabled={isSubmitting}>
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   variant="contained"
                   color="primary"
-                  loading={isSubmitting}
+                  disabled={isSubmitting}
                 >
                   Create Assignment
                 </Button>
               </Box>
             </Stack>
           </form>
-        </CardContent>
-      </Card>
-    </Box>
+        )}
+      </Box>
+    </Modal>
   );
 };
