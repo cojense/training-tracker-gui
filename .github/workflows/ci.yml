@@ -20,9 +20,9 @@ jobs:
         with:
           bun-version: latest
       - name: Install dependencies
-        run: cd training-tracker-gui && bun install --frozen-lockfile
+        run: bun install --frozen-lockfile
       - name: Lint
-        run: cd training-tracker-gui && bun run lint
+        run: bun run lint
 
   type-check:
     name: Type Checking (TSC)
@@ -34,9 +34,9 @@ jobs:
         with:
           bun-version: latest
       - name: Install dependencies
-        run: cd training-tracker-gui && bun install --frozen-lockfile
+        run: bun install --frozen-lockfile
       - name: Type check
-        run: cd training-tracker-gui && bunx tsc
+        run: bunx tsc
 
   build:
     name: Build Verification (Vite)
@@ -48,6 +48,6 @@ jobs:
         with:
           bun-version: latest
       - name: Install dependencies
-        run: cd training-tracker-gui && bun install --frozen-lockfile
+        run: bun install --frozen-lockfile
       - name: Build
-        run: cd training-tracker-gui && bun run build
+        run: bun run build

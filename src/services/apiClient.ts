@@ -25,6 +25,7 @@ export async function apiFetch<T>(
 
   if (response.status === 401) {
     // Handle unauthorized (session expired or not logged in)
+    window.dispatchEvent(new CustomEvent('auth:unauthorized'));
     throw new Error('UNAUTHORIZED');
   }
 

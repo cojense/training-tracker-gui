@@ -38,6 +38,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     void verifySession();
   }, [verifySession]);
 
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      console.warn('Unauthorized access detected, clearing session.');
+      setUser(null);
+    };
+
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => {
+      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+    };
+  }, []);
+
   const logout = useCallback(() => {
     // For real logout, we'll redirect to backend /logout with next parameter
     const BACKEND_URL =
