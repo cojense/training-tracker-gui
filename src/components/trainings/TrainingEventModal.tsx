@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   Typography,
   Box,
@@ -16,35 +16,22 @@ import { User } from '~/types/user';
 import { TrainingService } from '~/services/TrainingService';
 import { UserService } from '~/services/UserService';
 import { useAuth } from '~/hooks/useAuth';
-import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { useNotification } from '~/hooks/useNotification';
 
-const styles = {
-  modal: {
-    position: 'absolute' as const,
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 600,
-    bgcolor: 'background.paper',
-    border: 2,
-    borderColor: 'divider',
-    boxShadow: 24,
-    p: 4,
-    maxHeight: '90vh',
-    overflowY: 'auto',
-  },
-  uploadContainer: { mt: 1 },
-  actionButtons: { display: 'flex', gap: 2, justifyContent: 'flex-end' },
+const modalStyle = {
+  position: 'absolute' as const,
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 600,
+  bgcolor: 'background.paper',
+  border: 2, borderColor: 'divider',
+  boxShadow: 24,
+  p: 4,
+  maxHeight: '90vh',
+  overflowY: 'auto',
 };
-
-const validationRules = {
-  member: { required: 'Member is required' },
-  training: { required: 'Training is required' },
-  completionDate: { required: 'Completion date is required' },
-};
-
-const inputLabelProps = { inputLabel: { shrink: true } };
 
 interface EventFormInput {
   user_id: string | number;
@@ -64,43 +51,6 @@ interface TrainingEventModalProps {
   initialUserId?: number;
   initialTrainingId?: number;
 }
-
-const CertificateUnavailableCheckbox = ({
-  field,
-}: {
-  field: ControllerRenderProps<EventFormInput, 'certificate_unavailable'>;
-}) => {
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      field.onChange(e.target.checked);
-    },
-    [field]
-  );
-
-  return (
-    <FormControlLabel
-      control={<Checkbox checked={field.value} onChange={handleChange} />}
-      label="Certificate Unavailable"
-    />
-  );
-};
-
-const CertificateFileInput = ({
-  onChange,
-}: {
-  onChange: (files: FileList | null) => void;
-}) => {
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      onChange(e.target.files);
-    },
-    [onChange]
-  );
-
-  return (
-    <input type="file" accept=".pdf,.png,.jpg,.jpeg" onChange={handleChange} />
-  );
-};
 
 export const TrainingEventModal = ({
   open,
@@ -180,16 +130,7 @@ export const TrainingEventModal = ({
     } finally {
       setLoading(false);
     }
-  }, [
-    isManager,
-    showNotification,
-    mode,
-    event,
-    reset,
-    initialUserId,
-    initialTrainingId,
-    user?.id,
-  ]);
+  }, [isManager, showNotification, mode, event, reset, initialUserId, initialTrainingId, user?.id]);
 
   useEffect(() => {
     if (open) {
@@ -231,166 +172,102 @@ export const TrainingEventModal = ({
     [mode, event, onClose, showNotification, onSaveSuccess]
   );
 
-  const renderMember = useCallback(
-    ({
-      field,
-    }: {
-      field: ControllerRenderProps<EventFormInput, 'user_id'>;
-    }) => (
-      <TextField
-        {...field}
-        select
-        label="Member"
-        fullWidth
-        error={!!errors.user_id}
-        helperText={errors.user_id?.message}
-        disabled={mode === 'update'}
-      >
-        {users.map((u) => (
-          <MenuItem key={u.id} value={u.id}>
-            {u.last_name}, {u.first_name} ({u.email})
-          </MenuItem>
-        ))}
-      </TextField>
-    ),
-    [users, errors.user_id, mode]
-  );
-
-  const renderTraining = useCallback(
-    ({
-      field,
-    }: {
-      field: ControllerRenderProps<EventFormInput, 'training_id'>;
-    }) => (
-      <TextField
-        {...field}
-        select
-        label="Training Course"
-        fullWidth
-        error={!!errors.training_id}
-        helperText={errors.training_id?.message}
-        disabled={mode === 'update'}
-      >
-        {trainings.map((t) => (
-          <MenuItem key={t.id} value={t.id}>
-            {t.title}
-          </MenuItem>
-        ))}
-      </TextField>
-    ),
-    [trainings, errors.training_id, mode]
-  );
-
-  const renderCompletionDate = useCallback(
-    ({
-      field,
-      fieldState,
-    }: {
-      field: ControllerRenderProps<EventFormInput, 'completion_date'>;
-      fieldState: { error?: { message?: string } };
-    }) => (
-      <TextField
-        {...field}
-        label="Completion Date"
-        type="date"
-        fullWidth
-        slotProps={inputLabelProps}
-        error={!!fieldState.error}
-        helperText={fieldState.error?.message}
-      />
-    ),
-    []
-  );
-
-  const renderCertificateUnavailable = useCallback(
-    ({
-      field,
-    }: {
-      field: ControllerRenderProps<EventFormInput, 'certificate_unavailable'>;
-    }) => <CertificateUnavailableCheckbox field={field} />,
-    []
-  );
-
-  const renderCertificateInput = useCallback(
-    ({
-      field: { onChange },
-    }: {
-      field: { onChange: (files: FileList | null) => void };
-    }) => <CertificateFileInput onChange={onChange} />,
-    []
-  );
-
-  const renderComment = useCallback(
-    ({
-      field,
-    }: {
-      field: ControllerRenderProps<EventFormInput, 'comment'>;
-    }) => (
-      <TextField {...field} label="Comments" fullWidth multiline rows={3} />
-    ),
-    []
-  );
-
-  const modalTitle = useMemo(
-    () =>
-      mode === 'create'
-        ? 'Record Training Completion'
-        : 'Update Training Record',
-    [mode]
-  );
-
-  const submitButtonLabel = useMemo(
-    () => (mode === 'create' ? 'Save Record' : 'Save Changes'),
-    [mode]
-  );
-
-  const handleFormSubmit = useMemo(
-    () => handleSubmit(onSubmit),
-    [handleSubmit, onSubmit]
-  );
-
   return (
     <Modal open={open} onClose={onClose}>
-      <Box sx={styles.modal}>
+      <Box sx={modalStyle}>
         <Typography variant="h4" gutterBottom>
-          {modalTitle}
+          {mode === 'create'
+            ? 'Record Training Completion'
+            : 'Update Training Record'}
         </Typography>
         {loading ? (
           <CircularProgress />
         ) : (
-          <form onSubmit={handleFormSubmit}>
+          <form onSubmit={(e) => void handleSubmit(onSubmit)(e)}>
             <Stack spacing={3}>
               {isManager && (
                 <Controller
                   name="user_id"
                   control={control}
-                  rules={validationRules.member}
-                  render={renderMember}
+                  rules={{ required: 'Member is required' }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      select
+                      label="Member"
+                      fullWidth
+                      error={!!errors.user_id}
+                      helperText={errors.user_id?.message}
+                      disabled={mode === 'update'}
+                    >
+                      {users.map((u) => (
+                        <MenuItem key={u.id} value={u.id}>
+                          {u.last_name}, {u.first_name} ({u.email})
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  )}
                 />
               )}
 
               <Controller
                 name="training_id"
                 control={control}
-                rules={validationRules.training}
-                render={renderTraining}
+                rules={{ required: 'Training is required' }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    select
+                    label="Training Course"
+                    fullWidth
+                    error={!!errors.training_id}
+                    helperText={errors.training_id?.message}
+                    disabled={mode === 'update'}
+                  >
+                    {trainings.map((t) => (
+                      <MenuItem key={t.id} value={t.id}>
+                        {t.title}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
               />
 
               <Controller
                 name="completion_date"
                 control={control}
-                rules={validationRules.completionDate}
-                render={renderCompletionDate}
+                rules={{ required: 'Completion date is required' }}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    {...field}
+                    label="Completion Date"
+                    type="date"
+                    fullWidth
+                    InputLabelProps={{ shrink: true }}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                  />
+                )}
               />
 
               <Controller
                 name="certificate_unavailable"
                 control={control}
-                render={renderCertificateUnavailable}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                      />
+                    }
+                    label="Certificate Unavailable"
+                  />
+                )}
               />
 
               {!watchCertUnavailable && (
-                <Box sx={styles.uploadContainer}>
+                <Box sx={{ mt: 1 }}>
                   <Typography
                     variant="body2"
                     color="text.secondary"
@@ -401,7 +278,13 @@ export const TrainingEventModal = ({
                   <Controller
                     name="certificate"
                     control={control}
-                    render={renderCertificateInput}
+                    render={({ field: { onChange } }) => (
+                      <input
+                        type="file"
+                        accept=".pdf,.png,.jpg,.jpeg"
+                        onChange={(e) => onChange(e.target.files)}
+                      />
+                    )}
                   />
                 </Box>
               )}
@@ -409,10 +292,18 @@ export const TrainingEventModal = ({
               <Controller
                 name="comment"
                 control={control}
-                render={renderComment}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Comments"
+                    fullWidth
+                    multiline
+                    rows={3}
+                  />
+                )}
               />
 
-              <Box sx={styles.actionButtons}>
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
                 <Button onClick={onClose} disabled={isSubmitting}>
                   Cancel
                 </Button>
@@ -420,9 +311,9 @@ export const TrainingEventModal = ({
                   type="submit"
                   variant="contained"
                   color="primary"
-                  loading={isSubmitting}
+                  disabled={isSubmitting}
                 >
-                  {submitButtonLabel}
+                  {mode === 'create' ? 'Save Record' : 'Save Changes'}
                 </Button>
               </Box>
             </Stack>

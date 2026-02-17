@@ -20,29 +20,18 @@ import { TrainingDueTable } from '~/components/TrainingDueTable';
 import { GroupMembershipTable } from '~/components/users/GroupMembershipTable';
 import { TrainingRecordTable } from '~/components/users/TrainingRecordTable';
 
-const styles = {
-  modal: {
-    position: 'absolute' as const,
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 600,
-    bgcolor: 'background.paper',
-    border: 2,
-    borderColor: 'divider',
-    boxShadow: 24,
-    p: 4,
-    maxHeight: '90vh',
-    overflowY: 'auto',
-  },
-  loadingContainer: { display: 'flex', justifyContent: 'center', py: 8 },
-  errorContainer: { p: 3 },
-  cardHeader: {
-    p: 2,
-    bgcolor: 'primary.main',
-    color: 'primary.contrastText',
-  },
-  cardContent: { p: 0 },
+const modalStyle = {
+  position: 'absolute' as const,
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 600,
+  bgcolor: 'background.paper',
+  border: 2, borderColor: 'divider',
+  boxShadow: 24,
+  p: 4,
+  maxHeight: '90vh',
+  overflowY: 'auto',
 };
 
 interface UserDetailModalProps {
@@ -50,11 +39,8 @@ interface UserDetailModalProps {
   open: boolean;
   onClose: () => void;
 }
-export const UserDetailModal = ({
-  user,
-  open,
-  onClose,
-}: UserDetailModalProps) => {
+
+export const UserDetailModal = ({ user, open, onClose }: UserDetailModalProps) => {
   const [assignments, setAssignments] = useState<AssignedTraining[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [record, setRecord] = useState<TrainingEvent[]>([]);
@@ -66,11 +52,12 @@ export const UserDetailModal = ({
     try {
       setLoading(true);
       setError(null);
-      const [assignmentsData, groupsData, recordData] = await Promise.all([
-        UserService.getUserAssignments(user.id),
-        UserService.getUserGroups(user.id),
-        UserService.getUserRecord(user.id),
-      ]);
+      const [assignmentsData, groupsData, recordData] =
+        await Promise.all([
+          UserService.getUserAssignments(user.id),
+          UserService.getUserGroups(user.id),
+          UserService.getUserRecord(user.id),
+        ]);
       setAssignments(assignmentsData);
       setGroups(groupsData);
       setRecord(recordData);
@@ -94,13 +81,13 @@ export const UserDetailModal = ({
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Box sx={styles.modal}>
+      <Box sx={modalStyle}>
         {loading ? (
-          <Box sx={styles.loadingContainer}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
             <CircularProgress />
           </Box>
         ) : error ? (
-          <Box sx={styles.errorContainer}>
+          <Box sx={{ p: 3 }}>
             <Alert severity="error">{error ?? 'User not found'}</Alert>
           </Box>
         ) : (
@@ -111,24 +98,22 @@ export const UserDetailModal = ({
 
             {/* User Details Card */}
             <Card elevation={2}>
-              <Box sx={styles.cardHeader}>
+              <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
                 <Typography variant="h6">Personal Details</Typography>
               </Box>
               <Divider />
-              <CardContent sx={styles.cardContent}>
+              <CardContent sx={{ p: 0 }}>
                 <UserDetailTable user={user} />
               </CardContent>
             </Card>
 
             {/* Training Requirements Card */}
             <Card elevation={2}>
-              <Box sx={styles.cardHeader}>
-                <Typography variant="h6">
-                  Current Training Requirements
-                </Typography>
+              <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+                <Typography variant="h6">Current Training Requirements</Typography>
               </Box>
               <Divider />
-              <CardContent sx={styles.cardContent}>
+              <CardContent sx={{ p: 0 }}>
                 <TrainingDueTable
                   assignments={assignments}
                   onSaveSuccess={fetchData}
@@ -138,22 +123,22 @@ export const UserDetailModal = ({
 
             {/* Group Membership Card */}
             <Card elevation={2}>
-              <Box sx={styles.cardHeader}>
+              <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
                 <Typography variant="h6">Group Memberships</Typography>
               </Box>
               <Divider />
-              <CardContent sx={styles.cardContent}>
+              <CardContent sx={{ p: 0 }}>
                 <GroupMembershipTable groups={groups} />
               </CardContent>
             </Card>
 
             {/* Training Record Card */}
             <Card elevation={2}>
-              <Box sx={styles.cardHeader}>
+              <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
                 <Typography variant="h6">Training Record</Typography>
               </Box>
               <Divider />
-              <CardContent sx={styles.cardContent}>
+              <CardContent sx={{ p: 0 }}>
                 <TrainingRecordTable record={record} />
               </CardContent>
             </Card>
