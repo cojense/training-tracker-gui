@@ -22,7 +22,7 @@ const styles = {
   description: { mb: 3 },
 };
 
-export const LoginView = () => {
+const LoginView = () => {
   const handleGoogleLogin = useCallback(() => {
     // Perform full page redirect to backend OAuth route with next parameter
     window.location.href = `${BACKEND_URL}/oauth2/login/google?next=${encodeURIComponent(FRONTEND_URL)}`;
@@ -72,3 +72,5 @@ export const LoginView = () => {
     </Box>
   );
 };
+
+export default LoginView;

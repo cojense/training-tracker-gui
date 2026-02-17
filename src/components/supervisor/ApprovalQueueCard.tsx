@@ -149,7 +149,7 @@ export const ApprovalQueueCard = () => {
     if (ids.length === 0) return;
     try {
       setApproving(true);
-      await Promise.all(ids.map((id) => TrainingService.approveEvent(id)));
+      for (const id of ids) await TrainingService.approveEvent(id);
       showNotification(
         `Successfully approved ${ids.length} records.`,
         'success'

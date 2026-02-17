@@ -7,34 +7,18 @@ import {
   MenuItem,
   Stack,
   Modal,
+  FormControlLabel,
+  Switch,
 } from '@mui/material';
 import { User } from '~/types/user';
 import { UserService } from '~/services/UserService';
-import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
+import {
+  useForm,
+  Controller,
+  ControllerRenderProps,
+  FieldError,
+} from 'react-hook-form';
 import { useNotification } from '~/hooks/useNotification';
-import { ActiveStatusSwitch } from '~/components/shared/FormFields';
-
-const modalStyle = {
-  position: 'absolute' as const,
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 600,
-  bgcolor: 'background.paper',
-  border: 2, borderColor: 'divider',
-  boxShadow: 24,
-  p: 4,
-  maxHeight: '90vh',
-  overflowY: 'auto',
-};
-
-interface UserFormInput {
-  first_name: string;
-  last_name: string;
-  email: string;
-  supervisor_id: string | number;
-  is_active: boolean;
-}
 
 const firstNameRules = { required: 'First name is required' };
 const lastNameRules = { required: 'Last name is required' };
@@ -46,6 +30,59 @@ const emailRules = {
   },
 };
 
+const styles = {
+  saveBox: { display: 'flex', gap: 2, justifyContent: 'flex-end' },
+  modal: {
+    position: 'absolute' as const,
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 600,
+    bgcolor: 'background.paper',
+    border: 2,
+    borderColor: 'divider',
+    boxShadow: 24,
+    p: 4,
+    maxHeight: '90vh',
+    overflowY: 'auto',
+  },
+};
+const renderTextField =
+  (label: string) =>
+  ({
+    field,
+    fieldState,
+  }: {
+    field: ControllerRenderProps<UserFormInput, keyof UserFormInput>;
+    fieldState: { error?: FieldError };
+  }) => (
+    <TextField
+      {...field}
+      label={label}
+      fullWidth
+      error={!!fieldState.error}
+      helperText={fieldState.error?.message}
+    />
+  );
+
+interface UserFormInput {
+  first_name: string;
+  last_name: string;
+  email: string;
+  supervisor_id: string | number;
+  is_active: boolean;
+}
+const renderActiveStatusSwitch = ({
+  field,
+}: {
+  field: ControllerRenderProps<UserFormInput, 'is_active'>;
+}) => (
+  <FormControlLabel
+    control={<Switch {...field} checked={field.value} />}
+    label="Active"
+  />
+);
+
 interface UserEditModalProps {
   user: User | null;
   open: boolean;
@@ -53,8 +90,13 @@ interface UserEditModalProps {
   users?: User[]; // Optional list of users for supervisor selection
   onSaveSuccess?: () => void;
 }
-
-export const UserEditModal = ({ user, open, onClose, users = [], onSaveSuccess }: UserEditModalProps) => {
+export const UserEditModal = ({
+  user,
+  open,
+  onClose,
+  users = [],
+  onSaveSuccess,
+}: UserEditModalProps) => {
   const { showNotification } = useNotification();
 
   const {
@@ -98,6 +140,14 @@ export const UserEditModal = ({ user, open, onClose, users = [], onSaveSuccess }
     [user, onClose, showNotification, onSaveSuccess]
   );
 
+  const handleFormSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      return handleSubmit(onSubmit)(e);
+    },
+    [handleSubmit, onSubmit]
+  );
+
   const renderSupervisor = useMemo(
     () =>
       ({
@@ -121,53 +171,29 @@ export const UserEditModal = ({ user, open, onClose, users = [], onSaveSuccess }
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Box sx={modalStyle}>
+      <Box sx={styles.modal}>
         <Typography variant="h6" gutterBottom>
           Edit User Profile
         </Typography>
-        <form onSubmit={(e) => void handleSubmit(onSubmit)(e)}>
+        <form onSubmit={handleFormSubmit}>
           <Stack spacing={3}>
             <Controller
               name="first_name"
               control={control}
               rules={firstNameRules}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  label="First Name"
-                  fullWidth
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message}
-                />
-              )}
+              render={renderTextField('First Name')}
             />
             <Controller
               name="last_name"
               control={control}
               rules={lastNameRules}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  label="Last Name"
-                  fullWidth
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message}
-                />
-              )}
+              render={renderTextField('Last Name')}
             />
             <Controller
               name="email"
               control={control}
               rules={emailRules}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  label="Email"
-                  fullWidth
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message}
-                />
-              )}
+              render={renderTextField('Email')}
             />
 
             <Controller
@@ -179,12 +205,10 @@ export const UserEditModal = ({ user, open, onClose, users = [], onSaveSuccess }
             <Controller
               name="is_active"
               control={control}
-              render={({ field }) => (
-                <ActiveStatusSwitch field={field} />
-              )}
+              render={renderActiveStatusSwitch}
             />
 
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Box sx={styles.saveBox}>
               <Button onClick={onClose} disabled={isSubmitting}>
                 Cancel
               </Button>
