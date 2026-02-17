@@ -21,6 +21,7 @@ import { Training, TrainingEvent } from '~/types/training';
 
 const styles = {
   header: { fontWeight: 'bold' },
+  link: { cursor: 'pointer' },
 };
 
 interface RowProps {
@@ -48,8 +49,10 @@ const TrainingDueRow = ({ assignment, onRecord, onView }: RowProps) => {
     return assignment.projects.map((p) => p.name).join(', ');
   }, [assignment.projects]);
 
+  const rowStyles = useMemo(() => ({ backgroundColor }), [backgroundColor]);
+
   return (
-    <TableRow hover sx={{ backgroundColor }}>
+    <TableRow hover sx={rowStyles}>
       <TableCell>
         <Button
           size="small"
@@ -64,7 +67,7 @@ const TrainingDueRow = ({ assignment, onRecord, onView }: RowProps) => {
         <MuiLink
           onClick={handleView}
           underline="hover"
-          sx={{ cursor: 'pointer' }}
+          sx={styles.link}
           aria-label="View Details"
         >
           {assignment.assignment.training.title}
@@ -88,7 +91,9 @@ export const TrainingDueTable = ({
   onSaveSuccess,
 }: TrainingDueTableProps) => {
   const [eventModalOpen, setEventModalOpen] = useState(false);
-  const [selectedTrainingId, setSelectedTrainingId] = useState<number | undefined>();
+  const [selectedTrainingId, setSelectedTrainingId] = useState<
+    number | undefined
+  >();
   const [selectedUserId, setSelectedUserId] = useState<number | undefined>();
 
   const [detailTraining, setDetailTraining] = useState<Training | null>(null);
@@ -131,6 +136,9 @@ export const TrainingDueTable = ({
     if (onSaveSuccess) onSaveSuccess();
   }, [onSaveSuccess]);
 
+  const isDetailModalOpen = useMemo(() => !!detailTraining, [detailTraining]);
+  const isEditModalOpen = useMemo(() => !!editTraining, [editTraining]);
+
   return (
     <>
       <TableContainer component={Paper} elevation={0}>
@@ -170,7 +178,7 @@ export const TrainingDueTable = ({
 
       <TrainingDetailModal
         training={detailTraining}
-        open={!!detailTraining}
+        open={isDetailModalOpen}
         onClose={handleCloseModal}
         onEdit={handleEditFromDetail}
         onEditEvent={handleEditEventClick}
@@ -178,7 +186,7 @@ export const TrainingDueTable = ({
 
       <TrainingEditModal
         training={editTraining}
-        open={!!editTraining}
+        open={isEditModalOpen}
         onClose={handleCloseModal}
         onSaveSuccess={onSaveSuccess}
       />

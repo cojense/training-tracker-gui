@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { BACKEND_URL } from '~/services/apiClient';
 import {
   Card,
   CardContent,
@@ -8,7 +9,6 @@ import {
   Stack,
 } from '@mui/material';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:5001';
 const FRONTEND_URL = window.location.origin;
 
 const styles = {

@@ -11,9 +11,7 @@ import {
   InputAdornment,
   Button,
 } from '@mui/material';
-import {
-  Search as SearchIcon,
-} from '@mui/icons-material';
+import { Search as SearchIcon } from '@mui/icons-material';
 import { GroupService } from '~/services/GroupService';
 import { Group } from '~/types/user';
 import { AssignmentEditModal } from '~/components/trainings/AssignmentEditModal';
@@ -22,6 +20,16 @@ import { GroupCreateModal } from '~/components/groups/GroupCreateModal';
 import { GroupEditModal } from '~/components/groups/GroupEditModal';
 import { GroupDetailModal } from '~/components/groups/GroupDetailModal';
 import { GroupTable } from '~/components/groups/GroupTable';
+
+const textFieldProps = {
+  input: {
+    startAdornment: (
+      <InputAdornment position="start">
+        <SearchIcon fontSize="small" />
+      </InputAdornment>
+    ),
+  },
+};
 
 const styles = {
   headerBox: {
@@ -40,6 +48,7 @@ const styles = {
     borderRadius: 1,
     width: { xs: '100%', sm: 250 },
   },
+  headerControls: { display: 'flex', gap: 2, alignItems: 'center' },
 };
 
 type Order = 'asc' | 'desc';
@@ -57,7 +66,10 @@ export const GroupsView = () => {
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
 
-  const [editAssignment, setEditAssignment] = useState<{groupId: number, trainingId: number} | null>(null);
+  const [editAssignment, setEditAssignment] = useState<{
+    groupId: number;
+    trainingId: number;
+  } | null>(null);
   const [assignGroup, setAssignGroup] = useState<Group | null>(null);
 
   const fetchGroups = useCallback(async () => {
@@ -78,11 +90,14 @@ export const GroupsView = () => {
     void fetchGroups();
   }, [fetchGroups]);
 
-  const handleRequestSort = (property: keyof Group) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
+  const handleRequestSort = useCallback(
+    (property: keyof Group) => {
+      const isAsc = orderBy === property && order === 'asc';
+      setOrder(isAsc ? 'desc' : 'asc');
+      setOrderBy(property);
+    },
+    [orderBy, order]
+  );
 
   const filteredGroups = useMemo(() => {
     return groups
@@ -136,27 +151,49 @@ export const GroupsView = () => {
     void fetchGroups();
   }, [fetchGroups]);
 
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearch(e.target.value);
+    },
+    []
+  );
+
+  const handleDetailEditAssignment = useCallback(
+    (trainingId: number | null) => {
+      if (selectedGroup?.id != null && trainingId != null) {
+        setEditAssignment({ groupId: selectedGroup.id, trainingId });
+      } else {
+        setEditAssignment(null);
+      }
+    },
+    [selectedGroup]
+  );
+
+  const handleAddAssignment = useCallback(() => {
+    setAssignGroup(selectedGroup);
+  }, [selectedGroup]);
+
+  const handleCloseEditAssignment = useCallback(() => {
+    setEditAssignment(null);
+  }, []);
+
+  const handleCloseAssignGroup = useCallback(() => {
+    setAssignGroup(null);
+  }, []);
+
   return (
     <>
       <Card elevation={2}>
         <Box sx={styles.headerBox}>
           <Typography variant="h6">Groups Management</Typography>
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <Box sx={styles.headerControls}>
             <TextField
               size="small"
               placeholder="Search groups..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={handleSearchChange}
               sx={styles.searchField}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                }
-              }}
+              slotProps={textFieldProps}
             />
             <Button
               variant="contained"
@@ -208,13 +245,13 @@ export const GroupsView = () => {
         open={openDetailModal}
         onClose={handleCloseModal}
         group={selectedGroup}
-        onEditAssignment={(trainingId) => setEditAssignment(selectedGroup ? {groupId: selectedGroup.id, trainingId} : null)}
-        onAddAssignment={() => setAssignGroup(selectedGroup)}
+        onEditAssignment={handleDetailEditAssignment}
+        onAddAssignment={handleAddAssignment}
       />
 
       <AssignmentEditModal
         open={!!editAssignment}
-        onClose={() => setEditAssignment(null)}
+        onClose={handleCloseEditAssignment}
         groupId={editAssignment?.groupId ?? null}
         trainingId={editAssignment?.trainingId ?? null}
         onSaveSuccess={handleCloseModal}
@@ -222,7 +259,7 @@ export const GroupsView = () => {
 
       <TrainingAssignModal
         open={!!assignGroup}
-        onClose={() => setAssignGroup(null)}
+        onClose={handleCloseAssignGroup}
         group={assignGroup}
         onSaveSuccess={handleCloseModal}
       />

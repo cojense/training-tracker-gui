@@ -105,7 +105,7 @@ export const Sidebar = ({ open, onClose, mobile }: SidebarProps) => {
     [navigate, mobile, onClose]
   );
 
-  const isAdminOrManager = user?.is_admin || user?.is_training_manager || false;
+  const isAdminOrManager = user?.is_admin ?? user?.is_training_manager ?? false;
 
   const navItems = useMemo(
     () => [

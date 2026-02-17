@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Table,
   TableBody,
@@ -16,15 +16,25 @@ import {
   Button,
   Stack,
 } from '@mui/material';
-import {
-  Edit as EditIcon,
-  Add as AddIcon,
-} from '@mui/icons-material';
+import { Edit as EditIcon, Add as AddIcon } from '@mui/icons-material';
 import { GroupService } from '~/services/GroupService';
 import { Group, User } from '~/types/user';
 import { Assignment } from '~/types/assignments';
 
 const styles = {
+  modalContainer: {
+    position: 'absolute' as const,
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 800,
+    bgcolor: 'background.paper',
+    boxShadow: 24,
+    p: 4,
+    borderRadius: 1,
+    maxHeight: '90vh',
+    overflowY: 'auto',
+  },
   headerBox: {
     p: 2,
     bgcolor: 'primary.main',
@@ -34,6 +44,51 @@ const styles = {
     alignItems: 'center',
   },
   headerCell: { fontWeight: 'bold' },
+  cardContent: { p: 0 },
+  actionContainer: {
+    mt: 3,
+    display: 'flex',
+    justifyContent: 'flex-end',
+  },
+};
+
+interface AssignmentRowProps {
+  assignment: Assignment;
+  onEdit: (trainingId: number) => void;
+}
+
+const AssignmentRow = ({ assignment, onEdit }: AssignmentRowProps) => {
+  const handleEdit = useCallback(
+    () => onEdit(assignment.training.id),
+    [assignment.training.id, onEdit]
+  );
+
+  return (
+    <TableRow key={assignment.training.id}>
+      <TableCell>{assignment.training.title}</TableCell>
+      <TableCell>{assignment.project.name}</TableCell>
+      <TableCell>
+        <IconButton size="small" onClick={handleEdit}>
+          <EditIcon fontSize="small" />
+        </IconButton>
+      </TableCell>
+    </TableRow>
+  );
+};
+
+interface MemberRowProps {
+  member: User;
+}
+
+const MemberRow = ({ member }: MemberRowProps) => {
+  return (
+    <TableRow key={member.id}>
+      <TableCell>
+        {member.last_name}, {member.first_name}
+      </TableCell>
+      <TableCell>{member.email}</TableCell>
+    </TableRow>
+  );
 };
 
 interface GroupDetailModalProps {
@@ -44,7 +99,13 @@ interface GroupDetailModalProps {
   onAddAssignment: () => void;
 }
 
-export const GroupDetailModal = ({ open, onClose, group, onEditAssignment, onAddAssignment }: GroupDetailModalProps) => {
+export const GroupDetailModal = ({
+  open,
+  onClose,
+  group,
+  onEditAssignment,
+  onAddAssignment,
+}: GroupDetailModalProps) => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [members, setMembers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,29 +125,24 @@ export const GroupDetailModal = ({ open, onClose, group, onEditAssignment, onAdd
     } finally {
       setLoading(false);
     }
-  }, [group]);
+  }, [group?.id]);
 
   useEffect(() => {
-    if (open && group) void fetchData();
+    if (open && group) {
+      void fetchData();
+    }
   }, [open, group, fetchData]);
+
+  const groupDetailsTitle = useMemo(
+    () => `Group Details: ${group?.name ?? ''}`,
+    [group?.name]
+  );
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Box sx={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 800,
-        bgcolor: 'background.paper',
-        boxShadow: 24,
-        p: 4,
-        borderRadius: 1,
-        maxHeight: '90vh',
-        overflowY: 'auto',
-      }}>
+      <Box sx={styles.modalContainer}>
         <Typography variant="h5" gutterBottom>
-          Group Details: {group?.name || ''}
+          {groupDetailsTitle}
         </Typography>
 
         {loading ? (
@@ -107,7 +163,7 @@ export const GroupDetailModal = ({ open, onClose, group, onEditAssignment, onAdd
                 </Button>
               </Box>
               <Divider />
-              <CardContent sx={{ p: 0 }}>
+              <CardContent sx={styles.cardContent}>
                 <Table size="small">
                   <TableHead>
                     <TableRow>
@@ -118,15 +174,11 @@ export const GroupDetailModal = ({ open, onClose, group, onEditAssignment, onAdd
                   </TableHead>
                   <TableBody>
                     {assignments.map((a) => (
-                      <TableRow key={a.training.id}>
-                        <TableCell>{a.training.title}</TableCell>
-                        <TableCell>{a.project.name}</TableCell>
-                        <TableCell>
-                          <IconButton size="small" onClick={() => onEditAssignment(a.training.id)}>
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
+                      <AssignmentRow
+                        key={a.training.id}
+                        assignment={a}
+                        onEdit={onEditAssignment}
+                      />
                     ))}
                   </TableBody>
                 </Table>
@@ -138,7 +190,7 @@ export const GroupDetailModal = ({ open, onClose, group, onEditAssignment, onAdd
                 <Typography variant="h6">Members</Typography>
               </Box>
               <Divider />
-              <CardContent sx={{ p: 0 }}>
+              <CardContent sx={styles.cardContent}>
                 <Table size="small">
                   <TableHead>
                     <TableRow>
@@ -148,10 +200,7 @@ export const GroupDetailModal = ({ open, onClose, group, onEditAssignment, onAdd
                   </TableHead>
                   <TableBody>
                     {members.map((m) => (
-                      <TableRow key={m.id}>
-                        <TableCell>{m.last_name}, {m.first_name}</TableCell>
-                        <TableCell>{m.email}</TableCell>
-                      </TableRow>
+                      <MemberRow key={m.id} member={m} />
                     ))}
                   </TableBody>
                 </Table>
@@ -160,7 +209,7 @@ export const GroupDetailModal = ({ open, onClose, group, onEditAssignment, onAdd
           </Stack>
         )}
 
-        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+        <Box sx={styles.actionContainer}>
           <Button variant="contained" onClick={onClose}>
             Close
           </Button>

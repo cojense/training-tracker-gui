@@ -12,21 +12,24 @@ import { ProjectService } from '~/services/ProjectService';
 import { useNotification } from '~/hooks/useNotification';
 
 const styles = {
-  modal: {
+  modalContainer: {
     position: 'absolute' as const,
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
     width: 600,
     bgcolor: 'background.paper',
-    border: '2px solid #000',
     boxShadow: 24,
     p: 4,
+    borderRadius: 1,
     maxHeight: '90vh',
     overflowY: 'auto',
   },
-  buttonBox: { display: 'flex', gap: 2, justifyContent: 'flex-end' },
+  buttonBox: { display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3 },
+  stackContainer: { mt: 2 },
 };
+
+const NAME_RULES = { required: 'Project name is required' };
 
 export interface ProjectFormInput {
   name: string;
@@ -71,31 +74,40 @@ export const ProjectCreateModal = ({
     [onClose, onSaveSuccess, reset, showNotification]
   );
 
+  const handleFormSubmit = useCallback(
+    (e: React.FormEvent) => {
+      void handleSubmit(onSubmit)(e);
+    },
+    [handleSubmit, onSubmit]
+  );
+
+  const renderNameField = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ({ field }: { field: any }) => (
+      <TextField
+        {...field}
+        label="Project Name"
+        fullWidth
+        error={!!errors.name}
+        helperText={errors.name?.message}
+      />
+    ),
+    [errors.name]
+  );
+
   return (
     <Modal open={open} onClose={onClose}>
-      <Box sx={styles.modal}>
-        <Typography variant="h6" gutterBottom>
+      <Box sx={styles.modalContainer}>
+        <Typography variant="h5" gutterBottom>
           Create New Project
         </Typography>
-        <form
-          onSubmit={(e) => {
-            void handleSubmit(onSubmit)(e);
-          }}
-        >
-          <Stack spacing={3}>
+        <form onSubmit={handleFormSubmit}>
+          <Stack spacing={3} sx={styles.stackContainer}>
             <Controller
               name="name"
               control={control}
-              rules={{ required: 'Project name is required' }}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Project Name"
-                  fullWidth
-                  error={!!errors.name}
-                  helperText={errors.name?.message}
-                />
-              )}
+              rules={NAME_RULES}
+              render={renderNameField}
             />
 
             <Box sx={styles.buttonBox}>

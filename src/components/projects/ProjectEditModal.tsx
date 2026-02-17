@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Typography,
   Box,
@@ -13,23 +13,23 @@ import {
   DialogContentText,
   DialogActions,
 } from '@mui/material';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
 import { ProjectService } from '~/services/ProjectService';
 import { useNotification } from '~/hooks/useNotification';
 import { Project } from '~/types/projects';
 import { ProjectFormInput } from './ProjectCreateModal';
 
 const styles = {
-  modal: {
+  modalContainer: {
     position: 'absolute' as const,
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
     width: 600,
     bgcolor: 'background.paper',
-    border: '2px solid #000',
     boxShadow: 24,
     p: 4,
+    borderRadius: 1,
     maxHeight: '90vh',
     overflowY: 'auto',
   },
@@ -38,8 +38,13 @@ const styles = {
     display: 'flex',
     gap: 2,
     justifyContent: 'space-between',
+    mt: 3,
   },
+  formStack: { mt: 2 },
+  buttonGap: { display: 'flex', gap: 2 },
 };
+
+const NAME_RULES = { required: 'Project name is required' };
 
 interface ProjectEditModalProps {
   open: boolean;
@@ -121,11 +126,31 @@ export const ProjectEditModal = ({
   const handleOpenDelete = useCallback(() => setDeleteDialogOpen(true), []);
   const handleCloseDelete = useCallback(() => setDeleteDialogOpen(false), []);
 
+  const handleFormSubmit = useCallback(
+    (e: React.FormEvent) => {
+      void handleSubmit(onSubmit)(e);
+    },
+    [handleSubmit, onSubmit]
+  );
+
+  const renderNameField = useCallback(
+    ({ field }: { field: ControllerRenderProps<ProjectFormInput, 'name'> }) => (
+      <TextField
+        {...field}
+        label="Project Name"
+        fullWidth
+        error={!!errors.name}
+        helperText={errors.name?.message}
+      />
+    ),
+    [errors.name]
+  );
+
   return (
     <>
       <Modal open={open} onClose={onClose}>
-        <Box sx={styles.modal}>
-          <Typography variant="h6" gutterBottom>
+        <Box sx={styles.modalContainer}>
+          <Typography variant="h5" gutterBottom>
             Edit Project
           </Typography>
           {loading ? (
@@ -133,25 +158,13 @@ export const ProjectEditModal = ({
               <CircularProgress />
             </Box>
           ) : (
-            <form
-              onSubmit={(e) => {
-                void handleSubmit(onSubmit)(e);
-              }}
-            >
-              <Stack spacing={3}>
+            <form onSubmit={handleFormSubmit}>
+              <Stack spacing={3} sx={styles.formStack}>
                 <Controller
                   name="name"
                   control={control}
-                  rules={{ required: 'Project name is required' }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Project Name"
-                      fullWidth
-                      error={!!errors.name}
-                      helperText={errors.name?.message}
-                    />
-                  )}
+                  rules={NAME_RULES}
+                  render={renderNameField}
                 />
 
                 <Box sx={styles.spaceBetween}>
@@ -162,7 +175,7 @@ export const ProjectEditModal = ({
                   >
                     Delete Project
                   </Button>
-                  <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Box sx={styles.buttonGap}>
                     <Button onClick={onClose} disabled={isSubmitting}>
                       Cancel
                     </Button>
@@ -170,7 +183,7 @@ export const ProjectEditModal = ({
                       type="submit"
                       variant="contained"
                       color="primary"
-                      disabled={isSubmitting}
+                      loading={isSubmitting}
                     >
                       Save Changes
                     </Button>

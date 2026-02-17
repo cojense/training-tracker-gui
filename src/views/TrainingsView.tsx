@@ -11,10 +11,7 @@ import {
   TextField,
   InputAdornment,
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Search as SearchIcon,
-} from '@mui/icons-material';
+import { Add as AddIcon, Search as SearchIcon } from '@mui/icons-material';
 import { Training, TrainingEvent } from '~/types/training';
 import { TrainingService } from '~/services/TrainingService';
 import { useAuth } from '~/hooks/useAuth';
@@ -26,17 +23,34 @@ import { TrainingAssignModal } from '~/components/trainings/TrainingAssignModal'
 import { TrainingTable } from '~/components/trainings/TrainingTable';
 import { Group } from '~/types/user';
 
-const headerBoxStyles = {
-  p: 2,
-  bgcolor: 'primary.main',
-  color: 'primary.contrastText',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
+const textFieldProps = {
+  input: {
+    startAdornment: (
+      <InputAdornment position="start">
+        <SearchIcon fontSize="small" />
+      </InputAdornment>
+    ),
+  },
 };
-const contentRootStyles = { p: 0 };
-const centeredBoxStyles = { textAlign: 'center', py: 4 };
-const errorBoxStyles = { p: 2 };
+const styles = {
+  headerActions: { display: 'flex', gap: 2, alignItems: 'center' },
+  headerBox: {
+    p: 2,
+    bgcolor: 'primary.main',
+    color: 'primary.contrastText',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  contentRoot: { p: 0 },
+  centeredBox: { textAlign: 'center', py: 4 },
+  errorBox: { p: 2 },
+  searchField: {
+    bgcolor: 'background.paper',
+    borderRadius: 1,
+    width: { xs: '100%', sm: 250 },
+  },
+};
 
 type Order = 'asc' | 'desc';
 
@@ -89,11 +103,14 @@ export const TrainingsView = () => {
     void fetchTrainings();
   }, [fetchTrainings]);
 
-  const handleRequestSort = (property: keyof Training) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
+  const handleRequestSort = useCallback(
+    (property: keyof Training) => {
+      const isAsc = orderBy === property && order === 'asc';
+      setOrder(isAsc ? 'desc' : 'asc');
+      setOrderBy(property);
+    },
+    [orderBy, order]
+  );
 
   const filteredTrainings = useMemo(() => {
     return trainings
@@ -133,13 +150,20 @@ export const TrainingsView = () => {
     [trainings]
   );
 
-  const handleRecordEventClick = () => {
+  const handleRecordEventClick = useCallback(() => {
     setEventMode('create');
     setEventToEdit(null);
     setEventModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseModal = () => {
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearch(e.target.value);
+    },
+    []
+  );
+
+  const handleCloseModal = useCallback(() => {
     setCreateModalOpen(false);
     setEditTraining(null);
     setDetailTraining(null);
@@ -147,7 +171,7 @@ export const TrainingsView = () => {
     setEventModalOpen(false);
     setEventToEdit(null);
     void fetchTrainings();
-  };
+  }, [fetchTrainings]);
 
   const isManager = useMemo(
     () => user?.is_admin ?? user?.is_training_manager ?? false,
@@ -157,28 +181,16 @@ export const TrainingsView = () => {
   return (
     <>
       <Card elevation={2}>
-        <Box sx={headerBoxStyles}>
+        <Box sx={styles.headerBox}>
           <Typography variant="h6">Training Directory</Typography>
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <Box sx={styles.headerActions}>
             <TextField
               size="small"
               placeholder="Search trainings..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              sx={{
-                bgcolor: 'background.paper',
-                borderRadius: 1,
-                width: { xs: '100%', sm: 250 },
-              }}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                }
-              }}
+              onChange={handleSearchChange}
+              sx={styles.searchField}
+              slotProps={textFieldProps}
             />
             {isManager && (
               <>
@@ -205,13 +217,13 @@ export const TrainingsView = () => {
           </Box>
         </Box>
         <Divider />
-        <CardContent sx={contentRootStyles}>
+        <CardContent sx={styles.contentRoot}>
           {loading ? (
-            <Box sx={centeredBoxStyles}>
+            <Box sx={styles.centeredBox}>
               <CircularProgress />
             </Box>
           ) : error ? (
-            <Box sx={errorBoxStyles}>
+            <Box sx={styles.errorBox}>
               <Alert severity="error">{error}</Alert>
             </Box>
           ) : (

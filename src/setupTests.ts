@@ -4,7 +4,7 @@ import { vi } from 'vitest'; // Import vi from vitest
 // Mock fetch globally
 const originalFetch = global.fetch; // Store original fetch
 beforeEach(() => {
-  global.fetch = vi.fn((_url, _options) => {
+  global.fetch = vi.fn(() => {
     // Use vi.fn() instead of jest.fn()
     // Basic mock: you can expand this to return different responses based on url/options
     // For now, let's return a successful JSON response

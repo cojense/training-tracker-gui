@@ -40,6 +40,8 @@ describe('HomeView', () => {
 
   it('should render the training requirements card', async () => {
     renderComponent();
-    expect(await screen.findByText('Your Training Requirements')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Your Training Requirements')
+    ).toBeInTheDocument();
   });
 });

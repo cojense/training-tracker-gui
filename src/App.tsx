@@ -7,7 +7,7 @@ import { useAuth } from '~/hooks/useAuth';
 import { LoginView } from '~/views/LoginView';
 import { HomeView } from '~/views/HomeView';
 import { ProfileView } from '~/views/ProfileView';
-import { UsersView }from '~/views/UsersView';
+import { UsersView } from '~/views/UsersView';
 import { TrainingsView } from '~/views/TrainingsView';
 import { GroupsView } from '~/views/GroupsView';
 import { ProjectsView } from '~/views/ProjectsView';

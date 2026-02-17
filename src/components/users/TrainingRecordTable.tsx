@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { Edit as EditIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { BACKEND_URL } from '~/services/apiClient';
 import { TrainingEvent } from '~/types/training';
 
 const styles = {
@@ -33,17 +34,63 @@ const CertificateLink = ({ certId, index, sx }: CertificateLinkProps) => {
     () => `certificate${index > 0 ? index + 1 : ''}`,
     [index]
   );
-  const BACKEND_URL =
-    import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:5001';
+
   const href = useMemo(
     () => `${BACKEND_URL}/api/certificates/${certId}`,
-    [certId, BACKEND_URL]
+    [certId]
   );
 
   return (
     <Link href={href} target="_blank" rel="noopener noreferrer" sx={sx}>
       {label}
     </Link>
+  );
+};
+
+interface RowProps {
+  event: TrainingEvent;
+  onEdit: (id: number) => void;
+}
+
+const TrainingRecordRow = ({ event, onEdit }: RowProps) => {
+  const handleEdit = useCallback(() => {
+    if (event.id !== null) {
+      onEdit(event.id);
+    }
+  }, [event.id, onEdit]);
+
+  return (
+    <TableRow hover>
+      <TableCell>
+        {!event.approved_date && event.id !== null && (
+          <Tooltip title="Edit Event">
+            <IconButton size="small" onClick={handleEdit}>
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
+      </TableCell>
+      <TableCell>{event.training.id}</TableCell>
+      <TableCell>{event.training.title}</TableCell>
+      <TableCell>{event.completion_date}</TableCell>
+      <TableCell>{event.approved_date ?? 'Pending'}</TableCell>
+      <TableCell>
+        {event.certificate_unavailable ? (
+          <i>unavailable</i>
+        ) : event.training_certificates.length === 0 ? (
+          <b>missing</b>
+        ) : (
+          event.training_certificates.map((cert, index) => (
+            <CertificateLink
+              key={cert.id ?? index}
+              certId={cert.id!}
+              index={index}
+              sx={styles.certLink}
+            />
+          ))
+        )}
+      </TableCell>
+    </TableRow>
   );
 };
 
@@ -90,40 +137,11 @@ export const TrainingRecordTable = ({ record }: TrainingRecordTableProps) => {
         </TableHead>
         <TableBody>
           {record.map((event: TrainingEvent) => (
-            <TableRow key={event.id} hover>
-              <TableCell>
-                {!event.approved_date && event.id !== null && (
-                  <Tooltip title="Edit Event">
-                    <IconButton
-                      size="small"
-                      onClick={() => handleEditClick(event.id!)}
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                )}
-              </TableCell>
-              <TableCell>{event.training.id}</TableCell>
-              <TableCell>{event.training.title}</TableCell>
-              <TableCell>{event.completion_date}</TableCell>
-              <TableCell>{event.approved_date ?? 'Pending'}</TableCell>
-              <TableCell>
-                {event.certificate_unavailable ? (
-                  <i>unavailable</i>
-                ) : event.training_certificates.length === 0 ? (
-                  <b>missing</b>
-                ) : (
-                  event.training_certificates.map((cert, index) => (
-                    <CertificateLink
-                      key={cert.id ?? index}
-                      certId={cert.id!}
-                      index={index}
-                      sx={styles.certLink}
-                    />
-                  ))
-                )}
-              </TableCell>
-            </TableRow>
+            <TrainingRecordRow
+              key={event.id ?? 'new'}
+              event={event}
+              onEdit={handleEditClick}
+            />
           ))}
         </TableBody>
       </Table>

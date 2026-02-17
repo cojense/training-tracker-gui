@@ -15,7 +15,14 @@ const renderComponent = (props: ComponentProps<typeof UserTable>) =>
   );
 
 const mockUsers: User[] = [
-  { id: 1, first_name: 'John', last_name: 'Doe', email: 'john@example.com', is_admin: true, is_training_manager: false },
+  {
+    id: 1,
+    first_name: 'John',
+    last_name: 'Doe',
+    email: 'john@example.com',
+    is_admin: true,
+    is_training_manager: false,
+  },
 ];
 
 describe('UserTable', () => {

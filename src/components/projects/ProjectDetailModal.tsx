@@ -17,21 +17,32 @@ import { Project } from '~/types/projects';
 import { useAuth } from '~/hooks/useAuth';
 
 const styles = {
-  modal: {
+  modalContainer: {
     position: 'absolute' as const,
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
     width: 600,
     bgcolor: 'background.paper',
-    border: '2px solid #000',
     boxShadow: 24,
     p: 4,
+    borderRadius: 1,
     maxHeight: '90vh',
     overflowY: 'auto',
   },
+  headerBox: {
+    p: 2,
+    bgcolor: 'primary.main',
+    color: 'primary.contrastText',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   centeredBox: { textAlign: 'center', py: 4 },
   errorBox: { p: 2 },
+  errorFooter: { mt: 2, textAlign: 'right' },
+  cardContent: { p: 2 },
+  footerBox: { display: 'flex', justifyContent: 'flex-end' },
 };
 
 interface ProjectDetailModalProps {
@@ -42,28 +53,32 @@ interface ProjectDetailModalProps {
 }
 
 export const ProjectDetailModal = ({
-  project,
+  project: initialProject,
   open,
   onClose,
   onEdit,
 }: ProjectDetailModalProps) => {
   const { user } = useAuth();
+  const [project, setProject] = useState<Project | null>(initialProject);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
-    if (!project) return;
+    if (!initialProject) return;
     try {
       setLoading(true);
       setError(null);
-      await ProjectService.getProject(String(project.id)); // Fetch again to ensure fresh data
+      const freshProject = await ProjectService.getProject(
+        String(initialProject.id)
+      );
+      setProject(freshProject);
     } catch (err) {
       console.error('Failed to fetch project details:', err);
       setError('Could not load project details.');
     } finally {
       setLoading(false);
     }
-  }, [project]);
+  }, [initialProject]);
 
   useEffect(() => {
     if (open) {
@@ -71,7 +86,13 @@ export const ProjectDetailModal = ({
     }
   }, [open, fetchData]);
 
-  if (!project) {
+  const handleEdit = useCallback(() => {
+    if (project) {
+      onEdit(project);
+    }
+  }, [onEdit, project]);
+
+  if (!initialProject) {
     return null;
   }
 
@@ -79,43 +100,38 @@ export const ProjectDetailModal = ({
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Box sx={styles.modal}>
+      <Box sx={styles.modalContainer}>
         {loading ? (
           <Box sx={styles.centeredBox}>
             <CircularProgress />
           </Box>
-        ) : error ? (
+        ) : error || !project ? (
           <Box sx={styles.errorBox}>
             <Alert severity="error">{error ?? 'Project not found'}</Alert>
+            <Box sx={styles.errorFooter}>
+              <Button onClick={onClose}>Close</Button>
+            </Box>
           </Box>
         ) : (
           <Stack spacing={3}>
-            <Card elevation={2}>
-              <Box
-                sx={{
-                  p: 2,
-                  bgcolor: 'primary.main',
-                  color: 'primary.contrastText',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <Typography variant="h6">Project Detail</Typography>
+            <Typography variant="h5">Project Details</Typography>
+            <Card variant="outlined">
+              <Box sx={styles.headerBox}>
+                <Typography variant="h6">{project.name}</Typography>
                 {isAdmin && (
                   <Button
                     variant="contained"
                     color="secondary"
                     startIcon={<EditIcon />}
-                    onClick={() => onEdit(project)}
+                    onClick={handleEdit}
                     size="small"
                   >
-                    Edit Project
+                    Edit
                   </Button>
                 )}
               </Box>
               <Divider />
-              <CardContent sx={{ p: 2 }}>
+              <CardContent sx={styles.cardContent}>
                 <Stack spacing={2}>
                   <Box>
                     <Typography variant="subtitle2" color="text.secondary">
@@ -132,6 +148,11 @@ export const ProjectDetailModal = ({
                 </Stack>
               </CardContent>
             </Card>
+            <Box sx={styles.footerBox}>
+              <Button variant="contained" onClick={onClose}>
+                Close
+              </Button>
+            </Box>
           </Stack>
         )}
       </Box>
