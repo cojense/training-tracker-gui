@@ -12,6 +12,18 @@ dist
 dist-ssr
 *.local
 
+# --- AI Agents & Caches ---
+.gemini/plan-ideas/
+.gemini/logs/
+.claude/
+conductor/tracks/*
+conductor/code_styleguides/*
+CLAUDE.md
+conductor/claude-workflow.md
+conductor/research.md
+examples/
+*.md.template
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -32,3 +44,6 @@ GEMINI.md
 conductor/
 .geminiignore
 
+# --- Whitelist (Keep these) ---
+!README.md
+!GEMINI.md
