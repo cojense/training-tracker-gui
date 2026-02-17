@@ -22,52 +22,37 @@ const columns: ReportColumn[] = [
     render: (row: AssignedTraining) => row.assignment.training.title,
   },
   {
-    header: 'Bill To',
-    render: (row: AssignedTraining) =>
-      row.projects.map((p) => p.name).join(', '),
+    header: 'Completed',
+    render: (row: AssignedTraining) => row.completion_date ?? 'Never',
+  },
+  {
+    header: 'Approved',
+    render: (row: AssignedTraining) => row.approved_date ?? 'N/A',
   },
   {
     header: 'Due Date',
     render: (row: AssignedTraining) => row.due_date,
   },
-  {
-    header: 'Supervisor',
-    render: (row: AssignedTraining) =>
-      row.member.supervisor
-        ? `${row.member.supervisor.last_name}, ${row.member.supervisor.first_name}`
-        : 'MISSING',
-  },
 ];
 
 const exportConfig = {
-  headers: [
-    'Member',
-    'Training',
-    'Bill To',
-    'Last Completed',
-    'Approved',
-    'Due',
-    'Supervisor',
-  ],
+  headers: ['Member', 'Training', 'Last Completed', 'Approved', 'Due'],
   getData: (row: AssignedTraining) => [
     `${row.member.last_name}, ${row.member.first_name}`,
     row.assignment.training.title,
-    row.projects.map((p) => p.name).join(', '),
     row.completion_date,
     row.approved_date,
     row.due_date,
-    row.member.supervisor
-      ? `${row.member.supervisor.last_name}, ${row.member.supervisor.first_name}`
-      : 'MISSING',
   ],
 };
 
-export const ManagerReportCard = () => (
+export const SupervisorReportCard = () => (
   <ReportCard
-    title="Manager Report (All Users)"
-    fetchData={ReportService.getManagerReport}
-    exportFilenamePrefix="manager_report"
+    title="Supervisor Report (My Team)"
+    fetchData={ReportService.getSupervisorReport}
+    exportFilenamePrefix="supervisor_report"
     columns={columns}
     exportConfig={exportConfig}
+    emptyMessage="No pending training for your team members."
   />
 );

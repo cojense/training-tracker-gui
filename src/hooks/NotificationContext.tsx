@@ -1,6 +1,4 @@
 import {
-  createContext,
-  useContext,
   useState,
   useCallback,
   ReactNode,
@@ -8,19 +6,13 @@ import {
   SyntheticEvent,
 } from 'react';
 import { Snackbar, Alert, AlertColor, SnackbarOrigin } from '@mui/material';
-
-interface NotificationContextType {
-  showNotification: (message: string, severity?: AlertColor) => void;
-}
-
-const NotificationContext = createContext<NotificationContextType | undefined>(
-  undefined
-);
+import { NotificationContext } from './useNotification';
 
 const anchorOrigin: SnackbarOrigin = {
   vertical: 'bottom',
   horizontal: 'right',
 };
+
 const alertStyles = { width: '100%' };
 
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
@@ -72,14 +64,4 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       </Snackbar>
     </NotificationContext.Provider>
   );
-};
-
-export const useNotification = () => {
-  const context = useContext(NotificationContext);
-  if (context === undefined) {
-    throw new Error(
-      'useNotification must be used within a NotificationProvider'
-    );
-  }
-  return context;
 };
