@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
   Typography,
   Box,
@@ -9,22 +9,34 @@ import {
 } from '@mui/material';
 import { Training } from '~/types/training';
 import { TrainingService } from '~/services/TrainingService';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
 import { useNotification } from '~/hooks/useNotification';
 
-const modalStyle = {
-  position: 'absolute' as const,
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 600,
-  bgcolor: 'background.paper',
-  border: 2, borderColor: 'divider',
-  boxShadow: 24,
-  p: 4,
-  maxHeight: '90vh',
-  overflowY: 'auto',
+const styles = {
+  modal: {
+    position: 'absolute' as const,
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 600,
+    bgcolor: 'background.paper',
+    border: 2,
+    borderColor: 'divider',
+    boxShadow: 24,
+    p: 4,
+    maxHeight: '90vh',
+    overflowY: 'auto',
+  },
+  actionButtons: { display: 'flex', gap: 2, justifyContent: 'flex-end' },
 };
+
+const validationRules = {
+  date: { required: 'Date is required' },
+  title: { required: 'Title is required' },
+  description: { required: 'Description is required' },
+};
+
+const inputLabelProps = { shrink: true };
 
 interface TrainingFormInput {
   date: string;
@@ -39,7 +51,11 @@ interface TrainingCreateModalProps {
   onSaveSuccess?: () => void;
 }
 
-export const TrainingCreateModal = ({ open, onClose, onSaveSuccess }: TrainingCreateModalProps) => {
+export const TrainingCreateModal = ({
+  open,
+  onClose,
+  onSaveSuccess,
+}: TrainingCreateModalProps) => {
   const { showNotification } = useNotification();
 
   const {
@@ -79,74 +95,113 @@ export const TrainingCreateModal = ({ open, onClose, onSaveSuccess }: TrainingCr
     [onClose, showNotification, reset, onSaveSuccess]
   );
 
+  const renderDateField = useCallback(
+    ({
+      field,
+      fieldState,
+    }: {
+      field: ControllerRenderProps<TrainingFormInput, 'date'>;
+      fieldState: { error?: { message?: string } };
+    }) => (
+      <TextField
+        {...field}
+        label="Date"
+        type="date"
+        fullWidth
+        InputLabelProps={inputLabelProps}
+        error={!!fieldState.error}
+        helperText={fieldState.error?.message}
+      />
+    ),
+    []
+  );
+
+  const renderTitleField = useCallback(
+    ({
+      field,
+      fieldState,
+    }: {
+      field: ControllerRenderProps<TrainingFormInput, 'title'>;
+      fieldState: { error?: { message?: string } };
+    }) => (
+      <TextField
+        {...field}
+        label="Title"
+        fullWidth
+        error={!!fieldState.error}
+        helperText={fieldState.error?.message}
+      />
+    ),
+    []
+  );
+
+  const renderDescriptionField = useCallback(
+    ({
+      field,
+      fieldState,
+    }: {
+      field: ControllerRenderProps<TrainingFormInput, 'description'>;
+      fieldState: { error?: { message?: string } };
+    }) => (
+      <TextField
+        {...field}
+        label="Description"
+        fullWidth
+        multiline
+        rows={4}
+        error={!!fieldState.error}
+        helperText={fieldState.error?.message}
+      />
+    ),
+    []
+  );
+
+  const renderUrlField = useCallback(
+    ({ field }: { field: ControllerRenderProps<TrainingFormInput, 'url'> }) => (
+      <TextField
+        {...field}
+        label="External URL (Optional)"
+        fullWidth
+        placeholder="https://example.com"
+      />
+    ),
+    []
+  );
+
+  const handleFormSubmit = useMemo(
+    () => handleSubmit(onSubmit),
+    [handleSubmit, onSubmit]
+  );
+
   return (
     <Modal open={open} onClose={onClose}>
-      <Box sx={modalStyle}>
+      <Box sx={styles.modal}>
         <Typography variant="h6" gutterBottom>
           Create New Training
         </Typography>
-        <form onSubmit={(e) => void handleSubmit(onSubmit)(e)}>
+        <form onSubmit={handleFormSubmit}>
           <Stack spacing={3}>
             <Controller
               name="date"
               control={control}
-              rules={{ required: 'Date is required' }}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  label="Date"
-                  type="date"
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message}
-                />
-              )}
+              rules={validationRules.date}
+              render={renderDateField}
             />
             <Controller
               name="title"
               control={control}
-              rules={{ required: 'Title is required' }}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  label="Title"
-                  fullWidth
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message}
-                />
-              )}
+              rules={validationRules.title}
+              render={renderTitleField}
             />
             <Controller
               name="description"
               control={control}
-              rules={{ required: 'Description is required' }}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  label="Description"
-                  fullWidth
-                  multiline
-                  rows={4}
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message}
-                />
-              )}
+              rules={validationRules.description}
+              render={renderDescriptionField}
             />
-            <Controller
-              name="url"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="External URL (Optional)"
-                  fullWidth
-                  placeholder="https://example.com"
-                />
-              )}
-            />
+            <Controller name="url" control={control} render={renderUrlField} />
 
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Box sx={styles.actionButtons}>
               <Button onClick={onClose} disabled={isSubmitting}>
                 Cancel
               </Button>
