@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -10,6 +10,7 @@ import {
   Avatar,
   Tooltip,
   Theme,
+  useTheme,
 } from '@mui/material';
 import {
   LightMode,
@@ -19,7 +20,6 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '~/hooks/useAuth';
 import ShyftLogo from '~/assets/shyft-logo.svg?react';
-import { BACKEND_URL } from '~/services/apiClient';
 
 const styles = {
   appBar: { zIndex: (theme: Theme) => theme.zIndex.drawer + 1 },
@@ -31,13 +31,6 @@ const styles = {
     cursor: 'pointer',
   },
   titleApp: { ml: 1, display: { xs: 'none', sm: 'block' } },
-  logoContainer: {
-    height: 40,
-    display: 'flex',
-    alignItems: 'center',
-    '& .logo-dark': { fill: 'text.primary' },
-    '& .logo-blue': { fill: 'primary.main' },
-  },
   rightActions: { display: 'flex', alignItems: 'center', gap: 2 },
   flaskButton: { display: { xs: 'none', sm: 'flex' } },
   userContainer: {
@@ -65,9 +58,10 @@ interface HeaderProps {
   toggleMode: () => void;
   onMenuClick: () => void;
 }
-export const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
+const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
+  const theme = useTheme();
 
   const handleLogout = useCallback(() => {
     logout();
@@ -83,6 +77,8 @@ export const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
   }, [navigate]);
 
   const handleFlaskUIClick = useCallback(() => {
+    const BACKEND_URL =
+      import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:5001';
     window.location.href = `${BACKEND_URL}/`;
   }, []);
 
@@ -91,6 +87,9 @@ export const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
   }, [navigate]);
 
   const fullName = user ? `${user.first_name} ${user.last_name}` : '';
+
+  const logoDarkColor = theme.palette.text.primary;
+  const logoBlueColor = theme.palette.primary.main;
 
   return (
     <AppBar position="sticky" color="default" elevation={1} sx={styles.appBar}>
@@ -108,7 +107,15 @@ export const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
         )}
 
         <Box sx={styles.titleContainer} onClick={handleTitleClick}>
-          <Box sx={styles.logoContainer}>
+          <Box
+            sx={{
+              height: 40,
+              display: 'flex',
+              alignItems: 'center',
+              '& .logo-dark': { fill: logoDarkColor },
+              '& .logo-blue': { fill: logoBlueColor },
+            }}
+          >
             <ShyftLogo height={40} />
           </Box>
           <Typography variant="h6" noWrap component="div" sx={styles.titleApp}>

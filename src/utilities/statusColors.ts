@@ -12,11 +12,14 @@ export const getStatusBackgroundColor = (
 ): string => {
   if (assignment.assignment.no_nag) {
     // Gray for No Nag
-    return theme.palette.mode === 'light' ? '#f5f5f5' : '#424242';
+    return theme.palette.mode === 'light' ? '#bae6fd' : '#1e3a5f';
   }
 
   if (assignment.due_date) {
-    const daysUntilDue = differenceInDays(parseISO(assignment.due_date), new Date());
+    const daysUntilDue = differenceInDays(
+      parseISO(assignment.due_date),
+      new Date()
+    );
 
     if (daysUntilDue <= 0) {
       // Red for overdue
