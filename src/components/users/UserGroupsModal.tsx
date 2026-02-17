@@ -17,28 +17,18 @@ import { UserService } from '~/services/UserService';
 import { GroupService } from '~/services/GroupService';
 import { useNotification } from '~/hooks/useNotification';
 
-const styles = {
-  modal: {
-    position: 'absolute' as const,
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 600,
-    bgcolor: 'background.paper',
-    border: 2,
-    borderColor: 'divider',
-    boxShadow: 24,
-    p: 4,
-    maxHeight: '90vh',
-    overflowY: 'auto',
-  },
-  LoadingContainer: { display: 'flex', justifyContent: 'center', py: 8 },
-  modalHeader: {
-    p: 2,
-    bgcolor: 'primary.main',
-    color: 'primary.contrastText',
-  },
-  modalLoad: { display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3 },
+const modalStyle = {
+  position: 'absolute' as const,
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 600,
+  bgcolor: 'background.paper',
+  border: 2, borderColor: 'divider',
+  boxShadow: 24,
+  p: 4,
+  maxHeight: '90vh',
+  overflowY: 'auto',
 };
 
 interface UserGroupsModalProps {
@@ -48,12 +38,7 @@ interface UserGroupsModalProps {
   onSaveSuccess?: () => void;
 }
 
-export const UserGroupsModal = ({
-  user,
-  open,
-  onClose,
-  onSaveSuccess,
-}: UserGroupsModalProps) => {
+export const UserGroupsModal = ({ user, open, onClose, onSaveSuccess }: UserGroupsModalProps) => {
   const { showNotification } = useNotification();
   const [allGroups, setAllGroups] = useState<Group[]>([]);
   const [memberGroupIds, setMemberGroupIds] = useState<Set<number>>(new Set());
@@ -123,30 +108,15 @@ export const UserGroupsModal = ({
     } finally {
       setSaving(false);
     }
-  }, [
-    user,
-    allGroups,
-    memberGroupIds,
-    showNotification,
-    onClose,
-    onSaveSuccess,
-  ]);
-
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const groupId = parseInt(e.target.value, 10);
-      handleToggleGroup(groupId);
-    },
-    [handleToggleGroup]
-  );
+  }, [user, allGroups, memberGroupIds, showNotification, onClose, onSaveSuccess]);
 
   if (!user) return null;
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Box sx={styles.modal}>
+      <Box sx={modalStyle}>
         {loading ? (
-          <Box sx={styles.LoadingContainer}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
             <CircularProgress />
           </Box>
         ) : (
@@ -158,7 +128,7 @@ export const UserGroupsModal = ({
               For user: {user.first_name} {user.last_name} ({user.email})
             </Typography>
             <Card elevation={2}>
-              <Box sx={styles.modalHeader}>
+              <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
                 <Typography variant="h6">Available Groups</Typography>
               </Box>
               <Divider />
@@ -169,10 +139,8 @@ export const UserGroupsModal = ({
                       key={group.id}
                       control={
                         <Checkbox
-                          checked={memberGroupIds.has(
-                            group.id as unknown as number
-                          )}
-                          onChange={handleChange}
+                          checked={memberGroupIds.has(group.id as unknown as number)}
+                          onChange={() => handleToggleGroup(group.id as unknown as number)}
                         />
                       }
                       label={group.name}
@@ -180,7 +148,7 @@ export const UserGroupsModal = ({
                   ))}
                 </Stack>
 
-                <Box sx={styles.modalLoad}>
+                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3 }}>
                   <Button onClick={onClose} disabled={saving}>
                     Cancel
                   </Button>
@@ -188,7 +156,7 @@ export const UserGroupsModal = ({
                     variant="contained"
                     color="primary"
                     disabled={saving}
-                    onClick={handleSave}
+                    onClick={() => void handleSave()}
                   >
                     Save Changes
                   </Button>

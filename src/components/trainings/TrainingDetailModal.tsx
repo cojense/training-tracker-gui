@@ -28,75 +28,30 @@ import { Training, TrainingEvent } from '~/types/training';
 import { TrainingService } from '~/services/TrainingService';
 import { useAuth } from '~/hooks/useAuth';
 
-import { getSafeUrl } from '~/utilities/urlValidation';
-
-const styles = {
-  modal: {
-    position: 'absolute' as const,
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 600,
-    bgcolor: 'background.paper',
-    border: 2,
-    borderColor: 'divider',
-    boxShadow: 24,
-    p: 4,
-    maxHeight: '90vh',
-    overflowY: 'auto',
-  },
-  headerBox: {
-    p: 2,
-    bgcolor: 'primary.main',
-    color: 'primary.contrastText',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  centeredBox: { textAlign: 'center', py: 4 },
-  boldText: { fontWeight: 'bold' },
-  flexCenter: { display: 'flex', alignItems: 'center', gap: 0.5 },
-  preWrap: { whiteSpace: 'pre-wrap' },
-  contentBox: { p: 2 },
-  noPaddingBox: { p: 0 },
+const modalStyle = {
+  position: 'absolute' as const,
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 600,
+  bgcolor: 'background.paper',
+  border: 2, borderColor: 'divider',
+  boxShadow: 24,
+  p: 4,
+  maxHeight: '90vh',
+  overflowY: 'auto',
 };
 
-interface CompletionRowProps {
-  event: TrainingEvent;
-  isManager: boolean;
-  onEditEvent: (event: TrainingEvent) => void;
-}
-
-const CompletionRow = ({
-  event,
-  isManager,
-  onEditEvent,
-}: CompletionRowProps) => {
-  const handleEdit = useCallback(
-    () => onEditEvent(event),
-    [event, onEditEvent]
-  );
-
-  return (
-    <TableRow hover>
-      <TableCell>
-        {event.user
-          ? `${event.user.last_name}, ${event.user.first_name}`
-          : 'Unknown'}
-      </TableCell>
-      <TableCell>{event.completion_date}</TableCell>
-      <TableCell>{event.approved_date ?? 'Pending'}</TableCell>
-      <TableCell>{event.comment}</TableCell>
-      {isManager && (
-        <TableCell>
-          <IconButton size="small" onClick={handleEdit}>
-            <EditIcon fontSize="small" />
-          </IconButton>
-        </TableCell>
-      )}
-    </TableRow>
-  );
+const headerBoxStyles = {
+  p: 2,
+  bgcolor: 'primary.main',
+  color: 'primary.contrastText',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
 };
+
+const centeredBoxStyles = { textAlign: 'center', py: 4 };
 
 interface TrainingDetailModalProps {
   training: Training | null;
@@ -141,36 +96,32 @@ export const TrainingDetailModal = ({
     }
   }, [open, training, fetchData]);
 
-  const handleEditTraining = useCallback(() => {
-    if (training) onEdit(training);
-  }, [training, onEdit]);
-
   if (!training) return null;
 
   const isManager = user?.is_admin ?? user?.is_training_manager ?? false;
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Box sx={styles.modal}>
+      <Box sx={modalStyle}>
         {loading ? (
-          <Box sx={styles.centeredBox}>
+          <Box sx={centeredBoxStyles}>
             <CircularProgress />
           </Box>
         ) : error ? (
-          <Box sx={styles.contentBox}>
+          <Box sx={{ p: 2 }}>
             <Alert severity="error">{error ?? 'Training not found'}</Alert>
           </Box>
         ) : (
           <Stack spacing={3}>
             <Card elevation={2}>
-              <Box sx={styles.headerBox}>
+              <Box sx={headerBoxStyles}>
                 <Typography variant="h6">Training Detail</Typography>
                 {isManager && (
                   <Button
                     variant="contained"
                     color="secondary"
                     startIcon={<EditIcon />}
-                    onClick={handleEditTraining}
+                    onClick={() => onEdit(training)}
                     size="small"
                   >
                     Edit Training
@@ -178,7 +129,7 @@ export const TrainingDetailModal = ({
                 )}
               </Box>
               <Divider />
-              <CardContent sx={styles.contentBox}>
+              <CardContent sx={{ p: 2 }}>
                 <Stack spacing={2}>
                   <Box>
                     <Typography variant="subtitle2" color="text.secondary">
@@ -202,7 +153,7 @@ export const TrainingDetailModal = ({
                     <Typography variant="subtitle2" color="text.secondary">
                       Description
                     </Typography>
-                    <Typography variant="body1" sx={styles.preWrap}>
+                    <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
                       {training.description}
                     </Typography>
                   </Box>
@@ -212,10 +163,10 @@ export const TrainingDetailModal = ({
                         External URL
                       </Typography>
                       <MuiLink
-                        href={getSafeUrl(training.url)}
+                        href={training.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        sx={styles.flexCenter}
+                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                       >
                         {training.url} <OpenInNewIcon fontSize="inherit" />
                       </MuiLink>
@@ -226,39 +177,65 @@ export const TrainingDetailModal = ({
             </Card>
 
             <Card elevation={2}>
-              <Box sx={styles.headerBox}>
+              <Box sx={headerBoxStyles}>
                 <Typography variant="h6">Completion History</Typography>
               </Box>
               <Divider />
-              <CardContent sx={styles.noPaddingBox}>
+              <CardContent sx={{ p: 0 }}>
                 {completions.length > 0 ? (
                   <TableContainer component={Paper} elevation={0}>
                     <Table>
                       <TableHead>
                         <TableRow>
-                          <TableCell sx={styles.boldText}>User</TableCell>
-                          <TableCell sx={styles.boldText}>Completed</TableCell>
-                          <TableCell sx={styles.boldText}>Approved</TableCell>
-                          <TableCell sx={styles.boldText}>Comments</TableCell>
+                          <TableCell sx={{ fontWeight: 'bold' }}>
+                            User
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 'bold' }}>
+                            Completed
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 'bold' }}>
+                            Approved
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 'bold' }}>
+                            Comments
+                          </TableCell>
                           {isManager && (
-                            <TableCell sx={styles.boldText}>Actions</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>
+                              Actions
+                            </TableCell>
                           )}
                         </TableRow>
                       </TableHead>
                       <TableBody>
                         {completions.map((event) => (
-                          <CompletionRow
-                            key={event.id ?? 'new'}
-                            event={event}
-                            isManager={isManager}
-                            onEditEvent={onEditEvent}
-                          />
+                          <TableRow key={event.id} hover>
+                            <TableCell>
+                              {event.user
+                                ? `${event.user.last_name}, ${event.user.first_name}`
+                                : 'Unknown'}
+                            </TableCell>
+                            <TableCell>{event.completion_date}</TableCell>
+                            <TableCell>
+                              {event.approved_date ?? 'Pending'}
+                            </TableCell>
+                            <TableCell>{event.comment}</TableCell>
+                            {isManager && (
+                              <TableCell>
+                                <IconButton
+                                  size="small"
+                                  onClick={() => onEditEvent(event)}
+                                >
+                                  <EditIcon fontSize="small" />
+                                </IconButton>
+                              </TableCell>
+                            )}
+                          </TableRow>
                         ))}
                       </TableBody>
                     </Table>
                   </TableContainer>
                 ) : (
-                  <Box sx={styles.centeredBox}>
+                  <Box sx={centeredBoxStyles}>
                     <Typography variant="body2" color="text.secondary">
                       No completion records for this training.
                     </Typography>
