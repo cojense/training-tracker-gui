@@ -33,7 +33,8 @@ const modalStyle = {
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 600,
+  width: { xs: '90%', sm: 600 },
+  borderRadius: '12px',
   bgcolor: 'background.paper',
   border: 2, borderColor: 'divider',
   boxShadow: 24,
@@ -187,20 +188,20 @@ export const TrainingDetailModal = ({
                     <Table>
                       <TableHead>
                         <TableRow>
-                          <TableCell sx={{ fontWeight: 'bold' }}>
+                          <TableCell >
                             User
                           </TableCell>
-                          <TableCell sx={{ fontWeight: 'bold' }}>
+                          <TableCell >
                             Completed
                           </TableCell>
-                          <TableCell sx={{ fontWeight: 'bold' }}>
+                          <TableCell >
                             Approved
                           </TableCell>
-                          <TableCell sx={{ fontWeight: 'bold' }}>
+                          <TableCell >
                             Comments
                           </TableCell>
                           {isManager && (
-                            <TableCell sx={{ fontWeight: 'bold' }}>
+                            <TableCell >
                               Actions
                             </TableCell>
                           )}

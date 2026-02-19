@@ -18,7 +18,7 @@ const styles = {
     alignItems: 'center',
     minHeight: '60vh',
   },
-  card: { maxWidth: 400, textAlign: 'center', p: 2 },
+  card: { maxWidth: 400, textAlign: 'center', p: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' },
   description: { mb: 3 },
 };
 

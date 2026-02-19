@@ -19,10 +19,6 @@ import { TrainingDetailModal } from '~/components/trainings/TrainingDetailModal'
 import { TrainingEditModal } from '~/components/trainings/TrainingEditModal';
 import { Training, TrainingEvent } from '~/types/training';
 
-const styles = {
-  header: { fontWeight: 'bold' },
-};
-
 interface RowProps {
   assignment: AssignedTraining;
   onRecord: (trainingId: number | string, userId: number | string) => void;
@@ -137,12 +133,12 @@ export const TrainingDueTable = ({
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={styles.header}>Actions</TableCell>
-              <TableCell sx={styles.header}>Training Due</TableCell>
-              <TableCell sx={styles.header}>Bill To</TableCell>
-              <TableCell sx={styles.header}>Last Completed</TableCell>
-              <TableCell sx={styles.header}>Approved</TableCell>
-              <TableCell sx={styles.header}>Due Date</TableCell>
+              <TableCell >Actions</TableCell>
+              <TableCell >Training Due</TableCell>
+              <TableCell >Bill To</TableCell>
+              <TableCell >Last Completed</TableCell>
+              <TableCell >Approved</TableCell>
+              <TableCell >Due Date</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

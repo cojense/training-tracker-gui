@@ -17,10 +17,6 @@ import {
 } from '@mui/icons-material';
 import { Group } from '~/types/user';
 
-const styles = {
-  headerCell: { fontWeight: 'bold' },
-};
-
 interface GroupRowProps {
   group: Group;
   onDetails: (id: number | null) => void;
@@ -80,7 +76,7 @@ export const GroupTable = ({
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell sx={styles.headerCell}>
+            <TableCell>
               <TableSortLabel
                 active={orderBy === 'id'}
                 direction={orderBy === 'id' ? order : 'asc'}
@@ -89,7 +85,7 @@ export const GroupTable = ({
                 ID
               </TableSortLabel>
             </TableCell>
-            <TableCell sx={styles.headerCell}>
+            <TableCell>
               <TableSortLabel
                 active={orderBy === 'name'}
                 direction={orderBy === 'name' ? order : 'asc'}
@@ -98,9 +94,9 @@ export const GroupTable = ({
                 Name
               </TableSortLabel>
             </TableCell>
-            <TableCell sx={styles.headerCell}>Admin</TableCell>
-            <TableCell sx={styles.headerCell}>Manager</TableCell>
-            <TableCell sx={styles.headerCell}>Actions</TableCell>
+            <TableCell>Admin</TableCell>
+            <TableCell>Manager</TableCell>
+            <TableCell>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

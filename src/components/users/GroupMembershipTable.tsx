@@ -12,10 +12,6 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import { Group } from '~/types/user';
 
-const styles = {
-  header: { fontWeight: 'bold' },
-};
-
 interface StatusTableCellProps {
   value: boolean;
 }
@@ -55,10 +51,10 @@ export const GroupMembershipTable = ({ groups }: GroupMembershipTableProps) => {
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell sx={styles.header}>ID</TableCell>
-            <TableCell sx={styles.header}>Name</TableCell>
-            <TableCell sx={styles.header}>Admin</TableCell>
-            <TableCell sx={styles.header}>Training Manager</TableCell>
+            <TableCell >ID</TableCell>
+            <TableCell >Name</TableCell>
+            <TableCell >Admin</TableCell>
+            <TableCell >Training Manager</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

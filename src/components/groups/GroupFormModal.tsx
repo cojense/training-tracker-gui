@@ -55,11 +55,11 @@ export const GroupFormModal = ({ initialData = {}, onSubmit, onCancel, title, op
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 400,
+        width: { xs: '90%', sm: 400 },
         bgcolor: 'background.paper',
         boxShadow: 24,
         p: 4,
-        borderRadius: 1,
+        borderRadius: '12px',
       }}>
         <Typography variant="h6" component="h2" gutterBottom>
           {title}

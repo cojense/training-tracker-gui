@@ -16,7 +16,6 @@ import {
 } from '@mui/icons-material';
 import { Training } from '~/types/training';
 
-const headerCellStyles = { fontWeight: 'bold' };
 const trainingTableStyles = { minWidth: 650 };
 
 interface TrainingRowProps {
@@ -107,7 +106,7 @@ export const TrainingTable = ({
       <Table sx={trainingTableStyles} aria-label="training table">
         <TableHead>
           <TableRow>
-            <TableCell sx={headerCellStyles}>
+            <TableCell>
               <TableSortLabel
                 active={orderBy === 'id'}
                 direction={orderBy === 'id' ? order : 'asc'}
@@ -116,7 +115,7 @@ export const TrainingTable = ({
                 ID
               </TableSortLabel>
             </TableCell>
-            <TableCell sx={headerCellStyles}>
+            <TableCell>
               <TableSortLabel
                 active={orderBy === 'date'}
                 direction={orderBy === 'date' ? order : 'asc'}
@@ -125,7 +124,7 @@ export const TrainingTable = ({
                 Date
               </TableSortLabel>
             </TableCell>
-            <TableCell sx={headerCellStyles}>
+            <TableCell>
               <TableSortLabel
                 active={orderBy === 'title'}
                 direction={orderBy === 'title' ? order : 'asc'}
@@ -134,9 +133,9 @@ export const TrainingTable = ({
                 Training Name
               </TableSortLabel>
             </TableCell>
-            <TableCell sx={headerCellStyles}>External URL</TableCell>
+            <TableCell>External URL</TableCell>
             {isManager && (
-              <TableCell sx={headerCellStyles}>Actions</TableCell>
+              <TableCell>Actions</TableCell>
             )}
           </TableRow>
         </TableHead>

@@ -39,7 +39,6 @@ const styles = {
   },
   contentRoot: { p: 0 },
   centeredBox: { textAlign: 'center', py: 4 },
-  headerCell: { fontWeight: 'bold' },
 };
 
 export const ApprovalQueueCard = () => {
@@ -157,10 +156,10 @@ export const ApprovalQueueCard = () => {
                       onChange={handleToggleAll}
                     />
                   </TableCell>
-                  <TableCell sx={styles.headerCell}>User</TableCell>
-                  <TableCell sx={styles.headerCell}>Training</TableCell>
-                  <TableCell sx={styles.headerCell}>Date</TableCell>
-                  <TableCell sx={styles.headerCell}>Actions</TableCell>
+                  <TableCell>User</TableCell>
+                  <TableCell>Training</TableCell>
+                  <TableCell>Date</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>

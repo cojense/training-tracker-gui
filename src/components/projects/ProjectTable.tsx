@@ -17,10 +17,6 @@ import {
 } from '@mui/icons-material';
 import { Project } from '~/types/projects';
 
-const styles = {
-  headerCell: { fontWeight: 'bold' },
-};
-
 interface ProjectRowProps {
   project: Project;
   onDetails: (id: number | null) => void;
@@ -81,7 +77,7 @@ export const ProjectTable = ({
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell sx={styles.headerCell}>
+            <TableCell>
               <TableSortLabel
                 active={orderBy === 'id'}
                 direction={orderBy === 'id' ? order : 'asc'}
@@ -90,7 +86,7 @@ export const ProjectTable = ({
                 ID
               </TableSortLabel>
             </TableCell>
-            <TableCell sx={styles.headerCell}>
+            <TableCell>
               <TableSortLabel
                 active={orderBy === 'name'}
                 direction={orderBy === 'name' ? order : 'asc'}
@@ -99,7 +95,7 @@ export const ProjectTable = ({
                 Name
               </TableSortLabel>
             </TableCell>
-            <TableCell sx={styles.headerCell}>Actions</TableCell>
+            <TableCell>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

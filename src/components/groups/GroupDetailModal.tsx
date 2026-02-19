@@ -33,7 +33,6 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  headerCell: { fontWeight: 'bold' },
 };
 
 interface GroupDetailModalProps {
@@ -77,11 +76,11 @@ export const GroupDetailModal = ({ open, onClose, group, onEditAssignment, onAdd
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 800,
+        width: { xs: '90%', sm: 800 },
         bgcolor: 'background.paper',
         boxShadow: 24,
         p: 4,
-        borderRadius: 1,
+        borderRadius: '12px',
         maxHeight: '90vh',
         overflowY: 'auto',
       }}>
@@ -111,9 +110,9 @@ export const GroupDetailModal = ({ open, onClose, group, onEditAssignment, onAdd
                 <Table size="small">
                   <TableHead>
                     <TableRow>
-                      <TableCell sx={styles.headerCell}>Training</TableCell>
-                      <TableCell sx={styles.headerCell}>Project</TableCell>
-                      <TableCell sx={styles.headerCell}>Actions</TableCell>
+                      <TableCell>Training</TableCell>
+                      <TableCell>Project</TableCell>
+                      <TableCell>Actions</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -142,8 +141,8 @@ export const GroupDetailModal = ({ open, onClose, group, onEditAssignment, onAdd
                 <Table size="small">
                   <TableHead>
                     <TableRow>
-                      <TableCell sx={styles.headerCell}>Name</TableCell>
-                      <TableCell sx={styles.headerCell}>Email</TableCell>
+                      <TableCell>Name</TableCell>
+                      <TableCell>Email</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>

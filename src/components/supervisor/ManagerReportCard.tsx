@@ -36,7 +36,6 @@ const styles = {
   },
   contentRoot: { p: 0 },
   centeredBox: { textAlign: 'center', py: 4 },
-  headerCell: { fontWeight: 'bold' },
 };
 
 export const ManagerReportCard = () => {
@@ -107,11 +106,11 @@ export const ManagerReportCard = () => {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={styles.headerCell}>Member</TableCell>
-                  <TableCell sx={styles.headerCell}>Training</TableCell>
-                  <TableCell sx={styles.headerCell}>Bill To</TableCell>
-                  <TableCell sx={styles.headerCell}>Due Date</TableCell>
-                  <TableCell sx={styles.headerCell}>Supervisor</TableCell>
+                  <TableCell>Member</TableCell>
+                  <TableCell>Training</TableCell>
+                  <TableCell>Bill To</TableCell>
+                  <TableCell>Due Date</TableCell>
+                  <TableCell>Supervisor</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>

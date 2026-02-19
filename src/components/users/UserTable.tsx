@@ -18,8 +18,6 @@ import {
 } from '@mui/icons-material';
 import { User } from '~/types/user';
 
-const headerCellStyles = { fontWeight: 'bold' };
-
 interface UserRowProps {
   user: User;
   onEdit: (id: number) => void;
@@ -97,7 +95,7 @@ export const UserTable = ({
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell sx={headerCellStyles}>
+            <TableCell >
               <TableSortLabel
                 active={orderBy === 'id'}
                 direction={orderBy === 'id' ? order : 'asc'}
@@ -106,7 +104,7 @@ export const UserTable = ({
                 ID
               </TableSortLabel>
             </TableCell>
-            <TableCell sx={headerCellStyles}>
+            <TableCell >
               <TableSortLabel
                 active={orderBy === 'full_name'}
                 direction={orderBy === 'full_name' ? order : 'asc'}
@@ -115,7 +113,7 @@ export const UserTable = ({
                 Name
               </TableSortLabel>
             </TableCell>
-            <TableCell sx={headerCellStyles}>
+            <TableCell >
               <TableSortLabel
                 active={orderBy === 'email'}
                 direction={orderBy === 'email' ? order : 'asc'}
@@ -124,8 +122,8 @@ export const UserTable = ({
                 Email
               </TableSortLabel>
             </TableCell>
-            <TableCell sx={headerCellStyles}>Roles</TableCell>
-            <TableCell sx={headerCellStyles}>Actions</TableCell>
+            <TableCell >Roles</TableCell>
+            <TableCell >Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

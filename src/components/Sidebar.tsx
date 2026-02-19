@@ -8,8 +8,6 @@ import {
   ListItemText,
   Divider,
   Box,
-  SxProps,
-  Theme,
 } from '@mui/material';
 import {
   Home as HomeIcon,
@@ -27,15 +25,6 @@ const drawerWidth = 240;
 
 const styles = {
   drawerBox: { overflow: 'auto', mt: 2 },
-  selectedItem: {
-    '&.Mui-selected': {
-      backgroundColor: 'primary.light',
-      color: 'primary.contrastText',
-      '& .MuiListItemIcon-root': {
-        color: 'primary.contrastText',
-      },
-    },
-  },
   navBox: { width: { md: drawerWidth }, flexShrink: { md: 0 } },
   tempDrawer: {
     display: { xs: 'block', md: 'none' },
@@ -63,9 +52,8 @@ interface NavListItemProps {
   item: NavItem;
   isActive: boolean;
   onClick: (path: string) => void;
-  sx?: SxProps<Theme>;
 }
-const NavListItem = ({ item, isActive, onClick, sx }: NavListItemProps) => {
+const NavListItem = ({ item, isActive, onClick }: NavListItemProps) => {
   const handleClick = useCallback(() => {
     onClick(item.path);
   }, [item.path, onClick]);
@@ -79,7 +67,7 @@ const NavListItem = ({ item, isActive, onClick, sx }: NavListItemProps) => {
 
   return (
     <ListItem disablePadding>
-      <ListItemButton onClick={handleClick} selected={isActive} sx={sx}>
+      <ListItemButton onClick={handleClick} selected={isActive}>
         <ListItemIcon sx={iconStyles}>{item.icon}</ListItemIcon>
         <ListItemText primary={item.text} />
       </ListItemButton>
@@ -165,7 +153,6 @@ export const Sidebar = ({ open, onClose, mobile }: SidebarProps) => {
               item={item}
               isActive={location.pathname === item.path}
               onClick={handleNavigate}
-              sx={styles.selectedItem}
             />
           ))}
       </List>

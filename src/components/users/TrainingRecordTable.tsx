@@ -18,7 +18,6 @@ import { useNavigate } from 'react-router-dom';
 import { TrainingEvent } from '~/types/training';
 
 const styles = {
-  header: { fontWeight: 'bold' },
   certLink: { mr: 1 },
 };
 
@@ -80,12 +79,12 @@ export const TrainingRecordTable = ({ record }: TrainingRecordTableProps) => {
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell sx={styles.header}>Actions</TableCell>
-            <TableCell sx={styles.header}>ID</TableCell>
-            <TableCell sx={styles.header}>Training</TableCell>
-            <TableCell sx={styles.header}>Completed</TableCell>
-            <TableCell sx={styles.header}>Approved</TableCell>
-            <TableCell sx={styles.header}>Certificates</TableCell>
+            <TableCell >Actions</TableCell>
+            <TableCell >ID</TableCell>
+            <TableCell >Training</TableCell>
+            <TableCell >Completed</TableCell>
+            <TableCell >Approved</TableCell>
+            <TableCell >Certificates</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
