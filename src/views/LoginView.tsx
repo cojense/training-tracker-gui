@@ -1,76 +1,39 @@
-import { useCallback } from 'react';
-import { BACKEND_URL } from '~/services/apiClient';
-import {
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Box,
-  Stack,
-} from '@mui/material';
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
+import { Card, CardContent, Typography, Box } from '@mui/material';
+import { jwtDecode } from 'jwt-decode';
+import { useAuth } from '~/AuthContext';
 
-const FRONTEND_URL = window.location.origin;
-
-const styles = {
-  container: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '60vh',
-  },
-  card: { maxWidth: 400, textAlign: 'center', p: 2 },
-  description: { mb: 3 },
-};
-
-export const LoginView = () => {
-  const handleGoogleLogin = useCallback(() => {
-    // Perform full page redirect to backend OAuth route with next parameter
-    window.location.href = `${BACKEND_URL}/oauth2/login/google?next=${encodeURIComponent(FRONTEND_URL)}`;
-  }, []);
-
-  const handleDevLogin = useCallback(() => {
-    // Perform full page redirect to backend dev login route with next parameter
-    window.location.href = `${BACKEND_URL}/dev/login?next=${encodeURIComponent(FRONTEND_URL)}`;
-  }, []);
+const LoginView = () => {
+  const { setLoginAuth, setUser } = useAuth();
 
   return (
-    <Box sx={styles.container}>
-      <Card sx={styles.card}>
+    <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
+      <Card sx={{ maxWidth: 400, textAlign: 'center' }}>
         <CardContent>
-          <Typography variant="h5" gutterBottom>
-            Welcome to Training Tracker
+          <Typography variant="h5" component="div" sx={{ mb: 2 }}>
+            Welcome to Shyft Training Tracker
           </Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={styles.description}
-          >
-            Please sign in to access your training requirements.
+          <Typography variant="body1" sx={{ mb: 3 }}>
+            Please sign in with your Google account to continue.
           </Typography>
-
-          <Stack spacing={2}>
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              onClick={handleGoogleLogin}
-            >
-              Sign In with Google
-            </Button>
-
-            {import.meta.env.DEV && (
-              <Button
-                variant="outlined"
-                color="secondary"
-                fullWidth
-                onClick={handleDevLogin}
-              >
-                Dev Login (Bypass)
-              </Button>
-            )}
-          </Stack>
+          <GoogleLogin
+            onSuccess={(credentialResponse: CredentialResponse) => {
+              if (credentialResponse.credential) {
+                const decoded: { name: string; email: string; picture: string } = jwtDecode(
+                  credentialResponse.credential
+                );
+                setUser({ name: decoded.name, email: decoded.email, picture: decoded.picture });
+                setLoginAuth(true);
+              }
+            }}
+            onError={() => {
+              console.log('Login Failed');
+            }}
+          />
         </CardContent>
       </Card>
     </Box>
   );
 };
+
+export default LoginView;
