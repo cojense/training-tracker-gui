@@ -1,9 +1,4 @@
-import {
-  Typography,
-  Card,
-  CardContent,
-  Stack,
-} from '@mui/material';
+import { Typography, Card, CardContent, Stack } from '@mui/material';
 import { useAuth } from '~/hooks/useAuth';
 import { TrainingRequirementsCard } from '~/components/trainings/TrainingRequirementsCard';
 

@@ -87,7 +87,9 @@ describe('SupervisorView', () => {
 
   it('should render loading spinners while fetching data', () => {
     ReportServiceMock.getSupervisorReport.mockReturnValue(
-      new Promise(() => {})
+      new Promise(() => {
+        // Never resolves to keep component in loading state
+      })
     );
     renderComponent();
     expect(screen.getAllByRole('progressbar').length).toBeGreaterThan(0);
@@ -99,7 +101,7 @@ describe('SupervisorView', () => {
     );
     renderComponent();
     expect(
-      await screen.findByText('Could not load the supervisor report.')
+      await screen.findByText('Could not load the Supervisor Report (My Team).')
     ).toBeInTheDocument();
   });
 

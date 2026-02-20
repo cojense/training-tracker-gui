@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Typography,
   Box,
@@ -17,23 +17,35 @@ import { Project } from '~/types/projects';
 import { TrainingService } from '~/services/TrainingService';
 import { ProjectService } from '~/services/ProjectService';
 import { GroupService } from '~/services/GroupService';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
 import { useNotification } from '~/hooks/useNotification';
 
-const modalStyle = {
-  position: 'absolute' as const,
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: { xs: '90%', sm: 600 },
-  borderRadius: '12px',
-  bgcolor: 'background.paper',
-  border: 2, borderColor: 'divider',
-  boxShadow: 24,
-  p: 4,
-  maxHeight: '90vh',
-  overflowY: 'auto',
+const styles = {
+  modal: {
+    position: 'absolute' as const,
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: { xs: '90%', sm: 600 },
+    bgcolor: 'background.paper',
+    border: 2,
+    borderColor: 'divider',
+    boxShadow: 24,
+    p: 4,
+    borderRadius: '12px',
+    maxHeight: '90vh',
+    overflowY: 'auto',
+  },
+  actionButtons: { display: 'flex', gap: 2, justifyContent: 'flex-end' },
 };
+
+const validationRules = {
+  training: { required: 'Training is required' },
+  project: { required: 'Project is required' },
+  startDate: { required: 'Start date is required' },
+};
+
+const inputLabelProps = { shrink: true };
 
 interface AssignFormInput {
   training_id: string | number;
@@ -51,6 +63,26 @@ interface TrainingAssignModalProps {
   group: Group | null;
   onSaveSuccess?: () => void;
 }
+
+const NoNagCheckbox = ({
+  field,
+}: {
+  field: ControllerRenderProps<AssignFormInput, 'no_nag'>;
+}) => {
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      field.onChange(e.target.checked);
+    },
+    [field]
+  );
+
+  return (
+    <FormControlLabel
+      control={<Checkbox checked={field.value} onChange={handleChange} />}
+      label="No Nag"
+    />
+  );
+};
 
 export const TrainingAssignModal = ({
   open,
@@ -104,25 +136,163 @@ export const TrainingAssignModal = ({
     }
   }, [open, fetchData]);
 
-  const onSubmit = async (data: AssignFormInput) => {
-    if (!group || group.id === null) return;
-    try {
-      await GroupService.updateAssignment(group.id, String(data.training_id), {
-        ...data,
-        project_id: data.project_id,
-      });
-      showNotification('Training assigned successfully!', 'success');
-      if (onSaveSuccess) onSaveSuccess();
-      onClose();
-    } catch (error) {
-      console.error('Failed to assign training:', error);
-      showNotification('Failed to assign training.', 'error');
-    }
-  };
+  const onSubmit = useCallback(
+    async (data: AssignFormInput) => {
+      if (group?.id == null) return;
+      try {
+        await GroupService.updateAssignment(
+          group.id,
+          String(data.training_id),
+          {
+            ...data,
+            project_id: data.project_id,
+          }
+        );
+        showNotification('Training assigned successfully!', 'success');
+        if (onSaveSuccess) onSaveSuccess();
+        onClose();
+      } catch (error) {
+        console.error('Failed to assign training:', error);
+        showNotification('Failed to assign training.', 'error');
+      }
+    },
+    [group, onSaveSuccess, onClose, showNotification]
+  );
+
+  const renderTrainingField = useCallback(
+    ({
+      field,
+    }: {
+      field: ControllerRenderProps<AssignFormInput, 'training_id'>;
+    }) => (
+      <TextField
+        {...field}
+        select
+        label="Training Course"
+        fullWidth
+        error={!!errors.training_id}
+        helperText={errors.training_id?.message}
+      >
+        {trainings.map((t) => (
+          <MenuItem key={t.id} value={t.id}>
+            {t.title}
+          </MenuItem>
+        ))}
+      </TextField>
+    ),
+    [trainings, errors.training_id]
+  );
+
+  const renderProjectField = useCallback(
+    ({
+      field,
+    }: {
+      field: ControllerRenderProps<AssignFormInput, 'project_id'>;
+    }) => (
+      <TextField
+        {...field}
+        select
+        label="Bill To"
+        fullWidth
+        error={!!errors.project_id}
+        helperText={errors.project_id?.message}
+      >
+        {projects.map((p) => (
+          <MenuItem key={p.id} value={p.id ?? ''}>
+            {p.name}
+          </MenuItem>
+        ))}
+      </TextField>
+    ),
+    [projects, errors.project_id]
+  );
+
+  const renderStartDateField = useCallback(
+    ({
+      field,
+    }: {
+      field: ControllerRenderProps<AssignFormInput, 'start_date'>;
+    }) => (
+      <TextField
+        {...field}
+        label="Start Date"
+        type="date"
+        fullWidth
+        InputLabelProps={inputLabelProps}
+        error={!!errors.start_date}
+        helperText={errors.start_date?.message}
+      />
+    ),
+    [errors.start_date]
+  );
+
+  const renderEndDateField = useCallback(
+    ({
+      field,
+    }: {
+      field: ControllerRenderProps<AssignFormInput, 'end_date'>;
+    }) => (
+      <TextField
+        {...field}
+        label="End Date (Optional)"
+        type="date"
+        fullWidth
+        InputLabelProps={inputLabelProps}
+      />
+    ),
+    []
+  );
+
+  const renderSuspenseDateField = useCallback(
+    ({
+      field,
+    }: {
+      field: ControllerRenderProps<AssignFormInput, 'suspense_date'>;
+    }) => (
+      <TextField
+        {...field}
+        label="Suspense Date (Optional)"
+        type="date"
+        fullWidth
+        InputLabelProps={inputLabelProps}
+      />
+    ),
+    []
+  );
+
+  const renderCadenceField = useCallback(
+    ({
+      field,
+    }: {
+      field: ControllerRenderProps<AssignFormInput, 'cadence'>;
+    }) => (
+      <TextField
+        {...field}
+        label="Cadence (e.g. '1 year')"
+        fullWidth
+        placeholder="1 year"
+      />
+    ),
+    []
+  );
+
+  const renderNoNagField = useCallback(
+    ({
+      field,
+    }: {
+      field: ControllerRenderProps<AssignFormInput, 'no_nag'>;
+    }) => <NoNagCheckbox field={field} />,
+    []
+  );
+
+  const handleFormSubmit = useMemo(
+    () => handleSubmit(onSubmit),
+    [handleSubmit, onSubmit]
+  );
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Box sx={modalStyle}>
+      <Box sx={styles.modal}>
         <Typography variant="h4" gutterBottom>
           Assign Training
         </Typography>
@@ -134,127 +304,54 @@ export const TrainingAssignModal = ({
         {loading ? (
           <CircularProgress />
         ) : (
-          <form onSubmit={(e) => void handleSubmit(onSubmit)(e)}>
+          <form onSubmit={handleFormSubmit}>
             <Stack spacing={3}>
               <Controller
                 name="training_id"
                 control={control}
-                rules={{ required: 'Training is required' }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    select
-                    label="Training Course"
-                    fullWidth
-                    error={!!errors.training_id}
-                    helperText={errors.training_id?.message}
-                  >
-                    {trainings.map((t) => (
-                      <MenuItem key={t.id} value={t.id}>
-                        {t.title}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                )}
+                rules={validationRules.training}
+                render={renderTrainingField}
               />
 
               <Controller
                 name="project_id"
                 control={control}
-                rules={{ required: 'Project is required' }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    select
-                    label="Bill To"
-                    fullWidth
-                    error={!!errors.project_id}
-                    helperText={errors.project_id?.message}
-                  >
-                    {projects.map((p) => (
-                      <MenuItem key={p.id} value={p.id ?? ''}>
-                        {p.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                )}
+                rules={validationRules.project}
+                render={renderProjectField}
               />
 
               <Controller
                 name="start_date"
                 control={control}
-                rules={{ required: 'Start date is required' }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Start Date"
-                    type="date"
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    error={!!errors.start_date}
-                    helperText={errors.start_date?.message}
-                  />
-                )}
+                rules={validationRules.startDate}
+                render={renderStartDateField}
               />
 
               <Controller
                 name="end_date"
                 control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="End Date (Optional)"
-                    type="date"
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                  />
-                )}
+                render={renderEndDateField}
               />
 
               <Controller
                 name="suspense_date"
                 control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Suspense Date (Optional)"
-                    type="date"
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                  />
-                )}
+                render={renderSuspenseDateField}
               />
 
               <Controller
                 name="cadence"
                 control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Cadence (e.g. '1 year')"
-                    fullWidth
-                    placeholder="1 year"
-                  />
-                )}
+                render={renderCadenceField}
               />
 
               <Controller
                 name="no_nag"
                 control={control}
-                render={({ field }) => (
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={field.value}
-                        onChange={(e) => field.onChange(e.target.checked)}
-                      />
-                    }
-                    label="No Nag"
-                  />
-                )}
+                render={renderNoNagField}
               />
 
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+              <Box sx={styles.actionButtons}>
                 <Button onClick={onClose} disabled={isSubmitting}>
                   Cancel
                 </Button>

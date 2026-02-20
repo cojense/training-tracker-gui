@@ -10,9 +10,7 @@ import {
   TextField,
   InputAdornment,
 } from '@mui/material';
-import {
-  Search as SearchIcon,
-} from '@mui/icons-material';
+import { Search as SearchIcon } from '@mui/icons-material';
 import { UserService } from '~/services/UserService';
 import { User } from '~/types/user';
 import { UserEditModal } from '~/components/users/UserEditModal';
@@ -36,6 +34,16 @@ const Styles = {
     bgcolor: 'background.paper',
     borderRadius: 1,
     width: { xs: '100%', sm: 250 },
+  },
+};
+
+const searchProps = {
+  input: {
+    startAdornment: (
+      <InputAdornment position="start">
+        <SearchIcon fontSize="small" />
+      </InputAdornment>
+    ),
   },
 };
 
@@ -70,12 +78,14 @@ export const UsersView = () => {
     void fetchUsers();
   }, [fetchUsers]);
 
-  const handleRequestSort = (property: keyof User | 'full_name') => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
-
+  const handleRequestSort = useCallback(
+    (property: keyof User | 'full_name') => {
+      const isAsc = orderBy === property && order === 'asc';
+      setOrder(isAsc ? 'desc' : 'asc');
+      setOrderBy(property);
+    },
+    [orderBy, order]
+  );
   const filteredUsers = useMemo(() => {
     return users
       .filter((u) => {
@@ -134,12 +144,19 @@ export const UsersView = () => {
     [users]
   );
 
-  const handleCloseModal = () => {
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearch(e.target.value);
+    },
+    []
+  );
+
+  const handleCloseModal = useCallback(() => {
     setSelectedUser(null);
     setDetailUser(null);
     setGroupsUser(null);
     void fetchUsers();
-  };
+  }, [fetchUsers]);
 
   return (
     <>
@@ -150,17 +167,9 @@ export const UsersView = () => {
             size="small"
             placeholder="Search users..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={handleSearchChange}
             sx={Styles.searchField}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              }
-            }}
+            slotProps={searchProps}
           />
         </Box>
         <Divider />

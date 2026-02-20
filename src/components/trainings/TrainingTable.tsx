@@ -11,12 +11,17 @@ import {
   Button,
   TableSortLabel,
 } from '@mui/material';
-import {
-  Edit as EditIcon,
-} from '@mui/icons-material';
+import { Edit as EditIcon } from '@mui/icons-material';
 import { Training } from '~/types/training';
 
-const trainingTableStyles = { minWidth: 650 };
+const styles = {
+  table: {
+    minWidth: 650,
+  },
+  linkPointer: {
+    cursor: 'pointer',
+  },
+};
 
 interface TrainingRowProps {
   training: Training;
@@ -52,7 +57,7 @@ const TrainingRow = ({
         <MuiLink
           onClick={handleView}
           underline="hover"
-          sx={{ cursor: 'pointer' }}
+          sx={styles.linkPointer}
           aria-label="View Details"
         >
           {training.title}
@@ -101,16 +106,26 @@ export const TrainingTable = ({
   onEdit,
   onView,
 }: TrainingTableProps) => {
+  const handleSortId = useCallback(() => onRequestSort('id'), [onRequestSort]);
+  const handleSortDate = useCallback(
+    () => onRequestSort('date'),
+    [onRequestSort]
+  );
+  const handleSortTitle = useCallback(
+    () => onRequestSort('title'),
+    [onRequestSort]
+  );
+
   return (
     <TableContainer component={Paper} elevation={0}>
-      <Table sx={trainingTableStyles} aria-label="training table">
+      <Table sx={styles.table} aria-label="training table">
         <TableHead>
           <TableRow>
             <TableCell>
               <TableSortLabel
                 active={orderBy === 'id'}
                 direction={orderBy === 'id' ? order : 'asc'}
-                onClick={() => onRequestSort('id')}
+                onClick={handleSortId}
               >
                 ID
               </TableSortLabel>
@@ -119,7 +134,7 @@ export const TrainingTable = ({
               <TableSortLabel
                 active={orderBy === 'date'}
                 direction={orderBy === 'date' ? order : 'asc'}
-                onClick={() => onRequestSort('date')}
+                onClick={handleSortDate}
               >
                 Date
               </TableSortLabel>
@@ -128,15 +143,13 @@ export const TrainingTable = ({
               <TableSortLabel
                 active={orderBy === 'title'}
                 direction={orderBy === 'title' ? order : 'asc'}
-                onClick={() => onRequestSort('title')}
+                onClick={handleSortTitle}
               >
                 Training Name
               </TableSortLabel>
             </TableCell>
             <TableCell>External URL</TableCell>
-            {isManager && (
-              <TableCell>Actions</TableCell>
-            )}
+            {isManager && <TableCell>Actions</TableCell>}
           </TableRow>
         </TableHead>
         <TableBody>

@@ -51,10 +51,10 @@ export const GroupMembershipTable = ({ groups }: GroupMembershipTableProps) => {
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell >ID</TableCell>
-            <TableCell >Name</TableCell>
-            <TableCell >Admin</TableCell>
-            <TableCell >Training Manager</TableCell>
+            <TableCell>ID</TableCell>
+            <TableCell>Name</TableCell>
+            <TableCell>Admin</TableCell>
+            <TableCell>Training Manager</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

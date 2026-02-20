@@ -90,40 +90,53 @@ export const UserTable = ({
   onGroups,
   onView,
 }: UserTableProps) => {
+  const handleSortById = useCallback(
+    () => onRequestSort('id'),
+    [onRequestSort]
+  );
+  const handleSortByFullName = useCallback(
+    () => onRequestSort('full_name'),
+    [onRequestSort]
+  );
+  const handleSortByEmail = useCallback(
+    () => onRequestSort('email'),
+    [onRequestSort]
+  );
+
   return (
     <TableContainer component={Paper} elevation={0}>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell >
+            <TableCell>
               <TableSortLabel
                 active={orderBy === 'id'}
                 direction={orderBy === 'id' ? order : 'asc'}
-                onClick={() => onRequestSort('id')}
+                onClick={handleSortById}
               >
                 ID
               </TableSortLabel>
             </TableCell>
-            <TableCell >
+            <TableCell>
               <TableSortLabel
                 active={orderBy === 'full_name'}
                 direction={orderBy === 'full_name' ? order : 'asc'}
-                onClick={() => onRequestSort('full_name')}
+                onClick={handleSortByFullName}
               >
                 Name
               </TableSortLabel>
             </TableCell>
-            <TableCell >
+            <TableCell>
               <TableSortLabel
                 active={orderBy === 'email'}
                 direction={orderBy === 'email' ? order : 'asc'}
-                onClick={() => onRequestSort('email')}
+                onClick={handleSortByEmail}
               >
                 Email
               </TableSortLabel>
             </TableCell>
-            <TableCell >Roles</TableCell>
-            <TableCell >Actions</TableCell>
+            <TableCell>Roles</TableCell>
+            <TableCell>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

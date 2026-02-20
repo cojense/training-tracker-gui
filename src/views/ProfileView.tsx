@@ -78,12 +78,24 @@ export const ProfileView = () => {
     void fetchData();
   }, [fetchData]);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setEditModalOpen(false);
     setGroupsModalOpen(false);
     setEventModalOpen(false);
     void fetchData();
-  };
+  }, [fetchData]);
+
+  const handleEditProfileClick = useCallback(() => {
+    setEditModalOpen(true);
+  }, []);
+
+  const handleChangeGroupsClick = useCallback(() => {
+    setGroupsModalOpen(true);
+  }, []);
+
+  const handleRecordTrainingClick = useCallback(() => {
+    setEventModalOpen(true);
+  }, []);
 
   if (loading) {
     return (
@@ -111,7 +123,7 @@ export const ProfileView = () => {
             variant="contained"
             color="secondary"
             size="small"
-            onClick={() => setEditModalOpen(true)}
+            onClick={handleEditProfileClick}
           >
             Edit Profile
           </Button>
@@ -129,7 +141,10 @@ export const ProfileView = () => {
         </Box>
         <Divider />
         <CardContent sx={styles.contentRoot}>
-          <TrainingDueTable assignments={assignments} onSaveSuccess={fetchData} />
+          <TrainingDueTable
+            assignments={assignments}
+            onSaveSuccess={fetchData}
+          />
         </CardContent>
       </Card>
 
@@ -142,7 +157,7 @@ export const ProfileView = () => {
               variant="contained"
               color="secondary"
               size="small"
-              onClick={() => setGroupsModalOpen(true)}
+              onClick={handleChangeGroupsClick}
             >
               Change Groups
             </Button>
@@ -163,7 +178,7 @@ export const ProfileView = () => {
             color="secondary"
             size="small"
             startIcon={<AddIcon />}
-            onClick={() => setEventModalOpen(true)}
+            onClick={handleRecordTrainingClick}
           >
             Record Training
           </Button>

@@ -6,7 +6,7 @@ import {
   SyntheticEvent,
 } from 'react';
 import { Snackbar, Alert, AlertColor, SnackbarOrigin } from '@mui/material';
-import { NotificationContext} from './useNotification';
+import { NotificationContext } from './useNotification';
 
 const anchorOrigin: SnackbarOrigin = {
   vertical: 'bottom',

@@ -50,7 +50,9 @@ describe('ProjectsView', () => {
 
   it('should open the create project modal when Create button is clicked', async () => {
     renderComponent();
-    const createButton = await screen.findByRole('button', { name: /create project/i });
+    const createButton = await screen.findByRole('button', {
+      name: /create project/i,
+    });
     fireEvent.click(createButton);
     // expect(await screen.findByText('Create New Project')).toBeInTheDocument();
   });

@@ -17,7 +17,12 @@ const renderComponent = (props: ComponentProps<typeof GroupDetailModal>) =>
     </ThemeProvider>
   );
 
-const mockGroup: Group = { id: 1, name: 'Admin Group', is_admin: true, is_training_manager: false };
+const mockGroup: Group = {
+  id: 1,
+  name: 'Admin Group',
+  is_admin: true,
+  is_training_manager: false,
+};
 
 describe('GroupDetailModal', () => {
   const mockOnClose = vi.fn();
@@ -36,10 +41,12 @@ describe('GroupDetailModal', () => {
       onClose: mockOnClose,
       group: mockGroup,
       onEditAssignment: mockOnEditAssignment,
-      onAddAssignment: mockOnAddAssignment
+      onAddAssignment: mockOnAddAssignment,
     });
 
-    expect(await screen.findByText(/group details: admin group/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/group details: admin group/i)
+    ).toBeInTheDocument();
     expect(screen.getByText('Assignments')).toBeInTheDocument();
     expect(screen.getByText('Members')).toBeInTheDocument();
   });

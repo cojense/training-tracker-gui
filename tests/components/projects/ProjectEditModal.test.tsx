@@ -32,32 +32,54 @@ describe('ProjectEditModal', () => {
   });
 
   it('should render the modal when open and fetch project data', async () => {
-    renderComponent({ open: true, onClose: mockOnClose, project: mockProject, onSaveSuccess: mockOnSaveSuccess });
+    renderComponent({
+      open: true,
+      onClose: mockOnClose,
+      project: mockProject,
+      onSaveSuccess: mockOnSaveSuccess,
+    });
     expect(await screen.findByDisplayValue('Project A')).toBeInTheDocument();
   });
 
   it('should call updateProject and onSaveSuccess on valid submit', async () => {
-    vi.mocked(ProjectService.updateProject).mockResolvedValue({ ...mockProject, name: 'Updated Name' });
-    
-    renderComponent({ open: true, onClose: mockOnClose, project: mockProject, onSaveSuccess: mockOnSaveSuccess });
-    
+    vi.mocked(ProjectService.updateProject).mockResolvedValue({
+      ...mockProject,
+      name: 'Updated Name',
+    });
+
+    renderComponent({
+      open: true,
+      onClose: mockOnClose,
+      project: mockProject,
+      onSaveSuccess: mockOnSaveSuccess,
+    });
+
     const input = await screen.findByDisplayValue('Project A');
     fireEvent.change(input, { target: { value: 'Updated Name' } });
     fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
 
     await waitFor(() => {
-      expect(ProjectService.updateProject).toHaveBeenCalledWith("1", { name: 'Updated Name' });
+      expect(ProjectService.updateProject).toHaveBeenCalledWith('1', {
+        name: 'Updated Name',
+      });
       expect(mockOnSaveSuccess).toHaveBeenCalled();
       expect(mockOnClose).toHaveBeenCalled();
     });
   });
 
   it('should open delete confirmation dialog when delete is clicked', async () => {
-    renderComponent({ open: true, onClose: mockOnClose, project: mockProject, onSaveSuccess: mockOnSaveSuccess });
-    
-    const deleteBtn = await screen.findByRole('button', { name: /delete project/i });
+    renderComponent({
+      open: true,
+      onClose: mockOnClose,
+      project: mockProject,
+      onSaveSuccess: mockOnSaveSuccess,
+    });
+
+    const deleteBtn = await screen.findByRole('button', {
+      name: /delete project/i,
+    });
     fireEvent.click(deleteBtn);
-    
+
     expect(screen.getByText('Delete Project?')).toBeInTheDocument();
   });
 });

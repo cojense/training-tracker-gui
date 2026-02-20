@@ -11,10 +11,7 @@ import {
   Tooltip,
   TableSortLabel,
 } from '@mui/material';
-import {
-  Edit as EditIcon,
-  Visibility as ViewIcon,
-} from '@mui/icons-material';
+import { Edit as EditIcon, Visibility as ViewIcon } from '@mui/icons-material';
 import { Group } from '~/types/user';
 
 interface GroupRowProps {
@@ -71,6 +68,12 @@ export const GroupTable = ({
   onDetails,
   onEdit,
 }: GroupTableProps) => {
+  const handleSortId = useCallback(() => onRequestSort('id'), [onRequestSort]);
+  const handleSortName = useCallback(
+    () => onRequestSort('name'),
+    [onRequestSort]
+  );
+
   return (
     <TableContainer component={Paper} elevation={0}>
       <Table>
@@ -80,7 +83,7 @@ export const GroupTable = ({
               <TableSortLabel
                 active={orderBy === 'id'}
                 direction={orderBy === 'id' ? order : 'asc'}
-                onClick={() => onRequestSort('id')}
+                onClick={handleSortId}
               >
                 ID
               </TableSortLabel>
@@ -89,7 +92,7 @@ export const GroupTable = ({
               <TableSortLabel
                 active={orderBy === 'name'}
                 direction={orderBy === 'name' ? order : 'asc'}
-                onClick={() => onRequestSort('name')}
+                onClick={handleSortName}
               >
                 Name
               </TableSortLabel>

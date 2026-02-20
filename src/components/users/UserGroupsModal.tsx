@@ -17,19 +17,29 @@ import { UserService } from '~/services/UserService';
 import { GroupService } from '~/services/GroupService';
 import { useNotification } from '~/hooks/useNotification';
 
-const modalStyle = {
-  position: 'absolute' as const,
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: { xs: '90%', sm: 600 },
-  borderRadius: '12px',
-  bgcolor: 'background.paper',
-  border: 2, borderColor: 'divider',
-  boxShadow: 24,
-  p: 4,
-  maxHeight: '90vh',
-  overflowY: 'auto',
+const styles = {
+  modal: {
+    position: 'absolute' as const,
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: { xs: '90%', sm: 600 },
+    bgcolor: 'background.paper',
+    border: 2,
+    borderColor: 'divider',
+    boxShadow: 24,
+    p: 4,
+    borderRadius: '12px',
+    maxHeight: '90vh',
+    overflowY: 'auto',
+  },
+  LoadingContainer: { display: 'flex', justifyContent: 'center', py: 8 },
+  modalHeader: {
+    p: 2,
+    bgcolor: 'primary.main',
+    color: 'primary.contrastText',
+  },
+  modalLoad: { display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3 },
 };
 
 interface UserGroupsModalProps {
@@ -39,7 +49,12 @@ interface UserGroupsModalProps {
   onSaveSuccess?: () => void;
 }
 
-export const UserGroupsModal = ({ user, open, onClose, onSaveSuccess }: UserGroupsModalProps) => {
+export const UserGroupsModal = ({
+  user,
+  open,
+  onClose,
+  onSaveSuccess,
+}: UserGroupsModalProps) => {
   const { showNotification } = useNotification();
   const [allGroups, setAllGroups] = useState<Group[]>([]);
   const [memberGroupIds, setMemberGroupIds] = useState<Set<number>>(new Set());
@@ -109,15 +124,30 @@ export const UserGroupsModal = ({ user, open, onClose, onSaveSuccess }: UserGrou
     } finally {
       setSaving(false);
     }
-  }, [user, allGroups, memberGroupIds, showNotification, onClose, onSaveSuccess]);
+  }, [
+    user,
+    allGroups,
+    memberGroupIds,
+    showNotification,
+    onClose,
+    onSaveSuccess,
+  ]);
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const groupId = parseInt(e.target.value, 10);
+      handleToggleGroup(groupId);
+    },
+    [handleToggleGroup]
+  );
 
   if (!user) return null;
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Box sx={modalStyle}>
+      <Box sx={styles.modal}>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <Box sx={styles.LoadingContainer}>
             <CircularProgress />
           </Box>
         ) : (
@@ -129,7 +159,7 @@ export const UserGroupsModal = ({ user, open, onClose, onSaveSuccess }: UserGrou
               For user: {user.first_name} {user.last_name} ({user.email})
             </Typography>
             <Card elevation={2}>
-              <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+              <Box sx={styles.modalHeader}>
                 <Typography variant="h6">Available Groups</Typography>
               </Box>
               <Divider />
@@ -140,8 +170,10 @@ export const UserGroupsModal = ({ user, open, onClose, onSaveSuccess }: UserGrou
                       key={group.id}
                       control={
                         <Checkbox
-                          checked={memberGroupIds.has(group.id as unknown as number)}
-                          onChange={() => handleToggleGroup(group.id as unknown as number)}
+                          checked={memberGroupIds.has(
+                            group.id as unknown as number
+                          )}
+                          onChange={handleChange}
                         />
                       }
                       label={group.name}
@@ -149,7 +181,7 @@ export const UserGroupsModal = ({ user, open, onClose, onSaveSuccess }: UserGrou
                   ))}
                 </Stack>
 
-                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3 }}>
+                <Box sx={styles.modalLoad}>
                   <Button onClick={onClose} disabled={saving}>
                     Cancel
                   </Button>
@@ -157,7 +189,7 @@ export const UserGroupsModal = ({ user, open, onClose, onSaveSuccess }: UserGrou
                     variant="contained"
                     color="primary"
                     disabled={saving}
-                    onClick={() => void handleSave()}
+                    onClick={handleSave}
                   >
                     Save Changes
                   </Button>

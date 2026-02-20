@@ -5,6 +5,7 @@ cd "$(dirname "$0")"
 
 # Load environment variables from .env if it exists
 if [ -f .env ]; then
+  # Only export lines that are not comments and contain an '='
   export $(grep -v '^#' .env | xargs)
 fi
 
@@ -23,6 +24,7 @@ if [[ "$*" == *"--native"* ]]; then
         bun install
     fi
 
+    # Run the application
     exec bun run dev
 else
     echo "Starting Dockerized React Frontend..."

@@ -11,10 +11,7 @@ import {
   TableBody,
   Paper,
 } from '@mui/material';
-import {
-  Visibility as ViewIcon,
-  Edit as EditIcon,
-} from '@mui/icons-material';
+import { Visibility as ViewIcon, Edit as EditIcon } from '@mui/icons-material';
 import { Project } from '~/types/projects';
 
 interface ProjectRowProps {
@@ -39,12 +36,20 @@ const ProjectRow = ({ project, onDetails, onEdit }: ProjectRowProps) => {
       <TableCell>{project.name}</TableCell>
       <TableCell>
         <Tooltip title="View Details">
-          <IconButton size="small" onClick={handleDetails}>
+          <IconButton
+            size="small"
+            onClick={handleDetails}
+            aria-label="View Details"
+          >
             <ViewIcon fontSize="small" />
           </IconButton>
         </Tooltip>
         <Tooltip title="Edit Project">
-          <IconButton size="small" onClick={handleEdit}>
+          <IconButton
+            size="small"
+            onClick={handleEdit}
+            aria-label="Edit Project"
+          >
             <EditIcon fontSize="small" />
           </IconButton>
         </Tooltip>
@@ -72,6 +77,12 @@ export const ProjectTable = ({
   onDetails,
   onEdit,
 }: ProjectTableProps) => {
+  const handleSortId = useCallback(() => onRequestSort('id'), [onRequestSort]);
+  const handleSortName = useCallback(
+    () => onRequestSort('name'),
+    [onRequestSort]
+  );
+
   return (
     <TableContainer component={Paper} elevation={0}>
       <Table>
@@ -81,7 +92,7 @@ export const ProjectTable = ({
               <TableSortLabel
                 active={orderBy === 'id'}
                 direction={orderBy === 'id' ? order : 'asc'}
-                onClick={() => onRequestSort('id')}
+                onClick={handleSortId}
               >
                 ID
               </TableSortLabel>
@@ -90,7 +101,7 @@ export const ProjectTable = ({
               <TableSortLabel
                 active={orderBy === 'name'}
                 direction={orderBy === 'name' ? order : 'asc'}
-                onClick={() => onRequestSort('name')}
+                onClick={handleSortName}
               >
                 Name
               </TableSortLabel>

@@ -47,3 +47,4 @@ conductor/
 # --- Whitelist (Keep these) ---
 !README.md
 !GEMINI.md
+calendar-subscription-extension.md

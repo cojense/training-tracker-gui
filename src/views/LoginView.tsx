@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { BACKEND_URL } from '~/services/apiClient';
 import {
   Card,
   CardContent,
@@ -8,7 +9,6 @@ import {
   Stack,
 } from '@mui/material';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:5001';
 const FRONTEND_URL = window.location.origin;
 
 const styles = {
@@ -18,7 +18,12 @@ const styles = {
     alignItems: 'center',
     minHeight: '60vh',
   },
-  card: { maxWidth: 400, textAlign: 'center', p: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' },
+  card: {
+    maxWidth: 400,
+    textAlign: 'center',
+    p: 2,
+    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+  },
   description: { mb: 3 },
 };
 

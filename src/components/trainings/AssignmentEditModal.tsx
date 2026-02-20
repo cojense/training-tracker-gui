@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
 import {
   Box,
   Typography,
@@ -24,20 +24,36 @@ import { Project } from '~/types/projects';
 import { Group } from '~/types/user';
 import { Assignment } from '~/types/assignments';
 
-const modalStyle = {
-  position: 'absolute' as const,
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: { xs: '90%', sm: 600 },
-  borderRadius: '12px',
-  bgcolor: 'background.paper',
-  border: 2, borderColor: 'divider',
-  boxShadow: 24,
-  p: 4,
-  maxHeight: '90vh',
-  overflowY: 'auto',
+const styles = {
+  modal: {
+    position: 'absolute' as const,
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: { xs: '90%', sm: 600 },
+    bgcolor: 'background.paper',
+    border: 2,
+    borderColor: 'divider',
+    boxShadow: 24,
+    p: 4,
+    borderRadius: '12px',
+    maxHeight: '90vh',
+    overflowY: 'auto',
+  },
+  actionContainer: {
+    display: 'flex',
+    gap: 2,
+    justifyContent: 'space-between',
+  },
+  buttonGroup: { display: 'flex', gap: 2 },
 };
+
+const validationRules = {
+  project: { required: 'Project is required' },
+  startDate: { required: 'Start date is required' },
+};
+
+const inputLabelProps = { shrink: true };
 
 interface EditAssignFormInput {
   project_id: string | number;
@@ -55,6 +71,26 @@ interface AssignmentEditModalProps {
   trainingId: number | string | null;
   onSaveSuccess?: () => void;
 }
+
+const NoNagCheckbox = ({
+  field,
+}: {
+  field: ControllerRenderProps<EditAssignFormInput, 'no_nag'>;
+}) => {
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      field.onChange(e.target.checked);
+    },
+    [field]
+  );
+
+  return (
+    <FormControlLabel
+      control={<Checkbox checked={field.value} onChange={handleChange} />}
+      label="No Nag"
+    />
+  );
+};
 
 export const AssignmentEditModal = ({
   open,
@@ -112,23 +148,26 @@ export const AssignmentEditModal = ({
     }
   }, [open, fetchData]);
 
-  const onSubmit = async (data: EditAssignFormInput) => {
-    if (!groupId || !trainingId) return;
-    try {
-      await GroupService.updateAssignment(groupId, trainingId, {
-        ...data,
-        project_id: data.project_id,
-      });
-      showNotification('Assignment updated successfully!', 'success');
-      if (onSaveSuccess) onSaveSuccess();
-      onClose();
-    } catch (error) {
-      console.error('Failed to update assignment:', error);
-      showNotification('Failed to update assignment.', 'error');
-    }
-  };
+  const onSubmit = useCallback(
+    async (data: EditAssignFormInput) => {
+      if (!groupId || !trainingId) return;
+      try {
+        await GroupService.updateAssignment(groupId, trainingId, {
+          ...data,
+          project_id: data.project_id,
+        });
+        showNotification('Assignment updated successfully!', 'success');
+        if (onSaveSuccess) onSaveSuccess();
+        onClose();
+      } catch (error) {
+        console.error('Failed to update assignment:', error);
+        showNotification('Failed to update assignment.', 'error');
+      }
+    },
+    [groupId, trainingId, onSaveSuccess, onClose, showNotification]
+  );
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (!groupId || !trainingId) return;
     try {
       await GroupService.deleteAssignment(groupId, trainingId);
@@ -140,12 +179,122 @@ export const AssignmentEditModal = ({
       console.error('Failed to delete assignment:', error);
       showNotification('Failed to delete assignment.', 'error');
     }
-  };
+  }, [groupId, trainingId, onSaveSuccess, onClose, showNotification]);
+
+  const renderProjectField = useCallback(
+    ({
+      field,
+    }: {
+      field: ControllerRenderProps<EditAssignFormInput, 'project_id'>;
+    }) => (
+      <TextField
+        {...field}
+        select
+        label="Bill To"
+        fullWidth
+        error={!!errors.project_id}
+        helperText={errors.project_id?.message}
+      >
+        {projects.map((p) => (
+          <MenuItem key={p.id} value={p.id ?? ''}>
+            {p.name}
+          </MenuItem>
+        ))}
+      </TextField>
+    ),
+    [projects, errors.project_id]
+  );
+
+  const renderStartDateField = useCallback(
+    ({
+      field,
+    }: {
+      field: ControllerRenderProps<EditAssignFormInput, 'start_date'>;
+    }) => (
+      <TextField
+        {...field}
+        label="Start Date"
+        type="date"
+        fullWidth
+        InputLabelProps={inputLabelProps}
+        error={!!errors.start_date}
+        helperText={errors.start_date?.message}
+      />
+    ),
+    [errors.start_date]
+  );
+
+  const renderEndDateField = useCallback(
+    ({
+      field,
+    }: {
+      field: ControllerRenderProps<EditAssignFormInput, 'end_date'>;
+    }) => (
+      <TextField
+        {...field}
+        label="End Date (Optional)"
+        type="date"
+        fullWidth
+        InputLabelProps={inputLabelProps}
+      />
+    ),
+    []
+  );
+
+  const renderSuspenseDateField = useCallback(
+    ({
+      field,
+    }: {
+      field: ControllerRenderProps<EditAssignFormInput, 'suspense_date'>;
+    }) => (
+      <TextField
+        {...field}
+        label="Suspense Date (Optional)"
+        type="date"
+        fullWidth
+        InputLabelProps={inputLabelProps}
+      />
+    ),
+    []
+  );
+
+  const renderCadenceField = useCallback(
+    ({
+      field,
+    }: {
+      field: ControllerRenderProps<EditAssignFormInput, 'cadence'>;
+    }) => (
+      <TextField
+        {...field}
+        label="Cadence (e.g. '1 year')"
+        fullWidth
+        placeholder="1 year"
+      />
+    ),
+    []
+  );
+
+  const renderNoNagField = useCallback(
+    ({
+      field,
+    }: {
+      field: ControllerRenderProps<EditAssignFormInput, 'no_nag'>;
+    }) => <NoNagCheckbox field={field} />,
+    []
+  );
+
+  const handleOpenDelete = useCallback(() => setDeleteDialogOpen(true), []);
+  const handleCloseDelete = useCallback(() => setDeleteDialogOpen(false), []);
+
+  const handleFormSubmit = useMemo(
+    () => handleSubmit(onSubmit),
+    [handleSubmit, onSubmit]
+  );
 
   return (
     <>
       <Modal open={open} onClose={onClose}>
-        <Box sx={modalStyle}>
+        <Box sx={styles.modal}>
           <Typography variant="h4" gutterBottom>
             Edit Assignment
           </Typography>
@@ -158,119 +307,55 @@ export const AssignmentEditModal = ({
                   {assignment.training.title} for {group.name}
                 </Typography>
               )}
-              <form onSubmit={(e) => void handleSubmit(onSubmit)(e)}>
+              <form onSubmit={handleFormSubmit}>
                 <Stack spacing={3}>
                   <Controller
                     name="project_id"
                     control={control}
-                    rules={{ required: 'Project is required' }}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        select
-                        label="Bill To"
-                        fullWidth
-                        error={!!errors.project_id}
-                        helperText={errors.project_id?.message}
-                      >
-                        {projects.map((p) => (
-                          <MenuItem key={p.id} value={p.id ?? ''}>
-                            {p.name}
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                    )}
+                    rules={validationRules.project}
+                    render={renderProjectField}
                   />
 
                   <Controller
                     name="start_date"
                     control={control}
-                    rules={{ required: 'Start date is required' }}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Start Date"
-                        type="date"
-                        fullWidth
-                        InputLabelProps={{ shrink: true }}
-                        error={!!errors.start_date}
-                        helperText={errors.start_date?.message}
-                      />
-                    )}
+                    rules={validationRules.startDate}
+                    render={renderStartDateField}
                   />
 
                   <Controller
                     name="end_date"
                     control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="End Date (Optional)"
-                        type="date"
-                        fullWidth
-                        InputLabelProps={{ shrink: true }}
-                      />
-                    )}
+                    render={renderEndDateField}
                   />
 
                   <Controller
                     name="suspense_date"
                     control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Suspense Date (Optional)"
-                        type="date"
-                        fullWidth
-                        InputLabelProps={{ shrink: true }}
-                      />
-                    )}
+                    render={renderSuspenseDateField}
                   />
 
                   <Controller
                     name="cadence"
                     control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Cadence (e.g. '1 year')"
-                        fullWidth
-                        placeholder="1 year"
-                      />
-                    )}
+                    render={renderCadenceField}
                   />
 
                   <Controller
                     name="no_nag"
                     control={control}
-                    render={({ field }) => (
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={field.value}
-                            onChange={(e) => field.onChange(e.target.checked)}
-                          />
-                        }
-                        label="No Nag"
-                      />
-                    )}
+                    render={renderNoNagField}
                   />
 
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      gap: 2,
-                      justifyContent: 'space-between',
-                    }}
-                  >
+                  <Box sx={styles.actionContainer}>
                     <Button
                       color="error"
-                      onClick={() => setDeleteDialogOpen(true)}
+                      onClick={handleOpenDelete}
                       disabled={isSubmitting}
                     >
                       Delete Assignment
                     </Button>
-                    <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Box sx={styles.buttonGroup}>
                       <Button onClick={onClose} disabled={isSubmitting}>
                         Cancel
                       </Button>
@@ -291,10 +376,7 @@ export const AssignmentEditModal = ({
         </Box>
       </Modal>
 
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-      >
+      <Dialog open={deleteDialogOpen} onClose={handleCloseDelete}>
         <DialogTitle>Delete Assignment?</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -303,8 +385,8 @@ export const AssignmentEditModal = ({
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={() => void handleDelete()} color="error" autoFocus>
+          <Button onClick={handleCloseDelete}>Cancel</Button>
+          <Button onClick={handleDelete} color="error" autoFocus>
             Delete
           </Button>
         </DialogActions>

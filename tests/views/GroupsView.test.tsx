@@ -61,7 +61,9 @@ describe('GroupsView', () => {
 
   it('should open the create group modal when Create button is clicked', async () => {
     renderComponent();
-    const createButton = await screen.findByRole('button', { name: /create group/i });
+    const createButton = await screen.findByRole('button', {
+      name: /create group/i,
+    });
     fireEvent.click(createButton);
     // expect(await screen.findByText('Create New Group')).toBeInTheDocument();
   });

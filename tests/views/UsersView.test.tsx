@@ -100,7 +100,9 @@ describe('UsersView', () => {
     const viewButtons = screen.getAllByLabelText('View Profile');
     fireEvent.click(viewButtons[0]);
 
-    expect(await screen.findByText('User Detail: John Doe')).toBeInTheDocument();
+    expect(
+      await screen.findByText('User Detail: John Doe')
+    ).toBeInTheDocument();
     expect(screen.getByText('Personal Details')).toBeInTheDocument();
   });
 
@@ -122,7 +124,9 @@ describe('UsersView', () => {
     const groupButtons = screen.getAllByLabelText('Change Groups');
     fireEvent.click(groupButtons[0]);
 
-    expect(await screen.findByText('Change Group Membership')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Change Group Membership')
+    ).toBeInTheDocument();
     expect(screen.getByText(/For user: John Doe/)).toBeInTheDocument();
     expect(await screen.findByLabelText('Admins')).toBeInTheDocument();
   });

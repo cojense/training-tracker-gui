@@ -1,7 +1,4 @@
-import {
-  Add as AddIcon,
-  Search as SearchIcon,
-} from '@mui/icons-material';
+import { Add as AddIcon, Search as SearchIcon } from '@mui/icons-material';
 import { ProjectService } from '~/services/ProjectService';
 import { Project } from '~/types/projects';
 import {
@@ -34,10 +31,20 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  headerBoxActions: { display: 'flex', gap: 2, alignItems: 'center' },
   searchField: {
     bgcolor: 'background.paper',
     borderRadius: 1,
     width: { xs: '100%', sm: 250 },
+  },
+};
+const searchProps = {
+  input: {
+    startAdornment: (
+      <InputAdornment position="start">
+        <SearchIcon fontSize="small" />
+      </InputAdornment>
+    ),
   },
 };
 
@@ -73,11 +80,14 @@ export const ProjectsView = () => {
     void fetchProjects();
   }, [fetchProjects]);
 
-  const handleRequestSort = (property: keyof Project) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
+  const handleRequestSort = useCallback(
+    (property: keyof Project) => {
+      const isAsc = orderBy === property && order === 'asc';
+      setOrder(isAsc ? 'desc' : 'asc');
+      setOrderBy(property);
+    },
+    [orderBy, order]
+  );
 
   const filteredProjects = useMemo(() => {
     return projects
@@ -92,6 +102,13 @@ export const ProjectsView = () => {
         return 0;
       });
   }, [projects, search, order, orderBy]);
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearch(e.target.value);
+    },
+    []
+  );
 
   const handleCreateClick = useCallback(() => {
     setCreateModalOpen(true);
@@ -117,33 +134,32 @@ export const ProjectsView = () => {
     [projects]
   );
 
-  const handleCloseModal = () => {
+  const handleDetailEdit = useCallback(
+    (project: Project) => {
+      handleEditClick(project.id);
+    },
+    [handleEditClick]
+  );
+
+  const handleCloseModal = useCallback(() => {
     setCreateModalOpen(false);
     setEditProject(null);
     setDetailProject(null);
     void fetchProjects(); // Refresh data after any modal action
-  };
+  }, [fetchProjects]);
 
   return (
     <Card elevation={2}>
       <Box sx={styles.headerBox}>
         <Typography variant="h6">Projects List</Typography>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+        <Box sx={styles.headerBoxActions}>
           <TextField
             size="small"
             placeholder="Search projects..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={handleSearchChange}
             sx={styles.searchField}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              },
-            }}
+            slotProps={searchProps}
           />
           <Button
             variant="contained"
@@ -192,7 +208,7 @@ export const ProjectsView = () => {
         project={detailProject}
         open={!!detailProject}
         onClose={handleCloseModal}
-        onEdit={(project) => handleEditClick(project.id)}
+        onEdit={handleDetailEdit}
       />
     </Card>
   );

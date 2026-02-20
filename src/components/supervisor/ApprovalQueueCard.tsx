@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Table,
   TableBody,
@@ -7,17 +7,11 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Typography,
-  Card,
-  CardContent,
-  Box,
-  Divider,
-  CircularProgress,
-  Alert,
   Button,
   Checkbox,
   Tooltip,
   IconButton,
+  Box,
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
@@ -27,18 +21,63 @@ import { TrainingService } from '~/services/TrainingService';
 import { TrainingEvent } from '~/types/training';
 import { useNotification } from '~/hooks/useNotification';
 import { TrainingEventModal } from '~/components/trainings/TrainingEventModal';
+import { SupervisorCard } from './SupervisorCard';
 
-const styles = {
-  headerBox: {
-    p: 2,
-    bgcolor: 'primary.main',
-    color: 'primary.contrastText',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  contentRoot: { p: 0 },
-  centeredBox: { textAlign: 'center', py: 4 },
+const actionBoxStyles = { display: 'flex', gap: 1 };
+
+interface RowProps {
+  event: TrainingEvent;
+  isSelected: boolean;
+  onToggle: (id: number) => void;
+  onApprove: (id: number) => void;
+  onEdit: (event: TrainingEvent) => void;
+}
+
+const ApprovalQueueRow: React.FC<RowProps> = ({
+  event,
+  isSelected,
+  onToggle,
+  onApprove,
+  onEdit,
+}) => {
+  const handleToggle = useCallback(
+    () => onToggle(event.id!),
+    [onToggle, event.id]
+  );
+  const handleApprove = useCallback(
+    () => onApprove(event.id!),
+    [onApprove, event.id]
+  );
+  const handleEdit = useCallback(() => onEdit(event), [onEdit, event]);
+
+  return (
+    <TableRow hover selected={isSelected}>
+      <TableCell padding="checkbox">
+        <Checkbox checked={isSelected} onChange={handleToggle} />
+      </TableCell>
+      <TableCell>
+        {event.user
+          ? `${event.user.last_name}, ${event.user.first_name}`
+          : `ID: ${event.user_id}`}
+      </TableCell>
+      <TableCell>{event.training.title}</TableCell>
+      <TableCell>{event.completion_date}</TableCell>
+      <TableCell>
+        <Box sx={actionBoxStyles}>
+          <Tooltip title="Approve">
+            <IconButton size="small" color="success" onClick={handleApprove}>
+              <CheckCircleIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Edit">
+            <IconButton size="small" onClick={handleEdit}>
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      </TableCell>
+    </TableRow>
+  );
 };
 
 export const ApprovalQueueCard = () => {
@@ -79,24 +118,31 @@ export const ApprovalQueueCard = () => {
     });
   }, []);
 
-  const handleToggleAll = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) setSelectedIds(new Set(queue.map((e) => e.id!)));
-    else setSelectedIds(new Set());
-  }, [queue]);
+  const handleToggleAll = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (event.target.checked)
+        setSelectedIds(new Set(queue.map((e) => e.id!)));
+      else setSelectedIds(new Set());
+    },
+    [queue]
+  );
 
-  const handleApproveOne = useCallback(async (id: number) => {
-    try {
-      setApproving(true);
-      await TrainingService.approveEvent(id);
-      showNotification('Training approved.', 'success');
-      void fetchQueue();
-    } catch (err) {
-      console.error('Failed to approve training:', err);
-      showNotification('Failed to approve training.', 'error');
-    } finally {
-      setApproving(false);
-    }
-  }, [fetchQueue, showNotification]);
+  const handleApproveOne = useCallback(
+    async (id: number) => {
+      try {
+        setApproving(true);
+        await TrainingService.approveEvent(id);
+        showNotification('Training approved.', 'success');
+        void fetchQueue();
+      } catch (err) {
+        console.error('Failed to approve training:', err);
+        showNotification('Failed to approve training.', 'error');
+      } finally {
+        setApproving(false);
+      }
+    },
+    [fetchQueue, showNotification]
+  );
 
   const handleApproveSelected = useCallback(async () => {
     const ids = Array.from(selectedIds);
@@ -104,7 +150,10 @@ export const ApprovalQueueCard = () => {
     try {
       setApproving(true);
       for (const id of ids) await TrainingService.approveEvent(id);
-      showNotification(`Successfully approved ${ids.length} records.`, 'success');
+      showNotification(
+        `Successfully approved ${ids.length} records.`,
+        'success'
+      );
       void fetchQueue();
     } catch (err) {
       console.error('Failed to approve selected trainings:', err);
@@ -120,103 +169,74 @@ export const ApprovalQueueCard = () => {
     [queue, selectedIds]
   );
 
+  const handleCloseEdit = useCallback(() => setEditEvent(null), []);
+
+  const headerAction = useMemo(
+    () => (
+      <Button
+        variant="contained"
+        color="secondary"
+        disabled={selectedIds.size === 0 || approving}
+        onClick={handleApproveSelected}
+        size="small"
+      >
+        Approve Selected ({selectedIds.size})
+      </Button>
+    ),
+    [handleApproveSelected, selectedIds.size, approving]
+  );
+
   return (
-    <Card elevation={2}>
-      <Box sx={styles.headerBox}>
-        <Typography variant="h6">Training Approval Queue</Typography>
-        <Button
-          variant="contained"
-          color="secondary"
-          disabled={selectedIds.size === 0 || approving}
-          onClick={() => void handleApproveSelected()}
-          size="small"
-        >
-          Approve Selected ({selectedIds.size})
-        </Button>
-      </Box>
-      <Divider />
-      <CardContent sx={styles.contentRoot}>
-        {loading ? (
-          <Box sx={styles.centeredBox}>
-            <CircularProgress />
-          </Box>
-        ) : error ? (
-          <Box sx={{ p: 2 }}>
-            <Alert severity="error">{error}</Alert>
-          </Box>
-        ) : queue.length > 0 ? (
-          <TableContainer component={Paper} elevation={0}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={allSelected}
-                      indeterminate={selectedIds.size > 0 && selectedIds.size < queue.length}
-                      onChange={handleToggleAll}
-                    />
-                  </TableCell>
-                  <TableCell>User</TableCell>
-                  <TableCell>Training</TableCell>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {queue.map((event) => (
-                  <TableRow key={event.id} hover selected={selectedIds.has(event.id!)}>
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={selectedIds.has(event.id!)}
-                        onChange={() => handleToggle(event.id!)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {event.user ? `${event.user.last_name}, ${event.user.first_name}` : `ID: ${event.user_id}`}
-                    </TableCell>
-                    <TableCell>{event.training.title}</TableCell>
-                    <TableCell>{event.completion_date}</TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Tooltip title="Approve">
-                          <IconButton
-                            size="small"
-                            color="success"
-                            onClick={() => void handleApproveOne(event.id!)}
-                          >
-                            <CheckCircleIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Edit">
-                          <IconButton
-                            size="small"
-                            onClick={() => setEditEvent(event)}
-                          >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        ) : (
-          <Box sx={styles.centeredBox}>
-            <Typography variant="body1" color="text.secondary">
-              The approval queue is empty.
-            </Typography>
-          </Box>
-        )}
-      </CardContent>
+    <>
+      <SupervisorCard
+        title="Training Approval Queue"
+        loading={loading}
+        error={error}
+        headerAction={headerAction}
+        empty={queue.length === 0}
+        emptyMessage="The approval queue is empty."
+      >
+        <TableContainer component={Paper} elevation={0}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    checked={allSelected}
+                    indeterminate={
+                      selectedIds.size > 0 && selectedIds.size < queue.length
+                    }
+                    onChange={handleToggleAll}
+                  />
+                </TableCell>
+                <TableCell>User</TableCell>
+                <TableCell>Training</TableCell>
+                <TableCell>Date</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {queue.map((event) => (
+                <ApprovalQueueRow
+                  key={event.id}
+                  event={event}
+                  isSelected={selectedIds.has(event.id!)}
+                  onToggle={handleToggle}
+                  onApprove={handleApproveOne}
+                  onEdit={setEditEvent}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </SupervisorCard>
       <TrainingEventModal
         open={!!editEvent}
-        onClose={() => setEditEvent(null)}
+        onClose={handleCloseEdit}
         mode="update"
         event={editEvent}
         onSaveSuccess={fetchQueue}
       />
-    </Card>
+    </>
   );
 };

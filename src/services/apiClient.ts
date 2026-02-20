@@ -1,5 +1,10 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5001/api';
+export const BACKEND_URL: string =
+  (import.meta.env.VITE_BACKEND_URL as string | undefined) ??
+  'http://localhost:5001';
+
+export const API_BASE_URL: string =
+  (import.meta.env.VITE_API_BASE_URL as string | undefined) ??
+  `${BACKEND_URL}/api`;
 
 /**
  * Generic fetch wrapper with credentials enabled for session-based auth.

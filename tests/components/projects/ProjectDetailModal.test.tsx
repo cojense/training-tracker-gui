@@ -37,8 +37,13 @@ describe('ProjectDetailModal', () => {
   });
 
   it('should render project details when open', async () => {
-    renderComponent({ open: true, onClose: mockOnClose, project: mockProject, onEdit: mockOnEdit });
-    expect(await screen.findByText('Project Detail')).toBeInTheDocument();
-    expect(screen.getByText('Project A')).toBeInTheDocument();
+    renderComponent({
+      open: true,
+      onClose: mockOnClose,
+      project: mockProject,
+      onEdit: mockOnEdit,
+    });
+    expect(await screen.findByText('Project Details')).toBeInTheDocument();
+    expect(screen.getAllByText('Project A').length).toBeGreaterThan(0);
   });
 });

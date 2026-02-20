@@ -50,7 +50,8 @@ const sharedComponents: Components<Theme> = {
     styleOverrides: {
       root: {
         borderRadius: 8,
-        transition: 'border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+        transition:
+          'border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
       },
     },
   },
