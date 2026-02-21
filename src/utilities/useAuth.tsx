@@ -48,7 +48,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = useCallback(() => {
     // For real logout, we'll redirect to backend /logout with next parameter
-    window.location.href = `http://localhost:5001/oauth2/logout?next=${encodeURIComponent('http://localhost:5173/login')}`;
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+    const FRONTEND_URL = window.location.origin;
+    window.location.href = `${BACKEND_URL}/oauth2/logout?next=${encodeURIComponent(`${FRONTEND_URL}/login`)}`;
   }, []);
 
   const value = useMemo(

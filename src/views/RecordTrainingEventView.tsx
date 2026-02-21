@@ -95,7 +95,7 @@ interface CertificateFileProps {
   field: ControllerRenderProps<RecordFormInput, 'certificate'>;
 }
 const CertificateFile = ({ field }: CertificateFileProps) => {
-  const { onChange, ...fieldProps } = field;
+  const { onChange, value, ...fieldProps } = field;
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -110,6 +110,7 @@ const CertificateFile = ({ field }: CertificateFileProps) => {
       type="file"
       accept=".pdf,.png,.jpg,.jpeg"
       onChange={handleChange}
+      value={value === null ? '' : undefined}
     />
   );
 };
@@ -231,6 +232,7 @@ export const RecordTrainingEventView = () => {
     control,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<RecordFormInput>({
     defaultValues: {
@@ -244,6 +246,12 @@ export const RecordTrainingEventView = () => {
   });
 
   const watchCertUnavailable = watch('certificate_unavailable');
+
+  useEffect(() => {
+    if (watchCertUnavailable) {
+      setValue('certificate', null);
+    }
+  }, [watchCertUnavailable, setValue]);
 
   const fetchData = useCallback(async () => {
     try {

@@ -78,17 +78,21 @@ const QueueRow = ({
         ) : event.training_certificates.length === 0 ? (
           <b>missing</b>
         ) : (
-          event.training_certificates.map((cert, index) => (
-            <Link
-              key={cert.id ?? index}
-              href={`http://localhost:5001/api/certificates/${cert.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={styles.certLink}
-            >
-              cert{index > 0 ? index + 1 : ''}
-            </Link>
-          ))
+          event.training_certificates.map((cert, index) => {
+            const BACKEND_URL =
+              import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+            return (
+              <Link
+                key={cert.id ?? index}
+                href={`${BACKEND_URL}/api/certificates/${cert.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={styles.certLink}
+              >
+                cert{index > 0 ? index + 1 : ''}
+              </Link>
+            );
+          })
         )}
       </TableCell>
       <TableCell>

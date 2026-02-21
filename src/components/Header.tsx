@@ -75,7 +75,8 @@ const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
   }, [navigate]);
 
   const handleFlaskUIClick = useCallback(() => {
-    window.location.href = 'http://localhost:5001/';
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+    window.location.href = `${BACKEND_URL}/`;
   }, []);
 
   const handleProfileClick = useCallback(() => {
