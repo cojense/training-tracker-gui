@@ -1,4 +1,5 @@
-import React from 'react';
+import { useCallback } from 'react';
+import { BACKEND_URL } from '~/services/apiClient';
 import {
   Card,
   CardContent,
@@ -8,8 +9,7 @@ import {
   Stack,
 } from '@mui/material';
 
-const BACKEND_URL = 'http://localhost:5001';
-const FRONTEND_URL = 'http://localhost:5173';
+const FRONTEND_URL = window.location.origin;
 
 const styles = {
   container: {
@@ -18,23 +18,20 @@ const styles = {
     alignItems: 'center',
     minHeight: '60vh',
   },
-  card: {
-    maxWidth: 400,
-    textAlign: 'center',
-    p: 2,
-  },
-  secondaryText: { mb: 3 },
+  card: { maxWidth: 400, textAlign: 'center', p: 2 },
+  description: { mb: 3 },
 };
-const LoginView: React.FC = () => {
-  const handleGoogleLogin = () => {
+
+export const LoginView = () => {
+  const handleGoogleLogin = useCallback(() => {
     // Perform full page redirect to backend OAuth route with next parameter
     window.location.href = `${BACKEND_URL}/oauth2/login/google?next=${encodeURIComponent(FRONTEND_URL)}`;
-  };
+  }, []);
 
-  const handleDevLogin = () => {
+  const handleDevLogin = useCallback(() => {
     // Perform full page redirect to backend dev login route with next parameter
     window.location.href = `${BACKEND_URL}/dev/login?next=${encodeURIComponent(FRONTEND_URL)}`;
-  };
+  }, []);
 
   return (
     <Box sx={styles.container}>
@@ -46,7 +43,7 @@ const LoginView: React.FC = () => {
           <Typography
             variant="body1"
             color="text.secondary"
-            sx={styles.secondaryText}
+            sx={styles.description}
           >
             Please sign in to access your training requirements.
           </Typography>
@@ -75,5 +72,3 @@ const LoginView: React.FC = () => {
     </Box>
   );
 };
-
-export default LoginView;
