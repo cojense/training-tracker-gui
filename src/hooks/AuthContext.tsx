@@ -1,6 +1,11 @@
-import { useState, useCallback, useMemo, ReactNode, useEffect } from 'react';
+import {
+  useState,
+  useCallback,
+  useMemo,
+  ReactNode,
+  useEffect,
+} from 'react';
 import { UserService } from '~/services/UserService';
-import { BACKEND_URL } from '~/services/apiClient';
 import { Box, CircularProgress } from '@mui/material';
 import { User } from '~/types/user';
 import { AuthContext } from '~/hooks/useAuth';
@@ -47,6 +52,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = useCallback(() => {
     // For real logout, we'll redirect to backend /logout with next parameter
+    const BACKEND_URL =
+      import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:5001';
     const FRONTEND_URL = window.location.origin;
     window.location.href = `${BACKEND_URL}/oauth2/logout?next=${encodeURIComponent(`${FRONTEND_URL}/login`)}`;
   }, []);
