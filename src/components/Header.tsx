@@ -65,7 +65,7 @@ interface HeaderProps {
   toggleMode: () => void;
   onMenuClick: () => void;
 }
-const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
+export const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
 
