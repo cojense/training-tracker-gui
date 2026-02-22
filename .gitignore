@@ -44,5 +44,7 @@ conductor/
 .geminiignore
 
 # --- Whitelist (Keep these) ---
+*.sh
+!run.bash
+*.md
 !README.md
-!GEMINI.md
