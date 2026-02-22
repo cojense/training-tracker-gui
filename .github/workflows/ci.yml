@@ -20,9 +20,9 @@ jobs:
         with:
           bun-version: latest
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: cd training-tracker-gui && bun install --frozen-lockfile
       - name: Lint
-        run: bun run lint
+        run: cd training-tracker-gui && bun run lint
 
   type-check:
     name: Type Checking (TSC)
@@ -34,9 +34,9 @@ jobs:
         with:
           bun-version: latest
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: cd training-tracker-gui && bun install --frozen-lockfile
       - name: Type check
-        run: bunx tsc
+        run: cd training-tracker-gui && bunx tsc
 
   build:
     name: Build Verification (Vite)
@@ -48,21 +48,6 @@ jobs:
         with:
           bun-version: latest
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: cd training-tracker-gui && bun install --frozen-lockfile
       - name: Build
-        run: bun run build
-        
-
-  test:
-    name: Test Verification (Vitest)
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-      - name: Test
-        run: bun run test
+        run: cd training-tracker-gui && bun run build

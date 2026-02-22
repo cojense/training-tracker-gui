@@ -16,11 +16,16 @@ import {
   Alert,
   IconButton,
   Tooltip,
+  Link,
 } from '@mui/material';
-import { Edit as EditIcon, Visibility as ViewIcon } from '@mui/icons-material';
+import {
+  Edit as EditIcon,
+  Groups as GroupsIcon,
+  Visibility as ViewIcon,
+} from '@mui/icons-material';
 import { api } from '~/utilities/api';
-import { Project } from '~/types/projects';
-import { useNavigate } from 'react-router-dom';
+import { User } from '~/types/user';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 
 const headerBoxStyles = {
   p: 2,
@@ -32,35 +37,52 @@ const centeredBoxStyles = { textAlign: 'center', py: 4 };
 const headerCellStyles = { fontWeight: 'bold' };
 const errorBoxStyles = { p: 2 };
 
-interface ProjectRowProps {
-  project: Project;
-  onDetails: (id: number | null) => void;
-  onEdit: (id: number | null) => void;
+interface UserRowProps {
+  user: User;
+  onEdit: (id: number) => void;
+  onGroups: (id: number) => void;
 }
 
-const ProjectRow = ({ project, onDetails, onEdit }: ProjectRowProps) => {
-  const handleDetails = useCallback(
-    () => onDetails(project.id),
-    [project.id, onDetails]
+const UserRow = ({ user, onEdit, onGroups }: UserRowProps) => {
+  const handleEdit = useCallback(() => onEdit(user.id), [user.id, onEdit]);
+  const handleGroups = useCallback(
+    () => onGroups(user.id),
+    [user.id, onGroups]
   );
-  const handleEdit = useCallback(
-    () => onEdit(project.id),
-    [project.id, onEdit]
-  );
+
+  const userName = `${user.first_name} ${user.last_name}`;
+  const roles = [
+    user.is_admin ? 'Admin' : '',
+    user.is_training_manager ? 'Manager' : '',
+    !user.is_admin && !user.is_training_manager ? 'Employee' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <TableRow hover>
-      <TableCell>{project.id}</TableCell>
-      <TableCell>{project.name}</TableCell>
+      <TableCell>{user.id}</TableCell>
+      <TableCell>{userName}</TableCell>
+      <TableCell>{user.email}</TableCell>
+      <TableCell>{roles}</TableCell>
       <TableCell>
-        <Tooltip title="View Details">
-          <IconButton size="small" onClick={handleDetails}>
+        <Tooltip title="View Profile">
+          <IconButton
+            size="small"
+            component={RouterLink}
+            to={`/users/${user.id}`}
+          >
             <ViewIcon fontSize="small" />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Edit Project">
+        <Tooltip title="Edit Profile">
           <IconButton size="small" onClick={handleEdit}>
             <EditIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Change Groups">
+          <IconButton size="small" onClick={handleGroups}>
+            <GroupsIcon fontSize="small" />
           </IconButton>
         </Tooltip>
       </TableCell>
@@ -68,40 +90,40 @@ const ProjectRow = ({ project, onDetails, onEdit }: ProjectRowProps) => {
   );
 };
 
-export const ProjectsView = () => {
+export const UserListView = () => {
   const navigate = useNavigate();
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProjects = useCallback(async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.getProjects();
-      setProjects(data);
+      const data = await api.getUsers();
+      setUsers(data);
     } catch (err) {
-      console.error('Failed to fetch projects:', err);
-      setError('Could not load the projects list.');
+      console.error('Failed to fetch users:', err);
+      setError('Could not load the user directory.');
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    void fetchProjects();
-  }, [fetchProjects]);
+    void fetchUsers();
+  }, [fetchUsers]);
 
-  const handleDetailsClick = useCallback(
-    (id: number | null) => {
-      if (id !== null) void navigate(`/projects/${id}`);
+  const handleEditClick = useCallback(
+    (id: number) => {
+      void navigate(`/users/${id}/edit`);
     },
     [navigate]
   );
 
-  const handleEditClick = useCallback(
-    (id: number | null) => {
-      if (id !== null) void navigate(`/projects/${id}/edit`);
+  const handleGroupsClick = useCallback(
+    (id: number) => {
+      void navigate(`/users/${id}/groups`);
     },
     [navigate]
   );
@@ -109,7 +131,7 @@ export const ProjectsView = () => {
   return (
     <Card elevation={2}>
       <Box sx={headerBoxStyles}>
-        <Typography variant="h6">Projects List</Typography>
+        <Typography variant="h6">User Directory</Typography>
       </Box>
       <Divider />
       <CardContent sx={contentRootStyles}>
@@ -128,16 +150,18 @@ export const ProjectsView = () => {
                 <TableRow>
                   <TableCell sx={headerCellStyles}>ID</TableCell>
                   <TableCell sx={headerCellStyles}>Name</TableCell>
+                  <TableCell sx={headerCellStyles}>Email</TableCell>
+                  <TableCell sx={headerCellStyles}>Roles</TableCell>
                   <TableCell sx={headerCellStyles}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {projects.map((p) => (
-                  <ProjectRow
-                    key={p.id ?? 'new'}
-                    project={p}
-                    onDetails={handleDetailsClick}
+                {users.map((u) => (
+                  <UserRow
+                    key={u.id}
+                    user={u}
                     onEdit={handleEditClick}
+                    onGroups={handleGroupsClick}
                   />
                 ))}
               </TableBody>

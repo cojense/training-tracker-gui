@@ -15,13 +15,15 @@ import {
   Home as HomeIcon,
   School as TrainingIcon,
   SupervisorAccount as SupervisorIcon,
+  AdminPanelSettings as ManagerIcon,
+  CheckCircle as ApproveIcon,
   People as UsersIcon,
   Groups as GroupsIcon,
   Assignment as ProjectsIcon,
   AccountCircle as ProfileIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '~/hooks/useAuth';
+import { useAuth } from '~/utilities/useAuth';
 
 const drawerWidth = 240;
 
@@ -65,6 +67,7 @@ interface NavListItemProps {
   onClick: (path: string) => void;
   sx?: SxProps<Theme>;
 }
+
 const NavListItem = ({ item, isActive, onClick, sx }: NavListItemProps) => {
   const handleClick = useCallback(() => {
     onClick(item.path);
@@ -92,7 +95,8 @@ interface SidebarProps {
   onClose: () => void;
   mobile: boolean;
 }
-export const Sidebar = ({ open, onClose, mobile }: SidebarProps) => {
+
+const Sidebar = ({ open, onClose, mobile }: SidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
@@ -120,6 +124,18 @@ export const Sidebar = ({ open, onClose, mobile }: SidebarProps) => {
         text: 'Supervisor',
         path: '/supervisor',
         icon: <SupervisorIcon />,
+        visible: isAuthenticated,
+      },
+      {
+        text: 'Manager',
+        path: '/manager-report',
+        icon: <ManagerIcon />,
+        visible: isAdminOrManager,
+      },
+      {
+        text: 'Approve',
+        path: '/approval',
+        icon: <ApproveIcon />,
         visible: isAdminOrManager,
       },
       {
@@ -201,3 +217,5 @@ export const Sidebar = ({ open, onClose, mobile }: SidebarProps) => {
     </Box>
   );
 };
+
+export default Sidebar;

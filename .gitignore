@@ -12,20 +12,9 @@ dist
 dist-ssr
 *.local
 
-# --- AI Agents & Caches ---
-.gemini/plan-ideas/
-.gemini/logs/
-.claude/
-conductor/tracks/*
-conductor/code_styleguides/*
-CLAUDE.md
-conductor/claude-workflow.md
-conductor/research.md
-examples/
-*.md.template
-
 # Editor directories and files
 .vscode/*
+!.vscode/extensions.json
 .idea
 .DS_Store
 *.suo
@@ -33,18 +22,9 @@ examples/
 *.njsproj
 *.sln
 *.sw?
-*.bak
 
 # Extras
 .env
 GEMINI.md
 .vscode/
 .gemini/
-conductor/
-.geminiignore
-
-# --- Whitelist (Keep these) ---
-*.sh
-!run.bash
-*.md
-!README.md

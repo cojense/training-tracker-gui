@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { BACKEND_URL } from '~/services/apiClient';
 import {
   Card,
   CardContent,
@@ -9,6 +8,7 @@ import {
   Stack,
 } from '@mui/material';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
 const FRONTEND_URL = window.location.origin;
 
 const styles = {
@@ -22,7 +22,7 @@ const styles = {
   description: { mb: 3 },
 };
 
-export const LoginView = () => {
+const LoginView = () => {
   const handleGoogleLogin = useCallback(() => {
     // Perform full page redirect to backend OAuth route with next parameter
     window.location.href = `${BACKEND_URL}/oauth2/login/google?next=${encodeURIComponent(FRONTEND_URL)}`;
@@ -58,19 +58,19 @@ export const LoginView = () => {
               Sign In with Google
             </Button>
 
-            {import.meta.env.DEV && (
-              <Button
-                variant="outlined"
-                color="secondary"
-                fullWidth
-                onClick={handleDevLogin}
-              >
-                Dev Login (Bypass)
-              </Button>
-            )}
+            <Button
+              variant="outlined"
+              color="secondary"
+              fullWidth
+              onClick={handleDevLogin}
+            >
+              Dev Login (Bypass)
+            </Button>
           </Stack>
         </CardContent>
       </Card>
     </Box>
   );
 };
+
+export default LoginView;

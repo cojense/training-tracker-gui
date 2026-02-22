@@ -11,19 +11,10 @@ export const exportToCSV = (
     ...data.map((row) =>
       row
         .map((val) => {
-          let stringVal = val === null || val === undefined ? '' : String(val);
-
-          // CSV Injection protection: prepend ' if starts with =, +, -, or @
-          if (/^[=+\-@].*/.test(stringVal)) {
-            stringVal = `'${stringVal}`;
-          }
-
-          // Escape quotes and wrap in quotes if contains comma or newline
-          if (
-            stringVal.includes(',') ||
-            stringVal.includes('"') ||
-            stringVal.includes('\n')
-          ) {
+          const stringVal =
+            val === null || val === undefined ? '' : String(val);
+          // Escape quotes and wrap in quotes if contains comma
+          if (stringVal.includes(',') || stringVal.includes('"')) {
             return `"${stringVal.replace(/"/g, '""')}"`;
           }
           return stringVal;

@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -17,9 +17,7 @@ import {
   Menu as MenuIcon,
   OpenInNew as OpenInNewIcon,
 } from '@mui/icons-material';
-import { useAuth } from '~/hooks/useAuth';
-import ShyftLogo from '~/assets/shyft-logo.svg?react';
-import { BACKEND_URL } from '~/services/apiClient';
+import { useAuth } from '~/utilities/useAuth';
 
 const styles = {
   appBar: { zIndex: (theme: Theme) => theme.zIndex.drawer + 1 },
@@ -30,14 +28,8 @@ const styles = {
     flexGrow: 1,
     cursor: 'pointer',
   },
+  titleBrand: { fontWeight: 'bold', color: 'primary.main' },
   titleApp: { ml: 1, display: { xs: 'none', sm: 'block' } },
-  logoContainer: {
-    height: 40,
-    display: 'flex',
-    alignItems: 'center',
-    '& .logo-dark': { fill: 'text.primary' },
-    '& .logo-blue': { fill: 'primary.main' },
-  },
   rightActions: { display: 'flex', alignItems: 'center', gap: 2 },
   flaskButton: { display: { xs: 'none', sm: 'flex' } },
   userContainer: {
@@ -65,7 +57,7 @@ interface HeaderProps {
   toggleMode: () => void;
   onMenuClick: () => void;
 }
-export const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
+const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
 
@@ -83,6 +75,7 @@ export const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
   }, [navigate]);
 
   const handleFlaskUIClick = useCallback(() => {
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
     window.location.href = `${BACKEND_URL}/`;
   }, []);
 
@@ -108,9 +101,14 @@ export const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
         )}
 
         <Box sx={styles.titleContainer} onClick={handleTitleClick}>
-          <Box sx={styles.logoContainer}>
-            <ShyftLogo height={40} />
-          </Box>
+          <Typography
+            variant="h6"
+            noWrap
+            component="div"
+            sx={styles.titleBrand}
+          >
+            SHYFT
+          </Typography>
           <Typography variant="h6" noWrap component="div" sx={styles.titleApp}>
             Training Tracker
           </Typography>
@@ -174,3 +172,5 @@ export const Header = ({ mode, toggleMode, onMenuClick }: HeaderProps) => {
     </AppBar>
   );
 };
+
+export default Header;

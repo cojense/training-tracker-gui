@@ -3,11 +3,11 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import App from './App';
-import { AuthProvider } from '~/hooks/AuthContext';
-import { NotificationProvider } from './hooks/NotificationContext';
+import { AuthProvider } from './utilities/useAuth';
+import { NotificationProvider } from './utilities/NotificationContext';
 import getTheme, { ThemeMode } from './utilities/theme';
 
-export const Main: React.FC = () => {
+const Main: React.FC = () => {
   const prefersDark =
     window.matchMedia &&
     window.matchMedia('(prefers-color-scheme: dark)').matches;

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
   Table,
   TableContainer,
@@ -9,50 +9,55 @@ import {
   Paper,
   Button,
   useTheme,
-  Link as MuiLink,
+  alpha,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { Edit as EditIcon } from '@mui/icons-material';
 import { AssignedTraining } from '~/types/assignments';
-import { getStatusBackgroundColor } from '~/utilities/statusColors';
-import { TrainingEventModal } from '~/components/trainings/TrainingEventModal';
-import { TrainingDetailModal } from '~/components/trainings/TrainingDetailModal';
-import { TrainingEditModal } from '~/components/trainings/TrainingEditModal';
-import { Training, TrainingEvent } from '~/types/training';
+import { TrainingDetailsModalButton } from './TrainingDetailsModal';
+import { differenceInDays, parseISO } from 'date-fns';
 
 const styles = {
   header: { fontWeight: 'bold' },
-  link: { cursor: 'pointer' },
 };
 
 interface RowProps {
   assignment: AssignedTraining;
   onRecord: (trainingId: number | string, userId: number | string) => void;
-  onView: (training: Training) => void;
 }
 
-const TrainingDueRow = ({ assignment, onRecord, onView }: RowProps) => {
+const TrainingDueRow = ({ assignment, onRecord }: RowProps) => {
   const theme = useTheme();
   const handleRecord = useCallback(() => {
     onRecord(assignment.assignment.training.id, assignment.member.id);
   }, [assignment, onRecord]);
 
-  const handleView = useCallback(() => {
-    onView(assignment.assignment.training);
-  }, [assignment.assignment.training, onView]);
+  const backgroundColor = useMemo(() => {
+    if (assignment.assignment.no_nag) {
+      return theme.palette.mode === 'light' ? '#e1f5fe' : '#01579b'; // Light Blue
+    }
 
-  const backgroundColor = useMemo(
-    () => getStatusBackgroundColor(assignment, theme),
-    [assignment, theme]
-  );
+    if (assignment.due_date) {
+      const daysUntilDue = differenceInDays(
+        parseISO(assignment.due_date),
+        new Date()
+      );
+      if (daysUntilDue <= 0) {
+        return alpha(theme.palette.error.main, 0.2);
+      }
+      if (daysUntilDue <= 30) {
+        return alpha(theme.palette.warning.main, 0.2);
+      }
+    }
+    return 'inherit';
+  }, [assignment, theme]);
 
   const projectNames = useMemo(() => {
     return assignment.projects.map((p) => p.name).join(', ');
   }, [assignment.projects]);
 
-  const rowStyles = useMemo(() => ({ backgroundColor }), [backgroundColor]);
-
   return (
-    <TableRow hover sx={rowStyles}>
+    <TableRow hover sx={{ backgroundColor }}>
       <TableCell>
         <Button
           size="small"
@@ -64,14 +69,7 @@ const TrainingDueRow = ({ assignment, onRecord, onView }: RowProps) => {
         </Button>
       </TableCell>
       <TableCell>
-        <MuiLink
-          onClick={handleView}
-          underline="hover"
-          sx={styles.link}
-          aria-label="View Details"
-        >
-          {assignment.assignment.training.title}
-        </MuiLink>
+        <TrainingDetailsModalButton training={assignment.assignment.training} />
       </TableCell>
       <TableCell>{projectNames}</TableCell>
       <TableCell>{assignment.completion_date ?? 'Never'}</TableCell>
@@ -83,113 +81,45 @@ const TrainingDueRow = ({ assignment, onRecord, onView }: RowProps) => {
 
 interface TrainingDueTableProps {
   assignments?: AssignedTraining[];
-  onSaveSuccess?: () => void;
 }
 
 export const TrainingDueTable = ({
   assignments = [],
-  onSaveSuccess,
 }: TrainingDueTableProps) => {
-  const [eventModalOpen, setEventModalOpen] = useState(false);
-  const [selectedTrainingId, setSelectedTrainingId] = useState<
-    number | undefined
-  >();
-  const [selectedUserId, setSelectedUserId] = useState<number | undefined>();
-
-  const [detailTraining, setDetailTraining] = useState<Training | null>(null);
-  const [editTraining, setEditTraining] = useState<Training | null>(null);
-  const [eventToEdit, setEventToEdit] = useState<TrainingEvent | null>(null);
-  const [eventMode, setEventMode] = useState<'create' | 'update'>('create');
+  const navigate = useNavigate();
 
   const handleRecordClick = useCallback(
     (trainingId: number | string, userId: number | string) => {
-      setEventMode('create');
-      setEventToEdit(null);
-      setSelectedTrainingId(Number(trainingId));
-      setSelectedUserId(Number(userId));
-      setEventModalOpen(true);
+      void navigate(
+        `/events/record?training_id=${trainingId}&user_id=${userId}`
+      );
     },
-    []
+    [navigate]
   );
 
-  const handleViewClick = useCallback((training: Training) => {
-    setDetailTraining(training);
-  }, []);
-
-  const handleEditFromDetail = useCallback((training: Training) => {
-    setDetailTraining(null);
-    setEditTraining(training);
-  }, []);
-
-  const handleEditEventClick = useCallback((event: TrainingEvent) => {
-    setDetailTraining(null);
-    setEventMode('update');
-    setEventToEdit(event);
-    setEventModalOpen(true);
-  }, []);
-
-  const handleCloseModal = useCallback(() => {
-    setEventModalOpen(false);
-    setDetailTraining(null);
-    setEditTraining(null);
-    setEventToEdit(null);
-    if (onSaveSuccess) onSaveSuccess();
-  }, [onSaveSuccess]);
-
-  const isDetailModalOpen = useMemo(() => !!detailTraining, [detailTraining]);
-  const isEditModalOpen = useMemo(() => !!editTraining, [editTraining]);
-
   return (
-    <>
-      <TableContainer component={Paper} elevation={0}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={styles.header}>Actions</TableCell>
-              <TableCell sx={styles.header}>Training Due</TableCell>
-              <TableCell sx={styles.header}>Bill To</TableCell>
-              <TableCell sx={styles.header}>Last Completed</TableCell>
-              <TableCell sx={styles.header}>Approved</TableCell>
-              <TableCell sx={styles.header}>Due Date</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {assignments.map((training) => (
-              <TrainingDueRow
-                key={training.assignment.training.id}
-                assignment={training}
-                onRecord={handleRecordClick}
-                onView={handleViewClick}
-              />
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      <TrainingEventModal
-        open={eventModalOpen}
-        onClose={handleCloseModal}
-        mode={eventMode}
-        event={eventToEdit}
-        initialTrainingId={selectedTrainingId}
-        initialUserId={selectedUserId}
-        onSaveSuccess={onSaveSuccess}
-      />
-
-      <TrainingDetailModal
-        training={detailTraining}
-        open={isDetailModalOpen}
-        onClose={handleCloseModal}
-        onEdit={handleEditFromDetail}
-        onEditEvent={handleEditEventClick}
-      />
-
-      <TrainingEditModal
-        training={editTraining}
-        open={isEditModalOpen}
-        onClose={handleCloseModal}
-        onSaveSuccess={onSaveSuccess}
-      />
-    </>
+    <TableContainer component={Paper} elevation={0}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell sx={styles.header}>Actions</TableCell>
+            <TableCell sx={styles.header}>Training Due</TableCell>
+            <TableCell sx={styles.header}>Bill To</TableCell>
+            <TableCell sx={styles.header}>Last Completed</TableCell>
+            <TableCell sx={styles.header}>Approved</TableCell>
+            <TableCell sx={styles.header}>Due Date</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {assignments.map((training) => (
+            <TrainingDueRow
+              key={training.assignment.training.id}
+              assignment={training}
+              onRecord={handleRecordClick}
+            />
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 };

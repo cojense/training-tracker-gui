@@ -7,15 +7,9 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 export default defineConfig({
   plugins: [react(), svgr(), tsconfigPaths()],
   server: {
-    // 0.0.0.0 listens on all interfaces (internal and host)
-    host: '0.0.0.0',
-    port: 8080,
-    strictPort: true, // Fail if port is busy instead of picking another
-    watch: {
-      // Polling is often required for HMR inside Docker on some OSes
-      usePolling: true,
-    },
+    allowedHosts: true,
     headers: {
+      // Need to create deployment fix for this issue or may not authenticate correctly
       'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
     },
   },

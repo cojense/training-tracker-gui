@@ -12,16 +12,20 @@ import {
   Checkbox,
   MenuItem,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import { api } from '~/utilities/api';
 import { useNotification } from '~/utilities/NotificationContext';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Training } from '~/types/training';
 import { Project } from '~/types/projects';
 import { Group } from '~/types/user';
+import { Assignment } from '~/types/assignments';
 
-interface AssignFormInput {
-  training_id: string | number;
+interface EditAssignFormInput {
   project_id: string | number;
   start_date: string;
   end_date: string;
@@ -30,68 +34,84 @@ interface AssignFormInput {
   no_nag: boolean;
 }
 
-export const AssignTrainingView = () => {
-  const { groupId } = useParams<{ groupId: string }>();
+export const EditAssignmentView = () => {
+  const { groupId, trainingId } = useParams<{
+    groupId: string;
+    trainingId: string;
+  }>();
   const { showNotification } = useNotification();
   const navigate = useNavigate();
   const [group, setGroup] = useState<Group | null>(null);
-  const [trainings, setTrainings] = useState<Training[]>([]);
+  const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
-  } = useForm<AssignFormInput>({
-    defaultValues: {
-      training_id: '',
-      project_id: '',
-      start_date: new Date().toISOString().split('T')[0],
-      end_date: '',
-      suspense_date: '',
-      cadence: '',
-      no_nag: false,
-    },
-  });
+  } = useForm<EditAssignFormInput>();
 
   const fetchData = useCallback(async () => {
-    if (!groupId) return;
+    if (!groupId || !trainingId) return;
     try {
       setLoading(true);
-      const [groupData, trainingsData, projectsData] = await Promise.all([
+      const [groupData, assignmentData, projectsData] = await Promise.all([
         api.getGroup(groupId),
-        api.getTrainings(),
+        api.getAssignment(groupId, trainingId),
         api.getProjects(),
       ]);
       setGroup(groupData);
-      setTrainings(trainingsData);
+      setAssignment(assignmentData);
       setProjects(projectsData);
+      reset({
+        project_id: assignmentData.project.id ?? '',
+        start_date: assignmentData.start_date,
+        end_date: assignmentData.end_date ?? '',
+        suspense_date: assignmentData.suspense_date,
+        cadence: assignmentData.cadence,
+        no_nag: assignmentData.no_nag,
+      });
     } catch (error) {
       console.error('Failed to fetch data:', error);
       showNotification('Could not load required data.', 'error');
-      void navigate('/groups');
+      void navigate(`/groups/${groupId}`);
     } finally {
       setLoading(false);
     }
-  }, [groupId, navigate, showNotification]);
+  }, [groupId, trainingId, navigate, reset, showNotification]);
 
   useEffect(() => {
     void fetchData();
   }, [fetchData]);
 
-  const onSubmit = async (data: AssignFormInput) => {
-    if (!groupId) return;
+  const onSubmit = async (data: EditAssignFormInput) => {
+    if (!groupId || !trainingId) return;
     try {
-      await api.updateAssignment(groupId, data.training_id, {
+      await api.updateAssignment(groupId, trainingId, {
         ...data,
         project_id: data.project_id,
       });
-      showNotification('Training assigned successfully!', 'success');
+      showNotification('Assignment updated successfully!', 'success');
       void navigate(`/groups/${groupId}`);
     } catch (error) {
-      console.error('Failed to assign training:', error);
-      showNotification('Failed to assign training.', 'error');
+      console.error('Failed to update assignment:', error);
+      showNotification('Failed to update assignment.', 'error');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!groupId || !trainingId) return;
+    try {
+      await api.deleteAssignment(groupId, trainingId);
+      showNotification('Assignment deleted.', 'success');
+      setDeleteDialogOpen(false);
+      void navigate(`/groups/${groupId}`);
+    } catch (error) {
+      console.error('Failed to delete assignment:', error);
+      showNotification('Failed to delete assignment.', 'error');
     }
   };
 
@@ -106,11 +126,11 @@ export const AssignTrainingView = () => {
   return (
     <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Assign Training
+        Edit Assignment
       </Typography>
-      {group && (
+      {group && assignment && (
         <Typography variant="h6" color="text.secondary" gutterBottom>
-          Group: {group.name}
+          {assignment.training.title} for {group.name}
         </Typography>
       )}
       <Card elevation={2}>
@@ -121,28 +141,6 @@ export const AssignTrainingView = () => {
             }}
           >
             <Stack spacing={3}>
-              <Controller
-                name="training_id"
-                control={control}
-                rules={{ required: 'Training is required' }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    select
-                    label="Training Course"
-                    fullWidth
-                    error={!!errors.training_id}
-                    helperText={errors.training_id?.message}
-                  >
-                    {trainings.map((t) => (
-                      <MenuItem key={t.id} value={t.id}>
-                        {t.title}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                )}
-              />
-
               <Controller
                 name="project_id"
                 control={control}
@@ -239,23 +237,57 @@ export const AssignTrainingView = () => {
                 )}
               />
 
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                <Button onClick={() => navigate(-1)} disabled={isSubmitting}>
-                  Cancel
-                </Button>
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 2,
+                  justifyContent: 'space-between',
+                }}
+              >
                 <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  loading={isSubmitting}
+                  color="error"
+                  onClick={() => setDeleteDialogOpen(true)}
+                  disabled={isSubmitting}
                 >
-                  Create Assignment
+                  Delete Assignment
                 </Button>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Button onClick={() => navigate(-1)} disabled={isSubmitting}>
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    loading={isSubmitting}
+                  >
+                    Save Changes
+                  </Button>
+                </Box>
               </Box>
             </Stack>
           </form>
         </CardContent>
       </Card>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Delete Assignment?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to remove this training assignment from the
+            group? This will not delete the training or any completion records.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleDelete} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
