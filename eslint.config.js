@@ -13,9 +13,7 @@ export default defineConfig(
   },
   // @ts-ignore - InfiniteArray type mismatch in flat config
   eslint.configs.recommended,
-  // @ts-ignore - Type mismatch in flat config
   ...tseslint.configs.recommendedTypeChecked,
-  // @ts-ignore - Type mismatch in flat config
   ...tseslint.configs.stylisticTypeChecked,
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
@@ -47,7 +45,7 @@ export default defineConfig(
     languageOptions: {
       ...reactPlugin.configs.flat.recommended.languageOptions,
       parserOptions: {
-        projectService: true,
+        project: ['./tsconfig.app.json', './tsconfig.node.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },

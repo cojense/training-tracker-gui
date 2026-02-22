@@ -1,0 +1,103 @@
+{
+  "brand": {
+    "blue": {
+      "light": "#72c3fc",
+      "DEFAULT": "#329af0",
+      "dark": "#1c7cd6"
+    },
+    "green": {
+      "light": "#8ce99a",
+      "DEFAULT": "#51cf66",
+      "dark": "#37b24d"
+    },
+    "purple": {
+      "light": "#ba79da",
+      "DEFAULT": "#a551cf",
+      "dark": "#8d33ba"
+    },
+    "orange": {
+      "light": "#ffc078",
+      "DEFAULT": "#ff922b",
+      "dark": "#f76707"
+    },
+    "pink": {
+      "light": "#e964a4",
+      "DEFAULT": "#f0329a",
+      "dark": "#de0f80"
+    },
+    "gold": {
+      "light": "#ebc256",
+      "DEFAULT": "#f7be1e",
+      "dark": "#dda80a"
+    },
+    "gray": {
+      "50": "#f8f9fa",
+      "100": "#e9ecef",
+      "200": "#dee2e6",
+      "300": "#ced4da",
+      "400": "#adb5bd",
+      "500": "#868e96",
+      "600": "#495057",
+      "700": "#343a40",
+      "800": "#212529",
+      "900": "#0f1419"
+    }
+  },
+  "semantic": {
+    "light": {
+      "bg": {
+        "primary": "#f5f7fa",
+        "secondary": "#ffffff",
+        "card": "#ffffff"
+      },
+      "text": {
+        "primary": "#1a202c",
+        "secondary": "#4a5568",
+        "muted": "#718096"
+      },
+      "border": "#e2e8f0"
+    },
+    "dark": {
+      "bg": {
+        "primary": "#1e293b",
+        "secondary": "#0f172a",
+        "card": "#334155"
+      },
+      "text": {
+        "primary": "#f1f5f9",
+        "secondary": "#cbd5e1",
+        "muted": "#94a3b8"
+      },
+      "border": "#475569"
+    }
+  },
+  "status": {
+    "success": "#37b24d",
+    "warning": "#fbbf24",
+    "error": "#dc2626",
+    "info": "#3b82f6"
+  },
+  "ui": {
+    "brandBlue": "#3b82f6",
+    "brandCyan": "#22d3ee",
+    "brandOrange": "#f97316",
+    "btnProfileBg": "#22d3ee",
+    "btnProfileHover": "#06b6d4",
+    "btnLogoutBg": "#64748b",
+    "btnLogoutHover": "#475569",
+    "btnRefreshBg": "#64748b",
+    "btnRefreshHover": "#475569"
+  },
+  "statusRows": {
+    "light": {
+      "noNag": "#bae6fd",
+      "almostDue": "#fbbf24",
+      "overdue": "#dc2626"
+    },
+    "dark": {
+      "noNag": "#1e3a5f",
+      "almostDue": "#92400e",
+      "overdue": "#7f1d1d"
+    }
+  }
+}
