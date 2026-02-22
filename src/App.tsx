@@ -27,6 +27,33 @@ interface AppProps {
   mode: 'light' | 'dark';
   toggleMode: () => void;
 }
+
+const ProtectedRoute = ({
+  children,
+  requireAdmin = false,
+  requireManager = false,
+}: {
+  children: React.ReactNode;
+  requireAdmin?: boolean;
+  requireManager?: boolean;
+}) => {
+  const { isAuthenticated, user } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (requireAdmin && !user?.is_admin) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (requireManager && !user?.is_admin && !user?.is_training_manager) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 const App = ({ mode, toggleMode }: AppProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { isAuthenticated } = useAuth();
@@ -63,11 +90,39 @@ const App = ({ mode, toggleMode }: AppProps) => {
                 <>
                   <Route path="/" element={<HomeView />} />
                   <Route path="/trainings" element={<TrainingsView />} />
-                  <Route path="/supervisor" element={<SupervisorView />} />
+                  <Route
+                    path="/supervisor"
+                    element={
+                      <ProtectedRoute requireManager>
+                        <SupervisorView />
+                      </ProtectedRoute>
+                    }
+                  />
                   <Route path="/profile" element={<ProfileView />} />
-                  <Route path="/users" element={<UsersView />} />
-                  <Route path="/projects" element={<ProjectsView />} />
-                  <Route path="/groups" element={<GroupsView />} />
+                  <Route
+                    path="/users"
+                    element={
+                      <ProtectedRoute requireAdmin>
+                        <UsersView />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/projects"
+                    element={
+                      <ProtectedRoute requireAdmin>
+                        <ProjectsView />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/groups"
+                    element={
+                      <ProtectedRoute requireManager>
+                        <GroupsView />
+                      </ProtectedRoute>
+                    }
+                  />
                   <Route path="/login" element={<Navigate to="/" replace />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </>

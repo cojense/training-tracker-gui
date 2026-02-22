@@ -115,8 +115,8 @@ export const GroupFormModal = ({
     [submitting]
   );
 
-  const handleFormSubmit = useMemo(
-    () => (e: React.FormEvent) => {
+  const handleFormSubmit = useCallback(
+    (e: React.FormEvent) => {
       void handleSubmit(e);
     },
     [handleSubmit]

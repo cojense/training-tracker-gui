@@ -28,6 +28,8 @@ import { Training, TrainingEvent } from '~/types/training';
 import { TrainingService } from '~/services/TrainingService';
 import { useAuth } from '~/hooks/useAuth';
 
+import { getSafeUrl } from '~/utilities/urlValidation';
+
 const styles = {
   modal: {
     position: 'absolute' as const,
@@ -210,7 +212,7 @@ export const TrainingDetailModal = ({
                         External URL
                       </Typography>
                       <MuiLink
-                        href={training.url}
+                        href={getSafeUrl(training.url)}
                         target="_blank"
                         rel="noopener noreferrer"
                         sx={styles.flexCenter}
