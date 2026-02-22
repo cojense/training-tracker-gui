@@ -58,14 +58,16 @@ export const LoginView = () => {
               Sign In with Google
             </Button>
 
-            <Button
-              variant="outlined"
-              color="secondary"
-              fullWidth
-              onClick={handleDevLogin}
-            >
-              Dev Login (Bypass)
-            </Button>
+            {import.meta.env.DEV && (
+              <Button
+                variant="outlined"
+                color="secondary"
+                fullWidth
+                onClick={handleDevLogin}
+              >
+                Dev Login (Bypass)
+              </Button>
+            )}
           </Stack>
         </CardContent>
       </Card>

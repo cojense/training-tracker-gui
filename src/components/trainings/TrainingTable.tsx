@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { Edit as EditIcon } from '@mui/icons-material';
 import { Training } from '~/types/training';
+import { getSafeUrl } from '~/utilities/urlValidation';
 
 const styles = {
   headerCell: {
@@ -48,7 +49,7 @@ const TrainingRow = ({
     [training.id, onView]
   );
 
-  const externalUrl = training.url ?? '#';
+  const externalUrl = getSafeUrl(training.url);
 
   return (
     <TableRow hover>
